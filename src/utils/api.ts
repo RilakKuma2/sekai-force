@@ -29,6 +29,16 @@ export interface Song {
 }
 
 export const fetchSongs = async (): Promise<Song[]> => {
-    const response = await axios.get<Song[]>('/api/songs');
-    return response.data;
+    try {
+        const response = await axios.get<Song[]>('https://api.rilaksekai.com/api/songs');
+        if (Array.isArray(response.data)) {
+            return response.data;
+        } else {
+            console.error("API response is not an array:", response.data);
+            return [];
+        }
+    } catch (error) {
+        console.error("Failed to fetch songs:", error);
+        return [];
+    }
 };

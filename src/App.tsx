@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { fetchSongs, type Song } from './utils/api';
-import { processUserBest39, calculateTotalR, type MusicDifficultyStatus, type UserMusicResult, type Difficulty } from './utils/calculator';
+import { processUserBest39, calculateTotalR, type MusicDifficultyStatus, type UserMusicResult } from './utils/calculator';
 import Dashboard from './pages/Dashboard';
 import ScoreInput from './pages/ScoreInput';
 import './App.css';
@@ -28,7 +28,12 @@ function App() {
         if (savedResults) {
           try {
             const parsed = JSON.parse(savedResults);
-            setUserResults(parsed);
+            if (Array.isArray(parsed)) {
+              setUserResults(parsed);
+            } else {
+              console.error("Saved results is not an array, resetting.");
+              setUserResults([]);
+            }
           } catch (e) {
             console.error("Failed to parse saved results", e);
             setUserResults([]);

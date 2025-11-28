@@ -14,7 +14,7 @@ interface SummaryProps {
     playerName: string;
 }
 
-const Summary: React.FC<SummaryProps> = ({ best39, userResults, songs, totalR, sekaiRank, playerId, twitterId, playerName }) => {
+const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank, playerId, twitterId, playerName }) => {
     const [showInfo, setShowInfo] = useState(false);
 
     // Calculate summary data

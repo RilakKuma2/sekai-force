@@ -238,7 +238,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         const url = new URL(window.location.href);
         url.searchParams.set('data', encoded);
 
-        window.history.pushState({}, '', url.toString());
+
+
         setShareUrl(url.toString());
         setShowShareModal(true);
     };
