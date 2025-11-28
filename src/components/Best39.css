@@ -1,0 +1,166 @@
+.best39-list {
+    width: 100%;
+    background-color: #1e1e1e;
+    color: #fff;
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    border-top: 1px solid #333;
+}
+
+.divider {
+    height: 1px;
+    background-color: #333;
+    width: 100%;
+}
+
+.d-flex {
+    display: flex;
+    width: 100%;
+}
+
+.vertical-divider {
+    width: 1px;
+    background-color: #333;
+    height: auto;
+}
+
+.best39-cell {
+    width: calc((100% - 2px) / 3);
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.best39-item-container {
+    padding: 6px 0 0 0;
+    /* Increased top, removed bottom */
+}
+
+/* First Row Styles */
+.best39-list .list-item.first-row {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 12px;
+    /* Reduced padding */
+    position: relative;
+}
+
+.best39-list .list-item-avatar {
+    margin-right: 12px;
+    /* Reduced margin */
+    min-width: 40px;
+    /* Slightly larger */
+    height: 40px;
+}
+
+.best39-list .list-item-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    /* Slight radius */
+    object-fit: cover;
+}
+
+.best39-list .list-item-content {
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+.best39-list .list-item-title {
+    font-size: 12px;
+    /* Smaller rank font */
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: 2px;
+    color: #fff;
+}
+
+.best39-list .list-item-subtitle {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+}
+
+.difficulty-status {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 16px;
+    /* Smaller height */
+}
+
+.play-level {
+    padding: 0 6px;
+    /* Reduced padding */
+    border-top-left-radius: 8px;
+    /* Adjusted radius */
+    border-bottom-left-radius: 8px;
+    font-size: 11px;
+    /* Smaller font */
+    font-weight: 700;
+    min-width: 14px;
+    /* Reduced width */
+    text-align: center;
+    line-height: 14.5px;
+    /* Match height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.play-level sup {
+    font-size: 75%;
+    vertical-align: top;
+    margin-left: 1px;
+    line-height: 1;
+    position: relative;
+    top: -2px;
+}
+
+.rank-badge {
+    padding: 0 6px;
+    /* Reduced padding */
+    border-top-right-radius: 8px;
+    /* Adjusted radius */
+    border-bottom-right-radius: 8px;
+    font-size: 11px;
+    /* Smaller font */
+    font-weight: 700;
+    min-width: 14px;
+    /* Reduced width */
+    text-align: center;
+    line-height: 14.5px;
+    /* Match height */
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Second Row Styles */
+.best39-list .list-item.second-row {
+    display: flex;
+    flex-direction: column;
+    /* Stack title and score */
+    align-items: flex-start;
+    padding: 0 12px;
+    margin-top: 2px;
+}
+
+.best39-list .list-item.second-row .list-item-content {
+    width: 100%;
+}
+
+.best39-list .list-item-title.song-title {
+    font-size: 12px;
+    font-weight: 400;
+    color: #ddd;
+    /* Slightly dimmer white */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 2px;
+    width: 100%;
+}
+
+.list-item-action-text {
+    font-size: 11px;
+    color: #888;
+    /* Dimmer for score details */
+}

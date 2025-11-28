@@ -1,0 +1,292 @@
+.summary-container {
+    width: 100%;
+    background-color: #1e1e1e;
+    color: #fff;
+    font-family: sans-serif;
+}
+
+.summary-section {
+    background-color: #1e1e1e;
+}
+
+.spacer {
+    height: 12px;
+    background-color: #121212;
+}
+
+.divider {
+    height: 1px;
+    background-color: #333;
+    width: 100%;
+}
+
+.divider.inset {
+    margin-left: 56px;
+    /* Adjusted to match icon width + margin */
+    width: calc(100% - 56px);
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    min-height: 44px;
+    /* Slightly shorter */
+}
+
+.list-item-content {
+    flex: 1;
+    font-size: 14px;
+}
+
+/* Header Styles */
+.user-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    padding-top: 8px;
+    /* Add top padding */
+}
+
+.user-rank-container {
+    text-align: right;
+}
+
+.list-item-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.list-item-subtitle {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 2px;
+}
+
+.rank-label {
+    font-size: 11px;
+    color: #aaa;
+    margin-bottom: 2px;
+}
+
+.rank-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.list-item-action {
+    font-size: 14px;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    position: relative;
+    /* For tooltip positioning */
+}
+
+.list-item-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    background-color: #333;
+    border-radius: 50%;
+    margin-right: 16px;
+    background-image: url('https://via.placeholder.com/40');
+    /* Placeholder image */
+    background-size: cover;
+}
+
+/* Difficulty Breakdown Styles */
+.header-row {
+    padding-right: 16px;
+}
+
+.icon-placeholder {
+    width: 40px;
+    margin-right: 16px;
+}
+
+.difficulty-headers {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.diff-header {
+    width: 15%;
+    /* Distribute evenly (6 columns) */
+    text-align: center;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.7);
+    padding: 2px 0;
+}
+
+.diff-header.easy {
+    background-color: #81C784;
+}
+
+.diff-header.normal {
+    background-color: #64B5F6;
+}
+
+.diff-header.hard {
+    background-color: #FFB74D;
+}
+
+.diff-header.expert {
+    background-color: #E57373;
+}
+
+.diff-header.master {
+    background-color: #BA68C8;
+}
+
+.diff-header.append {
+    background-image: linear-gradient(to bottom right, #ad92fd, #fe7bde);
+    color: #fff;
+    /* White text for better contrast on gradient */
+}
+
+.rank-icon-container {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+}
+
+.rank-icon {
+    width: 100%;
+    text-align: center;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 0;
+    line-height: 1.5;
+}
+
+.rank-icon.rank-p {
+    background-image: linear-gradient(to bottom, #F06292, #64B5F6);
+    border: 1px solid #FFFFFF;
+    color: #FFFFFF;
+}
+
+.rank-icon.rank-f {
+    background-color: #F06292;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.rank-icon.rank-c {
+    background-color: transparent;
+    color: #FFB74D;
+    border: 1px solid #FFB74D;
+}
+
+.rank-icon.all {
+    color: #aaa;
+}
+
+.rank-counts {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.count-cell {
+    width: 15%;
+    text-align: center;
+    font-size: 13px;
+    color: #ddd;
+}
+
+.count-cell.full-width {
+    width: 100%;
+    text-align: center;
+}
+
+/* Chart Legend */
+.chart-legend {
+    display: flex;
+    justify-content: flex-start;
+    /* Left aligned as per standard charts usually, but image looks right? Let's stick to flex-start for now as per image analysis */
+    padding: 8px 16px;
+    gap: 16px;
+    font-size: 12px;
+    color: #fff;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
+.dot.unlocked {
+    background-color: #444;
+}
+
+.dot.c {
+    background-color: #FFB74D;
+}
+
+.dot.f {
+    background-color: #F06292;
+}
+
+.dot.p {
+    background-color: #FFFFFF;
+}
+
+.info-icon {
+    cursor: pointer;
+    margin-left: 6px;
+    border: 1px solid #aaa;
+    border-radius: 50%;
+    width: 12px;
+    /* Smaller width */
+    height: 12px;
+    /* Smaller height */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    /* Smaller font */
+    color: #aaa;
+}
+
+.info-tooltip {
+    position: absolute;
+    /* Absolute positioning */
+    top: 24px;
+    /* Position below the icon */
+    right: 0;
+    /* Align right */
+    width: 280px;
+    /* Fixed width */
+    padding: 12px;
+    font-size: 12px;
+    color: #ddd;
+    background-color: #2a2a2a;
+    /* Slightly lighter background for contrast */
+    border: 1px solid #444;
+    border-radius: 4px;
+    z-index: 100;
+    /* Float above content */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.info-tooltip p {
+    margin: 4px 0;
+    line-height: 1.4;
+}

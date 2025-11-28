@@ -1,0 +1,1548 @@
+:root {
+    --bg-color: #717292;
+    --card-bg-color: #333;
+    --text-color: rgba(255, 255, 255, 1);
+    --border-color: #444;
+    --text-color-light-gray: #ccc;
+    --unit-color-vs: #aaaaaa;
+    --unit-color-ln: #4455DD;
+    --unit-color-mmj: #88DD44;
+    --unit-color-vbs: #EE1166;
+    --unit-color-wxs: #FF9900;
+    --unit-color-n25: #884499;
+    --unit-color-oth: #ffffff;
+    --unit-color-unk: #aaaaaa;
+}
+
+.song-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.song-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: rgba(92, 92, 125, 0.8);
+    border-radius: 12px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.song-cover-wrapper {
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.song-cover {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 3px solid transparent;
+    box-sizing: border-box;
+}
+
+.unit-border-VS {
+    border-color: var(--unit-color-vs);
+}
+
+.unit-border-L-n {
+    border-color: var(--unit-color-ln);
+}
+
+.unit-border-MMJ {
+    border-color: var(--unit-color-mmj);
+}
+
+.unit-border-VBS {
+    border-color: var(--unit-color-vbs);
+}
+
+.unit-border-WxS {
+    border-color: var(--unit-color-wxs);
+}
+
+.unit-border-N25 {
+    border-color: var(--unit-color-n25);
+}
+
+.unit-border-Oth {
+    border-color: var(--unit-color-oth);
+}
+
+.unit-border-Unk {
+    border-color: var(--unit-color-unk);
+}
+
+.song-details {
+    position: relative;
+    z-index: 1;
+    flex-grow: 1;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 80px;
+}
+
+.song-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    width: 100%;
+}
+
+.song-titles {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+
+.title-ko {
+    font-size: 1.1rem;
+    font-weight: 900;
+    white-space: nowrap;
+    color: white;
+}
+
+.title-jp {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color-light-gray);
+    margin-left: 0.75rem;
+}
+
+.song-bpm {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color-light-gray);
+    white-space: nowrap;
+    margin-left: 1rem;
+}
+
+.difficulty-circles {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    /* Vertically center bubbles and inline buttons */
+}
+
+.circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-weight: 900;
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+    box-sizing: border-box;
+    cursor: pointer;
+    background-color: transparent;
+    /* Default transparent for unplayed? Or colored border? Reference uses colored border. */
+}
+
+.circle:hover {
+    transform: scale(1.1);
+}
+
+.circle.easy {
+    color: white;
+    border: 3.5px solid #13d675;
+}
+
+.circle.normal {
+    color: white;
+    border: 3.5px solid #33ccff;
+}
+
+.circle.hard {
+    color: white;
+    border: 3.5px solid #ffcc00;
+}
+
+.circle.expert {
+    color: white;
+    border: 3.5px solid #ff4179;
+}
+
+.circle.master {
+    color: white;
+    border: 3.5px solid #cb34ff;
+}
+
+.circle.append {
+    color: white;
+    border: 3.5px solid #febdf1;
+    /* Use solid border like others for consistency when empty, or gradient border? */
+    /* User said "transparent background". The previous code had a complex gradient border. */
+    /* Let's try to match the others: solid border, transparent background. */
+    /* But Append usually has a gradient border. */
+    /* If we want transparent background, we just need to ensure background is not set to a color. */
+    /* The previous code used background-clip to simulate gradient border with transparent center. */
+    /* background: linear-gradient(rgba(92, 92, 125, 0.8), rgba(92, 92, 125, 0.8)) padding-box, ... */
+    /* The rgba(92, 92, 125, 0.8) is the background color of the song item. */
+    /* To make it truly transparent (showing song item bg), we can use the same trick or just use border-image? */
+    /* Border-image doesn't work well with border-radius. */
+    /* Let's use the solid color from the result border: #febdf1 */
+    /* Or keep the gradient border but ensure center is transparent? */
+    /* "아무것도 선택 안된 어펜드 배경색은 투명하게" -> "Make unselected Append background transparent" */
+
+    /* Current: background: linear-gradient(rgba(92, 92, 125, 0.8), ...) */
+    /* This effectively makes it the same color as the card background. */
+    /* If the user sees it as "not transparent", maybe they mean they want to see the underlying image? */
+    /* Or maybe they just want it to look like the others (transparent center). */
+    /* The others have `background-color: transparent` (default). */
+
+    /* Let's use a solid border for Append when unselected, to match the others and avoid the background clip issue. */
+    border: 3.5px solid #febdf1;
+    background-color: transparent;
+}
+
+/* Result background styles - Remove border when filled */
+.circle.result-clear,
+.circle.result-full_combo,
+.circle.result-full_perfect {
+    background-origin: padding-box;
+    /* Reset background origin if needed */
+}
+
+/* Result Colors with Difficulty Borders */
+/* We need to target specific combinations of difficulty and result */
+
+/* Easy */
+.circle.easy.result-clear,
+.circle.easy.result-full_combo,
+.circle.easy.result-full_perfect {
+    border: 3.5px solid #8aeebc;
+}
+
+/* Normal */
+.circle.normal.result-clear,
+.circle.normal.result-full_combo,
+.circle.normal.result-full_perfect {
+    border: 3.5px solid #9ae6ff;
+}
+
+/* Hard */
+.circle.hard.result-clear,
+.circle.hard.result-full_combo,
+.circle.hard.result-full_perfect {
+    border: 3.5px solid #ffe680;
+}
+
+/* Expert */
+.circle.expert.result-clear,
+.circle.expert.result-full_combo,
+.circle.expert.result-full_perfect {
+    border: 3.5px solid #ff99b5;
+}
+
+/* Master */
+.circle.master.result-clear,
+.circle.master.result-full_combo,
+.circle.master.result-full_perfect {
+    border: 3.5px solid #d99cef;
+}
+
+/* Append */
+.circle.append.result-clear,
+.circle.append.result-full_combo,
+.circle.append.result-full_perfect {
+    border: 3.5px solid #febdf1;
+}
+
+
+/* Background colors for results (keep existing logic but ensure border overrides) */
+.result-clear {
+    background-color: #FFC107;
+    /* Yellow */
+    color: black;
+}
+
+.result-full_combo {
+    background-color: #FF5252;
+    /* Red */
+    color: white;
+}
+
+.result-full_perfect {
+    background: linear-gradient(to bottom right, #F06292, #64B5F6);
+    /* Pink/Blue Gradient */
+    color: white;
+    /* Border is handled by specific difficulty rules above */
+}
+
+/* Specific fix for Append to remove its gradient border when filled */
+/* REMOVED: This block was resetting the border we just set! */
+/* .circle.append.result-clear,
+.circle.append.result-full_combo,
+.circle.append.result-full_perfect {
+    background: none;
+    border: none !important;
+} */
+
+.circle.append.result-clear {
+    background: #FFC107;
+    /* Yellow */
+}
+
+.circle.append.result-full_combo {
+    background: #FF5252;
+    /* Red */
+}
+
+.circle.append.result-full_perfect {
+    background: linear-gradient(to bottom right, #F06292, #64B5F6);
+    /* Pink/Blue Gradient */
+}
+
+
+/* Score Input Header Styles */
+.score-input-container {
+    color: #fff;
+    background-color: #121212;
+    min-height: 100vh;
+    width: 100%;
+    /* Ensure full width */
+    max-width: 1000px;
+    /* Limit width for centering */
+    margin: 0 auto;
+    /* Center the container */
+    position: relative;
+    /* Ensure sticky works within */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    /* Optional: add shadow to separate from body bg */
+}
+
+.score-input-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #121212;
+    padding: 10px 20px;
+    /* Reduced padding */
+    border-bottom: 1px solid #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* Reduced gap */
+}
+
+.header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title {
+    margin: 0;
+    font-size: 1.1rem;
+    /* Slightly smaller */
+    font-weight: bold;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.back-button,
+.export-button,
+.import-button {
+    padding: 6px 12px;
+    /* Smaller buttons */
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-size: 0.85rem;
+    transition: background-color 0.2s;
+}
+
+.back-button {
+    background-color: #333;
+    color: #eee;
+}
+
+.back-button:hover {
+    background-color: #444;
+}
+
+.export-button {
+    background-color: #2196F3;
+    color: white;
+}
+
+.export-button:hover {
+    background-color: #1976D2;
+}
+
+.import-button {
+    background-color: #FF9800;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.import-button:hover {
+    background-color: #F57C00;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px;
+    /* Smaller padding */
+    border-radius: 8px;
+    border: 1px solid #444;
+    background-color: #1e1e1e;
+    color: white;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #64B5F6;
+}
+
+/* Difficulty Header Row */
+.difficulty-header-row {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    /* Match song-item padding */
+    margin-top: 5px;
+    /* Adjust alignment if needed. User said "slightly left".
+       The song-details has padding: 0 1rem.
+       Maybe reducing left padding of content slightly? */
+    position: relative;
+    /* For absolute positioning of instruction if needed, or just flex */
+}
+
+.difficulty-header-spacer {
+    width: 80px;
+    /* Match song-cover width */
+    flex-shrink: 0;
+}
+
+.difficulty-header-content {
+    flex-grow: 1;
+    padding: 0 1rem;
+    /* Match song-details padding */
+    /* To move slightly left, maybe reduce padding-left to 0.8rem if user insists on "left".
+       Or maybe the song-details padding is effectively different due to flex gap?
+       Let's keep it 1rem for now but ensure box-sizing.
+    */
+    box-sizing: border-box;
+    display: flex;
+    /* Make this flex to align labels and instruction */
+    align-items: center;
+    justify-content: space-between;
+    /* Push instruction to right or keep near? User said "right of buttons" */
+}
+
+.difficulty-header-labels {
+    display: flex;
+    gap: 1rem;
+    /* Match difficulty-circles gap */
+}
+
+.difficulty-instruction {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-left: auto;
+    /* Push to the right */
+    white-space: nowrap;
+    padding-left: 10px;
+}
+
+.header-circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 0.55rem;
+    /* Base size for labels */
+    color: black;
+    box-sizing: border-box;
+    text-align: center;
+    line-height: 1;
+    word-break: break-all;
+}
+
+/* Larger font for selected values (numbers) */
+.header-circle.has-value {
+    font-size: 1.1rem !important;
+    /* Larger size for numbers */
+    font-weight: 900;
+}
+
+/* Adjust font sizes for longer words */
+.header-circle.normal,
+.header-circle.expert,
+.header-circle.master,
+.header-circle.append {
+    font-size: 0.45rem;
+    /* Smaller for longer text */
+}
+
+/* Use filled styles for header circles */
+.header-circle.easy {
+    background-color: #11dd77;
+    border: 3.5px solid #8aeebc;
+}
+
+.header-circle.normal {
+    background-color: #33ccff;
+    border: 3.5px solid #9ae6ff;
+}
+
+.header-circle.hard {
+    background-color: #ffcc00;
+    border: 3.5px solid #ffe680;
+}
+
+.header-circle.expert {
+    background-color: #ff4477;
+    border: 3.5px solid #ff99b5;
+}
+
+.header-circle.master {
+    background-color: #cc33ff;
+    border: 3.5px solid #d99cef;
+}
+
+.header-circle.append {
+    background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
+    border: 3.5px solid #febdf1;
+}
+
+
+/* Legend Styles */
+.score-legend {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    /* Removed padding-top as it's now in header row */
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.legend-circle {
+    width: 20px;
+    /* Smaller legend circles */
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.65rem;
+    font-weight: bold;
+}
+
+.legend-circle.clear {
+    background-color: #FFC107;
+    color: black;
+}
+
+.legend-circle.fc {
+    background-color: #FF5252;
+    color: white;
+}
+
+.legend-circle.ap {
+    background: linear-gradient(to bottom, #F06292, #64B5F6);
+    color: white;
+}
+
+
+.score-popover {
+    position: absolute;
+    top: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    /* Center relative to parent circle */
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    gap: 5px;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+
+.score-popover::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #555;
+}
+
+.score-popover button {
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #555;
+    background-color: #444;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.score-popover button:hover {
+    background-color: #555;
+    color: white;
+}
+
+.score-popover button.active-clear {
+    background-color: #FFC107;
+    color: black;
+    border-color: #FFC107;
+}
+
+.score-popover button.active-fc {
+    background-color: #FF5252;
+    color: white;
+    border-color: #FF5252;
+}
+
+.score-popover button.active-ap {
+    background: linear-gradient(to bottom, #F06292, #64B5F6);
+    color: white;
+    border: none;
+}
+
+/* Inline Score Buttons (Visible when filtered) */
+.inline-score-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    /* More space between circle and buttons */
+    margin-left: 20px;
+}
+
+.inline-score-buttons {
+    display: flex;
+    gap: 12px;
+    /* More space between buttons */
+}
+
+.inline-score-btn {
+    min-width: 40px;
+    padding: 6px 16px;
+    border: 1px solid #555;
+    background-color: transparent;
+    border-radius: 20px;
+    /* Pill shape for style */
+    color: #888;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.inline-score-btn:hover {
+    border-color: #aaa;
+    color: #ddd;
+}
+
+/* Active states for inline buttons - Filled when active */
+.inline-score-btn.active-clear {
+    background-color: #FFC107;
+    border-color: #FFC107;
+    color: black;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
+}
+
+.inline-score-btn.active-fc {
+    background-color: #FF5252;
+    border-color: #FF5252;
+    color: white;
+    box-shadow: 0 0 10px rgba(255, 82, 82, 0.4);
+}
+
+.inline-score-btn.active-ap {
+    background: linear-gradient(to bottom right, #F06292, #64B5F6);
+    border: none;
+    /* Gradient handles border */
+    color: white;
+    box-shadow: 0 0 10px rgba(240, 98, 146, 0.4);
+}
+
+.inline-score-btn.active-none {
+    background-color: #555;
+    border-color: #555;
+    color: white;
+}
+
+
+/* Filtered Mode Bubble Styles (Matches Header Bubbles) */
+/* We use the same colors as header-circle but apply to circle in filtered mode */
+.circle.filtered-style {
+    color: black !important;
+    /* Text color black like header */
+    font-weight: 900;
+}
+
+.circle.filtered-style.easy {
+    background-color: #11dd77;
+    border: 3.5px solid #8aeebc;
+}
+
+.circle.filtered-style.normal {
+    background-color: #33ccff;
+    border: 3.5px solid #9ae6ff;
+}
+
+.circle.filtered-style.hard {
+    background-color: #ffcc00;
+    border: 3.5px solid #ffe680;
+}
+
+.circle.filtered-style.expert {
+    background-color: #ff4477;
+    border: 3.5px solid #ff99b5;
+}
+
+.circle.filtered-style.master {
+    background-color: #cc33ff;
+    border: 3.5px solid #d99cef;
+}
+
+.circle.filtered-style.append {
+    background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
+    border: 3.5px solid #febdf1;
+}
+
+/* When result is applied in filtered mode, we might want to keep this style 
+   OR show the result color?
+   User said: "search layout... bubble use EASY NORMAL design... 
+   instead - C FC AP button color changes".
+   This implies the bubble ITSELF might not change color to result, 
+   but the BUTTONS show the result status.
+   BUT previously we had the bubble change to result color.
+   If the bubble stays as "Difficulty Design", then how do we see the result on the bubble?
+   "그 난이도랑 - C FC AP 버튼만 뜨게 만들어" -> "Make only that difficulty and buttons appear".
+   "대신 - C FC AP 버튼의 색이... 활성화되면... 바꾸는 식으로 해" -> "Instead, change the button colors".
+   This suggests the BUBBLE might NOT need to change color in this mode, 
+   or maybe it does but the buttons are the primary control.
+   However, consistency suggests the bubble should probably reflect the result too?
+   Let's assume the bubble KEEPS the difficulty design (Green/Blue/etc) 
+   and the BUTTONS show the status. 
+   OR, the bubble changes to result color like normal?
+   "난이도 버블은 그 위에 EASY NORMAL 의 난이도 버블 디자인 그대로 써" -> "Use the design of EASY NORMAL bubbles AS IS".
+   This strongly implies the bubble should look like the header bubble (Difficulty Color Filled).
+   So in filtered mode, the bubble is ALWAYS the difficulty color.
+   The result is shown by the active button.
+*/
+/* Reset Filter Button */
+.reset-filter-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #ccc;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.reset-filter-btn:hover {
+    background-color: #444;
+    color: white;
+    border-color: #777;
+}
+
+/* Ensure labels container is relative for absolute positioning of button */
+.difficulty-header-labels {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    /* Vertically center items */
+    /* Removed relative positioning as button is now in spacer */
+}
+
+/* Spacer should center content (the button) */
+.difficulty-header-spacer {
+    width: 80px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Fixed Layout for Song List */
+.song-details {
+    position: relative;
+    z-index: 1;
+    flex-grow: 1;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 80px;
+    min-width: 0;
+    /* Crucial for text-overflow to work in flex child */
+}
+
+.song-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    width: 100%;
+}
+
+.song-titles {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: nowrap;
+    /* Prevent wrapping to keep single line if desired, or allow wrap but constrained */
+    overflow: hidden;
+    /* Hide overflow */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    /* Force single line */
+    max-width: 100%;
+}
+
+.title-ko {
+    font-size: 1.1rem;
+    font-weight: 900;
+    white-space: nowrap;
+    color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.title-jp {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color-light-gray);
+    margin-left: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Filter Dropdown Styles */
+.filter-dropdown {
+    position: absolute;
+    top: 120%;
+    /* Slightly lower */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #2a2a2a;
+    /* Slightly lighter dark */
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 5px;
+    z-index: 200;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    max-height: 400px;
+    /* Taller */
+    overflow-y: auto;
+    min-width: 80px;
+    /* Wider */
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.filter-option {
+    padding: 10px 15px;
+    /* More padding */
+    color: #ddd;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.filter-option:hover {
+    background-color: #444;
+    color: white;
+}
+
+.filter-option.selected {
+    background-color: #2196F3;
+    /* Blue highlight for selected */
+    color: white;
+    font-weight: bold;
+}
+
+/* Scrollbar for dropdown */
+.filter-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.filter-dropdown::-webkit-scrollbar-track {
+    background: #2a2a2a;
+    border-radius: 4px;
+}
+
+.filter-dropdown::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+.filter-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
+
+/* Bulk Input Button */
+.bulk-input-btn {
+    padding: 6px 12px;
+    background-color: #444;
+    color: white;
+    border: 1px solid #666;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.bulk-input-btn:hover {
+    background-color: #555;
+    border-color: #888;
+}
+
+/* Bulk Panel (Non-blocking) */
+.bulk-panel {
+    background-color: rgba(34, 34, 34, 0.95);
+    /* Slight transparency */
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 12px;
+    width: 320px;
+    /* Fixed width */
+    border: 1px solid #555;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Position is set inline in TSX */
+}
+
+.bulk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.bulk-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.bulk-close-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.bulk-close-btn:hover {
+    color: white;
+}
+
+/* Bulk Modal */
+.bulk-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.bulk-modal {
+    background-color: #222;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    border: 1px solid #444;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.bulk-modal h3 {
+    margin: 0;
+    color: white;
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.bulk-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bulk-section label {
+    color: #aaa;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.bulk-diff-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.bulk-diff-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    background-color: #333;
+    color: #888;
+    font-weight: 800;
+    font-size: 0.8rem;
+    /* Smaller font for 2 letters */
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+/* Hover states for bulk diff buttons */
+.bulk-diff-btn:hover {
+    transform: scale(1.05);
+}
+
+.bulk-diff-btn.easy:hover {
+    border-color: #8aeebc;
+}
+
+.bulk-diff-btn.normal:hover {
+    border-color: #9ae6ff;
+}
+
+.bulk-diff-btn.hard:hover {
+    border-color: #ffe680;
+}
+
+.bulk-diff-btn.expert:hover {
+    border-color: #ff99b5;
+}
+
+.bulk-diff-btn.master:hover {
+    border-color: #d99cef;
+}
+
+.bulk-diff-btn.append:hover {
+    border-color: #febdf1;
+}
+
+/* Selected states for bulk diff buttons */
+.bulk-diff-btn.selected {
+    color: black;
+    transform: scale(1.1);
+}
+
+.bulk-diff-btn.easy.selected {
+    background-color: #11dd77;
+    border-color: #8aeebc;
+}
+
+.bulk-diff-btn.normal.selected {
+    background-color: #33ccff;
+    border-color: #9ae6ff;
+}
+
+.bulk-diff-btn.hard.selected {
+    background-color: #ffcc00;
+    border-color: #ffe680;
+}
+
+.bulk-diff-btn.expert.selected {
+    background-color: #ff4477;
+    border-color: #ff99b5;
+}
+
+.bulk-diff-btn.master.selected {
+    background-color: #cc33ff;
+    border-color: #d99cef;
+}
+
+.bulk-diff-btn.append.selected {
+    background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
+    border-color: #febdf1;
+}
+
+.bulk-level-range {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.bulk-level-range select {
+    padding: 8px;
+    border-radius: 6px;
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    font-size: 1rem;
+    width: 80px;
+    text-align: center;
+}
+
+.bulk-result-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.bulk-result-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #aaa;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.bulk-result-btn.active.none {
+    background-color: #777;
+    color: white;
+    border-color: #999;
+}
+
+.bulk-result-btn.active.clear {
+    background-color: #FFC107;
+    color: black;
+    border-color: #FFC107;
+}
+
+.bulk-result-btn.active.fc {
+    background-color: #FF5252;
+    color: white;
+    border-color: #FF5252;
+}
+
+.bulk-result-btn.active.ap {
+    background: linear-gradient(to bottom right, #F06292, #64B5F6);
+    color: white;
+    border: none;
+}
+
+.bulk-actions {
+    display: flex;
+    margin-top: 5px;
+}
+
+.bulk-apply-btn {
+    width: 100%;
+    /* Full width apply button */
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #2196F3;
+    color: white;
+}
+
+.bulk-apply-btn:hover {
+    background-color: #1976D2;
+}
+
+@media (max-width: 768px) {
+
+    .song-cover-wrapper,
+    .song-cover {
+        width: 60px;
+        height: 60px;
+    }
+
+    .song-details {
+        padding: 0 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .title-ko {
+        font-size: 0.9rem;
+        white-space: normal;
+    }
+
+    .title-jp {
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+    }
+
+    .difficulty-circles {
+        gap: 0.75rem;
+    }
+
+    .circle {
+        width: 35px;
+        height: 35px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Preview Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+}
+
+.preview-modal {
+    background-color: #222;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    border: 1px solid #444;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.preview-modal h2 {
+    margin: 0;
+    color: white;
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.preview-best39-list {
+    flex: 1;
+    overflow-y: auto;
+    background-color: #333;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.preview-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background-color: #444;
+    border-radius: 6px;
+    color: white;
+}
+
+.preview-rank {
+    font-weight: bold;
+    color: #ffd700;
+    width: 30px;
+}
+
+.preview-diff {
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: white;
+    width: 60px;
+    text-align: center;
+}
+
+.preview-diff.easy {
+    background-color: #11dd77;
+}
+
+.preview-diff.normal {
+    background-color: #33ccff;
+}
+
+.preview-diff.hard {
+    background-color: #ffcc00;
+}
+
+.preview-diff.expert {
+    background-color: #ff4477;
+}
+
+.preview-diff.master {
+    background-color: #cc33ff;
+}
+
+.preview-diff.append {
+    background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
+}
+
+.preview-title {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.9rem;
+}
+
+.preview-r {
+    font-weight: bold;
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+.preview-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.preview-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    flex: 1;
+}
+
+.preview-total-r {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #ccc;
+    margin-bottom: 5px;
+}
+
+.total-r-value {
+    font-weight: bold;
+    color: #00e5ff;
+    font-size: 1.3rem;
+    margin-left: 5px;
+}
+
+.preview-btn.cancel {
+    background-color: #555;
+    color: white;
+}
+
+.preview-btn.cancel:hover {
+    background-color: #666;
+}
+
+.preview-btn.confirm {
+    background-color: #2196F3;
+    color: white;
+}
+
+.preview-btn.confirm:hover {
+    background-color: #1976D2;
+}
+
+/* Mobile Layout Adjustments (Matching pjsk-chart-search) */
+@media (max-width: 768px) {
+    .score-input-container {
+        padding: 1rem;
+        /* Match .App padding */
+    }
+
+    .score-input-header {
+        padding: 10px;
+        gap: 10px;
+        margin-left: -1rem;
+        /* Compensate for container padding to be full width */
+        margin-right: -1rem;
+        width: calc(100% + 2rem);
+        /* Ensure full width */
+        box-sizing: border-box;
+    }
+
+    .header-top-row {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .score-legend {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        margin-top: 5px;
+    }
+
+    .header-actions {
+        margin-left: auto;
+    }
+
+    /* Song List Adjustments */
+    .song-list {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+
+    .song-item {
+        /* Keep desktop padding: 10px */
+        border-radius: 12px;
+        /* Keep desktop radius */
+    }
+
+    .song-cover-wrapper,
+    .song-cover {
+        width: 60px;
+        height: 60px;
+    }
+
+    .song-details {
+        padding: 0 0.75rem;
+        gap: 0.5rem;
+        min-width: 0;
+        min-height: 0;
+        /* Reset min-height */
+    }
+
+    .song-titles {
+        flex-shrink: 1;
+        min-width: 0;
+    }
+
+    .title-ko {
+        font-size: 0.9rem;
+        white-space: normal;
+        /* Allow wrapping */
+        word-break: keep-all;
+    }
+
+    .title-jp,
+    .song-bpm {
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+    }
+
+    .song-bpm {
+        flex-shrink: 0;
+    }
+
+    .difficulty-circles {
+        gap: 0.75rem;
+        /* Exact match */
+        flex-wrap: wrap;
+    }
+
+    .circle {
+        width: 35px;
+        /* Exact match */
+        height: 35px;
+        /* Exact match */
+        font-size: 0.95rem;
+        /* Exact match */
+        border-width: 3.5px;
+        /* Keep border width visible */
+    }
+
+    /* Header Difficulty Bubbles on Mobile */
+    .difficulty-header-row {
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .difficulty-header-labels {
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .header-circle {
+        width: 35px;
+        height: 35px;
+        font-size: 0.5rem;
+        border-width: 3px;
+    }
+
+    .header-circle.has-value {
+        font-size: 0.9rem !important;
+    }
+
+    .difficulty-right-section {
+        width: 100%;
+        justify-content: space-between;
+        margin-left: 0 !important;
+        margin-top: 5px;
+    }
+
+    .difficulty-instruction {
+        display: none;
+    }
+
+    /* Inline buttons on mobile */
+    .inline-score-container {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .inline-score-buttons {
+        gap: 8px;
+    }
+
+    .inline-score-btn {
+        min-width: 36px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
