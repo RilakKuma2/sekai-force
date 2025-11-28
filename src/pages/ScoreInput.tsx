@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getChoseong } from 'es-hangul';
 import { type Difficulty, type UserMusicResult, processUserBest39, calculateTotalR, type MusicDifficultyStatus } from '../utils/calculator';
 import { type Song } from '../utils/api';
+import FloatingButton from '../components/FloatingButton';
 import './ScoreInput.css';
 
 interface ScoreInputProps {
@@ -361,44 +362,66 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         event.target.value = '';
     };
 
+    // Create a map for quick result lookup to pass to SongRow
+    const resultsMap = useMemo(() => {
+        const map: Record<string, Record<string, string>> = {};
+        localResults.forEach(r => {
+            if (!map[r.musicId]) map[r.musicId] = {};
+            map[r.musicId][r.musicDifficulty] = r.playResult;
+        });
+        return map;
+    }, [localResults]);
+
     const updateResult = (musicId: string, difficulty: Difficulty, result: 'clear' | 'full_combo' | 'full_perfect' | null) => {
-        const newResults = [...localResults];
-        const existingIndex = newResults.findIndex(r => r.musicId === musicId && r.musicDifficulty === difficulty);
+        setLocalResults(prevResults => {
+            const newResults = [...prevResults];
+            const existingIndex = newResults.findIndex(r => r.musicId === musicId && r.musicDifficulty === difficulty);
 
-        if (result === null) {
-            if (existingIndex >= 0) {
-                newResults.splice(existingIndex, 1);
-            }
-        } else {
-            const newItem: UserMusicResult = {
-                musicId,
-                musicDifficulty: difficulty,
-                playResult: result,
-                score: 1000,
-                createdAt: Date.now(),
-                updatedAt: Date.now()
-            };
-
-            if (existingIndex >= 0) {
-                newResults[existingIndex] = { ...newResults[existingIndex], playResult: result, updatedAt: Date.now() };
+            if (result === null) {
+                if (existingIndex >= 0) {
+                    newResults.splice(existingIndex, 1);
+                }
             } else {
-                newResults.push(newItem);
-            }
-        }
+                const newItem: UserMusicResult = {
+                    musicId,
+                    musicDifficulty: difficulty,
+                    playResult: result,
+                    score: 1000,
+                    createdAt: Date.now(),
+                    updatedAt: Date.now()
+                };
 
-        setLocalResults(newResults);
-        handleUpdateResults(newResults);
-        // Keep popover open or close it? User didn't specify, but usually selecting an option closes it or keeps it for quick change.
-        // "수정된 결과는 저 테두리 안에 색칠된 걸로 표기돼."
-        // Let's close it for better UX after selection, or keep it open?
-        // "클릭하지 않고 다른 부분을 클릭하면 플로팅창은 사라져" implies explicit dismissal.
-        // But usually selecting an option is a terminal action. Let's close it.
+                if (existingIndex >= 0) {
+                    newResults[existingIndex] = { ...newResults[existingIndex], playResult: result, updatedAt: Date.now() };
+                } else {
+                    newResults.push(newItem);
+                }
+            }
+
+            // Notify parent (this might trigger re-render of parent, but localResults state update is what matters)
+            // We defer the parent update to useEffect or just call it here. 
+            // Calling it here is fine, but we need to use the newResults.
+            // Note: onUpdateResults is a prop, so it might change.
+            // To be safe, we can just call it.
+            onUpdateResults(newResults);
+
+            return newResults;
+        });
+
         setActiveEdit(null);
     };
 
-    const getResult = (musicId: string, difficulty: Difficulty) => {
-        return localResults.find(r => r.musicId === musicId && r.musicDifficulty === difficulty)?.playResult || null;
-    };
+    // Check if any filter is active
+    const activeFilters: Difficulty[] = useMemo(() => {
+        const filters: Difficulty[] = [];
+        if (easyLevel) filters.push('easy');
+        if (normalLevel) filters.push('normal');
+        if (hardLevel) filters.push('hard');
+        if (expertLevel) filters.push('expert');
+        if (masterLevel) filters.push('master');
+        if (appendLevel) filters.push('append');
+        return filters;
+    }, [easyLevel, normalLevel, hardLevel, expertLevel, masterLevel, appendLevel]);
 
     const filteredSongs = useMemo(() => {
         let result = songs;
@@ -413,6 +436,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
                 if (titleKo.includes(term) || titleJp.includes(term) || composer.includes(term)) return true;
                 if (song.title_ko && /[ㄱ-ㅎ]/.test(term)) {
+                    // getChoseong is imported from 'es-hangul'
                     const choseong = getChoseong(song.title_ko).replace(/\s/g, '');
                     if (choseong.includes(term)) return true;
                 }
@@ -471,174 +495,6 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         return result;
     }, [songs, searchTerm, easyLevel, normalLevel, hardLevel, expertLevel, masterLevel, appendLevel]);
 
-    const DifficultyFilter = ({ diff, label, value, onChange }: { diff: Difficulty, label: string, value: string, onChange: (val: string) => void }) => {
-        // Generate level options based on available songs
-        const options = useMemo(() => {
-            const levels = new Set<number>();
-            songs.forEach(song => {
-                const l = song.levels[diff];
-                if (l !== null) levels.add(l);
-            });
-            return Array.from(levels).sort((a, b) => b - a);
-        }, [songs, diff]);
-
-        const handleSelect = (level: string) => {
-            // Toggle: if clicking the already selected value, clear it.
-            if (value === level) {
-                onChange('');
-            } else {
-                onChange(level);
-            }
-            setActiveFilter(null);
-        };
-
-        return (
-            <div className="difficulty-filter-container" style={{ position: 'relative' }}>
-                <div
-                    className={`header-circle ${diff} ${value ? 'has-value' : ''}`}
-                    onClick={() => setActiveFilter(activeFilter === diff ? null : diff)}
-                    style={{ cursor: 'pointer', border: value ? '3.5px solid white' : undefined }}
-                >
-                    {value ? value : label}
-                </div>
-
-                {activeFilter === diff && (
-                    <div className="filter-dropdown">
-                        {/* Removed ALL and Exist options as requested */}
-                        {options.map(level => (
-                            <div
-                                key={level}
-                                className={`filter-option ${value === String(level) ? 'selected' : ''}`}
-                                onClick={() => handleSelect(String(level))}
-                            >
-                                {level}
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
-    const SongRow = ({ song }: { song: Song }) => {
-        // Determine unit border class
-        const unitClass = `unit-border-${song.unit_code.replace('/', '-')}`;
-
-        // Check if any filter is active
-        const activeFilters: Difficulty[] = [];
-        if (easyLevel) activeFilters.push('easy');
-        if (normalLevel) activeFilters.push('normal');
-        if (hardLevel) activeFilters.push('hard');
-        if (expertLevel) activeFilters.push('expert');
-        if (masterLevel) activeFilters.push('master');
-        if (appendLevel) activeFilters.push('append');
-
-        const isFilteredMode = activeFilters.length > 0;
-
-        return (
-            <div className={`song-item ${activeEdit?.songId === song.id ? 'active-popover-parent' : ''}`} style={{ zIndex: activeEdit?.songId === song.id ? 100 : 'auto' }}>
-                <div className="song-cover-wrapper">
-                    <img
-                        src={`https://asset.rilaksekai.com/cover/${song.id}.jpg`}
-                        alt={song.title_ko || song.title_jp}
-                        loading="lazy"
-                        className={`song-cover ${unitClass}`}
-                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80'; }}
-                    />
-                </div>
-
-                <div className="song-details">
-                    <div className="song-title-row">
-                        <div className="song-titles">
-                            <span className="title-ko">{song.title_ko || song.title_jp}</span>
-                            <span className="title-jp">{song.title_jp}</span>
-                        </div>
-                        <span className="song-bpm">
-                            {typeof song.bpm === 'number' || (typeof song.bpm === 'string' && /^\d+(\.\d+)?$/.test(song.bpm))
-                                ? `${song.bpm} BPM`
-                                : song.bpm}
-                        </span>
-                    </div>
-
-                    <div className="difficulty-circles">
-                        {(['easy', 'normal', 'hard', 'expert', 'master', 'append'] as Difficulty[]).map(diff => {
-                            const level = song.levels[diff];
-
-                            // In filtered mode, only show active difficulties
-                            if (isFilteredMode && !activeFilters.includes(diff)) return null;
-
-                            // Render placeholder if level is null (only in non-filtered mode to maintain alignment)
-                            if (level === null) {
-                                if (isFilteredMode) return null; // Don't show placeholder in filtered mode
-                                // If it's append and null, don't show placeholder at all (as requested)
-                                if (diff === 'append') return null;
-                                return <div key={diff} className="circle" style={{ visibility: 'hidden', cursor: 'default' }}></div>;
-                            }
-
-                            const currentResult = getResult(song.id, diff);
-                            const isEditing = activeEdit?.songId === song.id && activeEdit?.diff === diff;
-
-                            // Determine classes
-                            let circleClass = `circle ${diff}`;
-
-                            if (isFilteredMode) {
-                                // In filtered mode, use the specific filtered style (header style)
-                                circleClass += ' filtered-style';
-                                // Note: We do NOT add result classes here because the user wants the bubble to keep the difficulty design.
-                                // The result is shown via the buttons.
-                            } else {
-                                // Standard mode: Apply result classes
-                                if (currentResult === 'clear') circleClass += ' result-clear';
-                                else if (currentResult === 'full_combo') circleClass += ' result-full_combo';
-                                else if (currentResult === 'full_perfect') circleClass += ' result-full_perfect';
-                            }
-
-                            return (
-                                <div key={diff} style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-                                    <div
-                                        className={circleClass}
-                                        onClick={(e) => {
-                                            if (!isFilteredMode) {
-                                                e.stopPropagation();
-                                                setActiveEdit(isEditing ? null : { songId: song.id, diff });
-                                            }
-                                        }}
-                                        title={`${diff}: ${level}`}
-                                        style={{ cursor: isFilteredMode ? 'default' : 'pointer' }}
-                                    >
-                                        {level}
-                                    </div>
-
-                                    {/* Standard Popover (Non-filtered mode) */}
-                                    {!isFilteredMode && isEditing && (
-                                        <div className="score-popover" onClick={(e) => e.stopPropagation()}>
-                                            <button className={currentResult === null ? 'active-none' : ''} onClick={() => updateResult(song.id, diff, null)}>-</button>
-                                            <button className={currentResult === 'clear' ? 'active-clear' : ''} onClick={() => updateResult(song.id, diff, 'clear')}>C</button>
-                                            <button className={currentResult === 'full_combo' ? 'active-fc' : ''} onClick={() => updateResult(song.id, diff, 'full_combo')}>FC</button>
-                                            <button className={currentResult === 'full_perfect' ? 'active-ap' : ''} onClick={() => updateResult(song.id, diff, 'full_perfect')}>AP</button>
-                                        </div>
-                                    )}
-
-                                    {/* Inline Buttons (Filtered mode) */}
-                                    {isFilteredMode && (
-                                        <div className="inline-score-container">
-                                            <div className="inline-score-buttons">
-                                                <button className={`inline-score-btn ${currentResult === null ? 'active-none' : ''}`} onClick={() => updateResult(song.id, diff, null)}>-</button>
-                                                <button className={`inline-score-btn ${currentResult === 'clear' ? 'active-clear' : ''}`} onClick={() => updateResult(song.id, diff, 'clear')}>C</button>
-                                                <button className={`inline-score-btn ${currentResult === 'full_combo' ? 'active-fc' : ''}`} onClick={() => updateResult(song.id, diff, 'full_combo')}>FC</button>
-                                                <button className={`inline-score-btn ${currentResult === 'full_perfect' ? 'active-ap' : ''}`} onClick={() => updateResult(song.id, diff, 'full_perfect')}>AP</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
     const resetFilters = () => {
         setEasyLevel('');
         setNormalLevel('');
@@ -651,8 +507,6 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
     // Check if any filter is active (for rendering reset button)
     const isAnyFilterActive = !!(easyLevel || normalLevel || hardLevel || expertLevel || masterLevel || appendLevel);
-
-    // Bulk Input State declarations removed (duplicates)
 
     // Generate level options for bulk select (5 to 38)
     const levelOptions = Array.from({ length: 34 }, (_, i) => i + 5);
@@ -769,7 +623,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
                 <input
                     type="text"
-                    placeholder="곡 검색 (제목, 작곡가, 초성)..."
+                    placeholder="곡 검색 (제목, 작곡가, 초성)"
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     className="search-input"
@@ -791,12 +645,12 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                                     &lt;
                                 </button>
                             )}
-                            <DifficultyFilter diff="easy" label="EASY" value={easyLevel} onChange={(val) => updateFilter('easy', val)} />
-                            <DifficultyFilter diff="normal" label="NORMAL" value={normalLevel} onChange={(val) => updateFilter('normal', val)} />
-                            <DifficultyFilter diff="hard" label="HARD" value={hardLevel} onChange={(val) => updateFilter('hard', val)} />
-                            <DifficultyFilter diff="expert" label="EXPERT" value={expertLevel} onChange={(val) => updateFilter('expert', val)} />
-                            <DifficultyFilter diff="master" label="MASTER" value={masterLevel} onChange={(val) => updateFilter('master', val)} />
-                            <DifficultyFilter diff="append" label="APPEND" value={appendLevel} onChange={(val) => updateFilter('append', val)} />
+                            <DifficultyFilter diff="easy" label="EASY" value={easyLevel} onChange={(val) => updateFilter('easy', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
+                            <DifficultyFilter diff="normal" label="NORMAL" value={normalLevel} onChange={(val) => updateFilter('normal', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
+                            <DifficultyFilter diff="hard" label="HARD" value={hardLevel} onChange={(val) => updateFilter('hard', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
+                            <DifficultyFilter diff="expert" label="EXPERT" value={expertLevel} onChange={(val) => updateFilter('expert', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
+                            <DifficultyFilter diff="master" label="MASTER" value={masterLevel} onChange={(val) => updateFilter('master', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
+                            <DifficultyFilter diff="append" label="APPEND" value={appendLevel} onChange={(val) => updateFilter('append', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
                         </div>
                         <div className="difficulty-right-section" style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: '10px', position: 'relative' }}>
                             <button className="bulk-input-btn" onClick={toggleBulkModal}>
@@ -865,7 +719,15 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
             {/* Song List */}
             <div className="song-list">
                 {filteredSongs.map(song => (
-                    <SongRow key={song.id} song={song} />
+                    <SongRow
+                        key={song.id}
+                        song={song}
+                        activeEdit={activeEdit}
+                        setActiveEdit={setActiveEdit}
+                        updateResult={updateResult}
+                        activeFilters={activeFilters}
+                        songResults={resultsMap[song.id] || {}}
+                    />
                 ))}
             </div>
 
@@ -873,27 +735,37 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
             {showPreviewModal && (
                 <div className="modal-overlay">
                     <div className="preview-modal">
-                        <h2>공유된 데이터 미리보기</h2>
-                        <div className="preview-total-r">
-                            Player R: <span className="total-r-value">{calculateTotalR(previewBest39).toFixed(2)}</span>
+                        <h2>데이터 불러오기 미리보기</h2>
+                        <p>공유된 URL에서 데이터를 불러옵니다.</p>
+
+                        <div className="preview-stats">
+                            <div className="stat-item">
+                                <span className="label">불러올 기록 수</span>
+                                <span className="value">{previewResults.length}개</span>
+                            </div>
+                            <div className="stat-item">
+                                <span className="label">예상 Total R</span>
+                                <span className="value">{calculateTotalR(previewBest39)}</span>
+                            </div>
                         </div>
-                        <div className="preview-best39-list">
-                            {previewBest39.length === 0 ? (
-                                <p>Best 39 기록이 없습니다.</p>
-                            ) : (
-                                previewBest39.map((item, index) => (
-                                    <div key={`${item.musicId}-${item.musicDifficulty}`} className="preview-item">
-                                        <span className="preview-rank">#{index + 1}</span>
-                                        <span className={`preview-diff ${item.musicDifficulty}`}>{item.musicDifficulty.toUpperCase()}</span>
-                                        <span className="preview-title">{item.title}</span>
-                                        <span className="preview-r">R: {Math.floor(item.r)}</span>
+
+                        <div className="preview-best39">
+                            <h3>Best 39 미리보기</h3>
+                            <div className="preview-list">
+                                {previewBest39.slice(0, 5).map((item, idx) => (
+                                    <div key={idx} className="preview-item">
+                                        <span className="rank">#{idx + 1}</span>
+                                        <span className="title">{item.title}</span>
+                                        <span className="score">{item.r.toFixed(1)}</span>
                                     </div>
-                                ))
-                            )}
+                                ))}
+                                {previewBest39.length > 5 && <div className="more-items">...외 {previewBest39.length - 5}곡</div>}
+                            </div>
                         </div>
+
                         <div className="preview-actions">
                             <button className="preview-btn cancel" onClick={cancelLoad}>취소</button>
-                            <button className="preview-btn confirm" onClick={confirmLoad}>불러오기</button>
+                            <button className="preview-btn confirm" onClick={confirmLoad}>불러오기 (덮어쓰기)</button>
                         </div>
                     </div>
                 </div>
@@ -902,32 +774,202 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
             {/* Share Modal */}
             {showShareModal && (
                 <div className="modal-overlay">
-                    <div className="preview-modal" style={{ height: 'auto', maxHeight: 'auto' }}>
-                        <h2>URL로 데이터 공유</h2>
-                        <p style={{ color: '#ccc', textAlign: 'center', wordBreak: 'break-all', fontSize: '0.9rem', margin: '10px 0' }}>
-                            아래 URL을 복사하여 공유하세요.
-                        </p>
-                        <div style={{
-                            backgroundColor: '#333',
-                            padding: '10px',
-                            borderRadius: '6px',
-                            wordBreak: 'break-all',
-                            fontSize: '0.8rem',
-                            color: '#aaa',
-                            maxHeight: '100px',
-                            overflowY: 'auto'
-                        }}>
-                            {shareUrl}
+                    <div className="share-modal">
+                        <h2>데이터 공유 URL</h2>
+                        <p>아래 URL을 복사하여 다른 기기나 브라우저에서 내 기록을 불러올 수 있습니다.</p>
+                        <div className="url-container">
+                            <input type="text" value={shareUrl} readOnly />
+                            <button onClick={copyShareUrl}>복사</button>
                         </div>
-                        <div className="preview-actions" style={{ marginTop: '15px' }}>
-                            <button className="preview-btn cancel" onClick={() => setShowShareModal(false)}>닫기</button>
-                            <button className="preview-btn confirm" onClick={copyShareUrl}>URL 복사</button>
+                        <div className="modal-actions">
+                            <button className="confirm-btn" onClick={() => setShowShareModal(false)}>닫기</button>
                         </div>
                     </div>
                 </div>
             )}
+
+            <FloatingButton
+                onBulkInput={toggleBulkModal}
+                isScoreInputPage={true}
+            />
         </div>
     );
 };
+
+// Extracted Components
+
+interface DifficultyFilterProps {
+    diff: Difficulty;
+    label: string;
+    value: string;
+    onChange: (val: string) => void;
+    activeFilter: Difficulty | null;
+    setActiveFilter: (diff: Difficulty | null) => void;
+    songs: Song[];
+}
+
+const DifficultyFilter = React.memo(({ diff, label, value, onChange, activeFilter, setActiveFilter, songs }: DifficultyFilterProps) => {
+    // Generate level options based on available songs
+    const options = useMemo(() => {
+        const levels = new Set<number>();
+        songs.forEach(song => {
+            const l = song.levels[diff];
+            if (l !== null) levels.add(l);
+        });
+        return Array.from(levels).sort((a, b) => b - a);
+    }, [songs, diff]);
+
+    const handleSelect = (level: string) => {
+        // Toggle: if clicking the already selected value, clear it.
+        if (value === level) {
+            onChange('');
+        } else {
+            onChange(level);
+        }
+        setActiveFilter(null);
+    };
+
+    return (
+        <div className="difficulty-filter-container" style={{ position: 'relative' }}>
+            <div
+                className={`header-circle ${diff} ${value ? 'has-value' : ''}`}
+                onClick={() => setActiveFilter(activeFilter === diff ? null : diff)}
+                style={{ cursor: 'pointer', border: value ? '3.5px solid white' : undefined }}
+            >
+                {value ? value : label}
+            </div>
+
+            {activeFilter === diff && (
+                <div className="filter-dropdown">
+                    {options.map(level => (
+                        <div
+                            key={level}
+                            className={`filter-option ${value === String(level) ? 'selected' : ''}`}
+                            onClick={() => handleSelect(String(level))}
+                        >
+                            {level}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+});
+
+interface SongRowProps {
+    song: Song;
+    activeEdit: { songId: string, diff: Difficulty } | null;
+    setActiveEdit: (edit: { songId: string, diff: Difficulty } | null) => void;
+    updateResult: (musicId: string, difficulty: Difficulty, result: 'clear' | 'full_combo' | 'full_perfect' | null) => void;
+    activeFilters: Difficulty[];
+    songResults: Record<string, string>; // difficulty -> result
+}
+
+const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, activeFilters, songResults }: SongRowProps) => {
+    // Determine unit border class
+    const unitClass = `unit-border-${song.unit_code.replace('/', '-')}`;
+    const isFilteredMode = activeFilters.length > 0;
+
+    return (
+        <div className={`song-item ${activeEdit?.songId === song.id ? 'active-popover-parent' : ''}`} style={{ zIndex: activeEdit?.songId === song.id ? 100 : 'auto' }}>
+            <div className="song-cover-wrapper">
+                <img
+                    src={`https://asset.rilaksekai.com/cover/${song.id}.jpg`}
+                    alt={song.title_ko || song.title_jp}
+                    loading="lazy"
+                    className={`song-cover ${unitClass}`}
+                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80'; }}
+                />
+            </div>
+
+            <div className="song-details">
+                <div className="song-title-row">
+                    <div className="song-titles">
+                        <span className="title-ko">{song.title_ko || song.title_jp}</span>
+                        <span className="title-jp">{song.title_jp}</span>
+                    </div>
+                    <span className="song-bpm">
+                        {typeof song.bpm === 'number' || (typeof song.bpm === 'string' && /^\d+(\.\d+)?$/.test(song.bpm))
+                            ? `${song.bpm} BPM`
+                            : song.bpm}
+                    </span>
+                </div>
+
+                <div className="difficulty-circles">
+                    {(['easy', 'normal', 'hard', 'expert', 'master', 'append'] as Difficulty[]).map(diff => {
+                        const level = song.levels[diff];
+
+                        // In filtered mode, only show active difficulties
+                        if (isFilteredMode && !activeFilters.includes(diff)) return null;
+
+                        // Render placeholder if level is null (only in non-filtered mode to maintain alignment)
+                        if (level === null) {
+                            if (isFilteredMode) return null; // Don't show placeholder in filtered mode
+                            // If it's append and null, don't show placeholder at all (as requested)
+                            if (diff === 'append') return null;
+                            return <div key={diff} className="circle" style={{ visibility: 'hidden', cursor: 'default' }}></div>;
+                        }
+
+                        const currentResult = songResults[diff] || null;
+                        const isEditing = activeEdit?.songId === song.id && activeEdit?.diff === diff;
+
+                        // Determine classes
+                        let circleClass = `circle ${diff}`;
+
+                        if (isFilteredMode) {
+                            // In filtered mode, use the specific filtered style (header style)
+                            circleClass += ' filtered-style';
+                        } else {
+                            // Standard mode: Apply result classes
+                            if (currentResult === 'clear') circleClass += ' result-clear';
+                            else if (currentResult === 'full_combo') circleClass += ' result-full_combo';
+                            else if (currentResult === 'full_perfect') circleClass += ' result-full_perfect';
+                        }
+
+                        return (
+                            <div key={diff} style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                                <div
+                                    className={circleClass}
+                                    onClick={(e) => {
+                                        if (!isFilteredMode) {
+                                            e.stopPropagation();
+                                            setActiveEdit(isEditing ? null : { songId: song.id, diff });
+                                        }
+                                    }}
+                                    title={`${diff}: ${level}`}
+                                    style={{ cursor: isFilteredMode ? 'default' : 'pointer' }}
+                                >
+                                    {level}
+                                </div>
+
+                                {/* Standard Popover (Non-filtered mode) */}
+                                {!isFilteredMode && isEditing && (
+                                    <div className="score-popover" onClick={(e) => e.stopPropagation()}>
+                                        <button className={currentResult === null ? 'active-none' : ''} onClick={() => updateResult(song.id, diff, null)}>-</button>
+                                        <button className={currentResult === 'clear' ? 'active-clear' : ''} onClick={() => updateResult(song.id, diff, 'clear')}>C</button>
+                                        <button className={currentResult === 'full_combo' ? 'active-fc' : ''} onClick={() => updateResult(song.id, diff, 'full_combo')}>FC</button>
+                                        <button className={currentResult === 'full_perfect' ? 'active-ap' : ''} onClick={() => updateResult(song.id, diff, 'full_perfect')}>AP</button>
+                                    </div>
+                                )}
+
+                                {/* Inline Buttons (Filtered mode) */}
+                                {isFilteredMode && (
+                                    <div className="inline-score-container">
+                                        <div className="inline-score-buttons">
+                                            <button className={`inline-score-btn ${currentResult === null ? 'active-none' : ''}`} onClick={() => updateResult(song.id, diff, null)}>-</button>
+                                            <button className={`inline-score-btn ${currentResult === 'clear' ? 'active-clear' : ''}`} onClick={() => updateResult(song.id, diff, 'clear')}>C</button>
+                                            <button className={`inline-score-btn ${currentResult === 'full_combo' ? 'active-fc' : ''}`} onClick={() => updateResult(song.id, diff, 'full_combo')}>FC</button>
+                                            <button className={`inline-score-btn ${currentResult === 'full_perfect' ? 'active-ap' : ''}`} onClick={() => updateResult(song.id, diff, 'full_perfect')}>AP</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+});
 
 export default ScoreInput;

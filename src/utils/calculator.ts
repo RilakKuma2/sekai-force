@@ -20,6 +20,7 @@ export interface MusicDifficultyStatus {
     rank: Rank;
     r: number;
     title: string;
+    isExact: boolean;
 }
 
 export const calculateR = (playLevel: number, rank: Rank): number => {
@@ -54,21 +55,26 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
 
         const originalLevel = song.levels[result.musicDifficulty];
         let playLevel = originalLevel;
+        let isExact = false;
 
         // Use precise difficulty values if available
-        if (result.musicDifficulty === 'master' && song.mas_diff != null) {
+        if (result.musicDifficulty === 'master' && song.mas_diff != null && song.mas_diff > 0) {
             playLevel = Number(song.mas_diff);
-        } else if (result.musicDifficulty === 'append' && song.apd_diff != null) {
+            isExact = true;
+        } else if (result.musicDifficulty === 'append' && song.apd_diff != null && song.apd_diff > 0) {
             playLevel = Number(song.apd_diff);
+            isExact = true;
         }
 
         if (playLevel === null || isNaN(playLevel)) return;
 
-        // Apply global adjustment: subtract 0.4 from constant
-        playLevel = playLevel - 0.4;
+        // Apply global adjustment: subtract 0.4 from constant ONLY if exact
+        if (isExact) {
+            playLevel = playLevel - 0.4;
+        }
 
         // Ensure originalLevel is treated as number for baseLevel, defaulting to floor of playLevel (before adjustment would be better, but originalLevel is from API)
-        const baseLevel = originalLevel !== null ? originalLevel : Math.floor(playLevel + 0.4);
+        const baseLevel = originalLevel !== null ? originalLevel : Math.floor(playLevel + (isExact ? 0.4 : 0));
 
         let rank: Rank = '';
         if (result.playResult === 'full_perfect') rank = 'P';
@@ -77,6 +83,9 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
 
         const r = calculateR(playLevel, rank);
 
+        // Debug logging
+        // console.log(`Song ${song.id} (${song.title_ko}): Diff=${result.musicDifficulty}, Orig=${originalLevel}, Exact=${isExact}, Play=${playLevel}, R=${r}`);
+
         statuses.push({
             musicId: result.musicId,
             musicDifficulty: result.musicDifficulty,
@@ -84,7 +93,8 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
             baseLevel: baseLevel,
             rank: rank,
             r: r,
-            title: song.title_ko || song.title_jp
+            title: song.title_ko || song.title_jp,
+            isExact: isExact
         });
     });
 

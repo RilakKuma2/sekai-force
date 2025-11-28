@@ -140,7 +140,7 @@
     /* Stack title and score */
     align-items: flex-start;
     align-items: flex-start;
-    padding: 0 12px 2px 12px !important;
+    padding: 5px 2px 2px 12px !important;
     /* Reduced bottom padding */
     margin-top: 2px;
 }

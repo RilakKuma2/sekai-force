@@ -140,7 +140,7 @@ const Best39: React.FC<Best39Props> = ({ best39 }) => {
                                                     <div className="list-item-title song-title">{item.title}</div>
                                                     <div className="list-item-action-text">
                                                         <span className="score-detail">
-                                                            {Number(item.playLevel).toFixed(1)} → {Math.round(item.r)}
+                                                            {Number(item.playLevel).toFixed(1)}{item.isExact ? '' : '?'} → {Math.round(item.r)}
                                                         </span>
                                                     </div>
                                                 </div>

@@ -19,19 +19,34 @@ const Summary: React.FC<SummaryProps> = ({ best39, userResults, songs, totalR, s
 
     // Calculate summary data
     const difficulties = ['easy', 'normal', 'hard', 'expert', 'master', 'append'] as const;
+
+    // Create a lookup map for user results to avoid duplicates and ensure O(1) access
+    const resultMap = new Map<string, string>();
+    userResults.forEach(r => {
+        resultMap.set(`${r.musicId}-${r.musicDifficulty}`, r.playResult);
+    });
+
+    // Calculate summary data by iterating over SONGS, not results
+    // This ensures we only count valid songs and don't double count
     const summaryByDifficulty = {
         'P': { easy: 0, normal: 0, hard: 0, expert: 0, master: 0, append: 0 },
         'F': { easy: 0, normal: 0, hard: 0, expert: 0, master: 0, append: 0 },
         'C': { easy: 0, normal: 0, hard: 0, expert: 0, master: 0, append: 0 },
     };
 
-    userResults.forEach(result => {
-        const diff = result.musicDifficulty as keyof typeof summaryByDifficulty.P;
-        if (diff in summaryByDifficulty.P) {
-            if (result.playResult === 'full_perfect') summaryByDifficulty.P[diff]++;
-            if (result.playResult === 'full_combo' || result.playResult === 'full_perfect') summaryByDifficulty.F[diff]++;
-            if (result.playResult === 'clear' || result.playResult === 'full_combo' || result.playResult === 'full_perfect') summaryByDifficulty.C[diff]++;
-        }
+    songs.forEach(song => {
+        difficulties.forEach(diff => {
+            // Check if the song has this difficulty
+            if (song.levels[diff] !== null) {
+                // Check if user has a result for this song & difficulty
+                const result = resultMap.get(`${song.id}-${diff}`);
+                if (result) {
+                    if (result === 'full_perfect') summaryByDifficulty.P[diff]++;
+                    if (result === 'full_combo' || result === 'full_perfect') summaryByDifficulty.F[diff]++;
+                    if (result === 'clear' || result === 'full_combo' || result === 'full_perfect') summaryByDifficulty.C[diff]++;
+                }
+            }
+        });
     });
 
     // Calculate total songs per difficulty

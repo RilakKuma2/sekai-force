@@ -63,44 +63,34 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
         const songMap = new Map<string, Song>();
         songs.forEach(song => songMap.set(song.id, song));
 
-        // Count Totals (Unlocked)
+        // Create a map for quick result lookup
+        const resultMap = new Map<string, string>();
+        userResults.forEach(r => {
+            resultMap.set(`${r.musicId}-${r.musicDifficulty}`, r.playResult);
+        });
+
+        // Count Totals (Unlocked) and User Results
         songs.forEach(song => {
             Object.entries(song.levels).forEach(([diff, val]) => {
                 if (val !== null && typeof val === 'number') {
                     const levelInt = Math.floor(val);
                     const key = diff === 'append' ? `A${levelInt}` : `${levelInt}`;
                     const index = categoryToIndex.get(key);
+
                     if (index !== undefined) {
+                        // Increment Total Count
                         dataTotalCount[index]++;
+
+                        // Check for User Result
+                        const result = resultMap.get(`${song.id}-${diff}`);
+                        if (result) {
+                            if (result === 'full_perfect') dataPCount[index]++;
+                            if (result === 'full_combo' || result === 'full_perfect') dataFCount[index]++;
+                            if (result === 'clear' || result === 'full_combo' || result === 'full_perfect') dataCCount[index]++;
+                        }
                     }
                 }
             });
-        });
-
-        // Count User Results (All Results)
-        userResults.forEach(result => {
-            const song = songMap.get(result.musicId);
-            if (!song) return;
-
-            let playLevel = song.levels[result.musicDifficulty];
-            // Use precise difficulty values if available (though for grouping we use integer floor)
-            if (result.musicDifficulty === 'master' && song.mas_diff != null) {
-                playLevel = Number(song.mas_diff);
-            } else if (result.musicDifficulty === 'append' && song.apd_diff != null) {
-                playLevel = Number(song.apd_diff);
-            }
-
-            if (playLevel === null || isNaN(playLevel)) return;
-
-            const levelInt = Math.floor(playLevel);
-            const key = result.musicDifficulty === 'append' ? `A${levelInt}` : `${levelInt}`;
-            const index = categoryToIndex.get(key);
-
-            if (index !== undefined) {
-                if (result.playResult === 'full_perfect') dataPCount[index]++;
-                else if (result.playResult === 'full_combo') dataFCount[index]++;
-                else if (result.playResult === 'clear') dataCCount[index]++;
-            }
         });
 
         const dataUnlockedPercent = yAxisCategories.map(() => 100);

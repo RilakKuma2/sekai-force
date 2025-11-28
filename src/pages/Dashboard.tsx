@@ -63,30 +63,62 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
         if (dashboardRef.current) {
             try {
                 // Clone the dashboard element
-                const clone = dashboardRef.current.cloneNode(true) as HTMLElement;
+                const original = dashboardRef.current;
+                const clone = original.cloneNode(true) as HTMLElement;
+
+                // Copy Canvas Content (Critical for ECharts)
+                const originalCanvases = original.querySelectorAll('canvas');
+                const cloneCanvases = clone.querySelectorAll('canvas');
+                originalCanvases.forEach((sourceCanvas, index) => {
+                    const destCanvas = cloneCanvases[index];
+                    if (destCanvas) {
+                        const context = destCanvas.getContext('2d');
+                        if (context) {
+                            destCanvas.width = sourceCanvas.width;
+                            destCanvas.height = sourceCanvas.height;
+                            context.drawImage(sourceCanvas, 0, 0);
+                        }
+                    }
+                });
 
                 // Force Desktop Styles on Clone
+                clone.style.position = 'fixed';
+                clone.style.top = '0';
+                clone.style.left = '0';
+                clone.style.zIndex = '-9999';
+
                 clone.style.width = '1200px';
                 clone.style.minWidth = '1200px';
                 clone.style.maxWidth = '1200px';
+                clone.style.height = 'auto';
+                clone.style.minHeight = '800px';
+
                 clone.style.display = 'flex';
                 clone.style.flexDirection = 'row';
-                clone.style.position = 'absolute';
-                clone.style.top = '-9999px';
-                clone.style.left = '-9999px';
+                clone.style.alignItems = 'flex-start';
+                clone.style.justifyContent = 'flex-start';
+                clone.style.gap = '0';
+
                 clone.style.backgroundColor = '#1e1e1e';
                 clone.style.border = '1px solid #333';
                 clone.style.borderRadius = '8px';
+                clone.style.padding = '0';
+                clone.style.margin = '0';
+                clone.style.transform = 'none';
 
                 // Force Left Panel Styles
                 const leftPanel = clone.querySelector('.left-panel-wrapper') as HTMLElement;
                 if (leftPanel) {
                     leftPanel.style.width = '360px';
+                    leftPanel.style.minWidth = '360px';
+                    leftPanel.style.maxWidth = '360px';
                     leftPanel.style.flexShrink = '0';
                     leftPanel.style.borderRight = '1px solid #333';
                     leftPanel.style.borderBottom = 'none';
                     leftPanel.style.display = 'flex';
                     leftPanel.style.flexDirection = 'column';
+                    leftPanel.style.margin = '0';
+                    leftPanel.style.padding = '0';
                 }
 
                 // Force Best39 Section Styles
@@ -95,23 +127,61 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                     best39Section.style.flexGrow = '1';
                     best39Section.style.width = 'auto';
                     best39Section.style.maxWidth = 'none';
+                    best39Section.style.margin = '0';
+                    best39Section.style.padding = '0';
                 }
 
-                // Append to body to render
+                // Append to body to render (hidden)
                 document.body.appendChild(clone);
 
-                // Wait for images to load (optional, but html2canvas handles it mostly)
-                // We can use a small timeout to ensure styles are applied
-                await new Promise(resolve => setTimeout(resolve, 100));
+                // Handle Images: Convert to Base64 to bypass CORS issues in html2canvas
+                const images = clone.querySelectorAll('img');
+                const imagePromises = Array.from(images).map(async (img) => {
+                    if (img.src.includes('asset.rilaksekai.com')) {
+                        try {
+                            // Fetch the image as a blob
+                            const response = await fetch(img.src, { mode: 'cors' });
+                            const blob = await response.blob();
+
+                            // Convert blob to base64
+                            return new Promise<void>((resolve) => {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                    img.src = reader.result as string;
+                                    resolve();
+                                };
+                                reader.onerror = () => {
+                                    console.warn('Failed to convert image to base64:', img.src);
+                                    resolve(); // Resolve anyway to not block
+                                };
+                                reader.readAsDataURL(blob);
+                            });
+                        } catch (e) {
+                            console.warn('Failed to fetch image for base64 conversion:', img.src, e);
+                            return Promise.resolve();
+                        }
+                    }
+                    return Promise.resolve();
+                });
+
+                // Wait for all image conversions
+                await Promise.all(imagePromises);
+
+                // Wait for the new base64 images to render
+                await new Promise(resolve => setTimeout(resolve, 500));
 
                 const canvas = await html2canvas(clone, {
                     backgroundColor: '#1e1e1e',
                     scale: 2,
-                    useCORS: true,
+                    useCORS: true, // Still keep this true just in case
                     allowTaint: true,
                     logging: false,
-                    width: 1200, // Force canvas width
-                    windowWidth: 1200, // Simulate window width
+                    width: 1200,
+                    windowWidth: 1200,
+                    scrollX: 0,
+                    scrollY: 0,
+                    x: 0,
+                    y: 0
                 });
 
                 // Remove clone

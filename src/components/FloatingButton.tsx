@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 interface FloatingButtonProps {
     onEditProfile?: () => void;
     onCapture?: () => void;
+    onBulkInput?: () => void;
+    isScoreInputPage?: boolean;
 }
 
-const FloatingButton: React.FC<FloatingButtonProps> = ({ onEditProfile, onCapture }) => {
+const FloatingButton: React.FC<FloatingButtonProps> = ({ onEditProfile, onCapture, onBulkInput, isScoreInputPage }) => {
     const navigate = useNavigate();
 
     return (
@@ -87,35 +89,70 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ onEditProfile, onCaptur
                             <span className="mdi mdi-account-edit" style={{ fontSize: '20px' }}></span>
                         </button>
                     )}
-                    <button
-                        onClick={() => navigate('/input')}
-                        style={{
-                            padding: '12px 24px',
-                            borderRadius: '30px',
-                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                            color: 'white',
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            backdropFilter: 'blur(4px)',
-                            transition: 'transform 0.2s, background-color 0.2s'
-                        }}
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.05)';
-                            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-                        }}
-                    >
-                        성과 입력
-                    </button>
+
+                    {isScoreInputPage && onBulkInput ? (
+                        <button
+                            onClick={onBulkInput}
+                            style={{
+                                padding: '12px 24px',
+                                borderRadius: '30px',
+                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                color: 'white',
+                                border: '1px solid rgba(255, 255, 255, 0.3)',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                backdropFilter: 'blur(4px)',
+                                transition: 'transform 0.2s, background-color 0.2s'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.05)';
+                                e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                            }}
+                        >
+                            일괄 입력
+                        </button>
+                    ) : (
+                        !isScoreInputPage && (
+                            <button
+                                onClick={() => navigate('/input')}
+                                style={{
+                                    padding: '12px 24px',
+                                    borderRadius: '30px',
+                                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                    color: 'white',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    backdropFilter: 'blur(4px)',
+                                    transition: 'transform 0.2s, background-color 0.2s'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                    e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                                }}
+                            >
+                                성과 입력
+                            </button>
+                        )
+                    )}
                 </div>
             </div>
         </div>
