@@ -736,7 +736,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
             {showPreviewModal && (
                 <div className="modal-overlay">
                     <div className="preview-modal">
-                        <h2>데이터 불러오기 미리보기</h2>
+                        <h2>불러올 데이터 미리보기</h2>
                         <p>공유된 URL에서 데이터를 불러옵니다.</p>
 
                         <div className="preview-stats">
@@ -753,14 +753,22 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                         <div className="preview-best39">
                             <h3>Best 39 미리보기</h3>
                             <div className="preview-list">
-                                {previewBest39.slice(0, 5).map((item, idx) => (
+                                {previewBest39.map((item, idx) => (
                                     <div key={idx} className="preview-item">
                                         <span className="rank">#{idx + 1}</span>
+                                        <span className={`preview-diff ${item.musicDifficulty}`}>
+                                            {item.musicDifficulty === 'master' ? 'MAS' :
+                                                item.musicDifficulty === 'expert' ? 'EXP' :
+                                                    item.musicDifficulty === 'append' ? 'APD' :
+                                                        item.musicDifficulty.toUpperCase().slice(0, 3)}
+                                        </span>
+                                        <span className={`preview-clear-status ${item.rank}`}>
+                                            {item.rank === 'P' ? 'AP' : item.rank === 'F' ? 'FC' : 'Clear'}
+                                        </span>
                                         <span className="title">{item.title}</span>
                                         <span className="score">{item.r.toFixed(1)}</span>
                                     </div>
                                 ))}
-                                {previewBest39.length > 5 && <div className="more-items">...외 {previewBest39.length - 5}곡</div>}
                             </div>
                         </div>
 

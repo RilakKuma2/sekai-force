@@ -98,7 +98,7 @@
     font-size: 10px;
     /* Smaller font */
     font-weight: 900;
-    width: 22px;
+    width: 26px;
     /* Fixed width to prevent expansion */
     text-align: center;
     line-height: 14.5px;
@@ -125,7 +125,7 @@
     font-size: 11px;
     /* Smaller font */
     font-weight: 900;
-    min-width: 20px;
+    min-width: 26px;
     /* Increased width */
     text-align: center;
     line-height: 14.5px;
