@@ -38,6 +38,10 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
     const [bulkMaxLevel, setBulkMaxLevel] = useState<number>(38);
     const [bulkResult, setBulkResult] = useState<'clear' | 'full_combo' | 'full_perfect' | null>(null);
 
+    // Share Modal State
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [shareUrl, setShareUrl] = useState('');
+
     // Sync local state with global state on mount/update
     useEffect(() => {
         setLocalResults(userResults);
@@ -234,11 +238,15 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         url.searchParams.set('data', encoded);
 
         window.history.pushState({}, '', url.toString());
+        setShareUrl(url.toString());
+        setShowShareModal(true);
+    };
 
-        navigator.clipboard.writeText(url.toString()).then(() => {
+    const copyShareUrl = () => {
+        navigator.clipboard.writeText(shareUrl).then(() => {
             alert('URL이 클립보드에 복사되었습니다.');
         }).catch(() => {
-            alert('URL 생성 완료 (복사 실패)');
+            alert('복사 실패. URL을 직접 복사해주세요.');
         });
     };
 
@@ -562,6 +570,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                             // Render placeholder if level is null (only in non-filtered mode to maintain alignment)
                             if (level === null) {
                                 if (isFilteredMode) return null; // Don't show placeholder in filtered mode
+                                // If it's append and null, don't show placeholder at all (as requested)
+                                if (diff === 'append') return null;
                                 return <div key={diff} className="circle" style={{ visibility: 'hidden', cursor: 'default' }}></div>;
                             }
 
@@ -769,13 +779,18 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                 <div className="difficulty-header-row">
                     <div className="difficulty-header-spacer">
                         {isAnyFilterActive && (
-                            <button className="reset-filter-btn" onClick={resetFilters} title="Reset Filters">
+                            <button className="reset-filter-btn desktop-only" onClick={resetFilters} title="Reset Filters">
                                 &lt;
                             </button>
                         )}
                     </div>
                     <div className="difficulty-header-content">
                         <div className="difficulty-header-labels">
+                            {isAnyFilterActive && (
+                                <button className="reset-filter-btn mobile-only" onClick={resetFilters} title="Reset Filters">
+                                    &lt;
+                                </button>
+                            )}
                             <DifficultyFilter diff="easy" label="EASY" value={easyLevel} onChange={(val) => updateFilter('easy', val)} />
                             <DifficultyFilter diff="normal" label="NORMAL" value={normalLevel} onChange={(val) => updateFilter('normal', val)} />
                             <DifficultyFilter diff="hard" label="HARD" value={hardLevel} onChange={(val) => updateFilter('hard', val)} />
@@ -879,6 +894,34 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                         <div className="preview-actions">
                             <button className="preview-btn cancel" onClick={cancelLoad}>취소</button>
                             <button className="preview-btn confirm" onClick={confirmLoad}>불러오기</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Share Modal */}
+            {showShareModal && (
+                <div className="modal-overlay">
+                    <div className="preview-modal" style={{ height: 'auto', maxHeight: 'auto' }}>
+                        <h2>URL로 데이터 공유</h2>
+                        <p style={{ color: '#ccc', textAlign: 'center', wordBreak: 'break-all', fontSize: '0.9rem', margin: '10px 0' }}>
+                            아래 URL을 복사하여 공유하세요.
+                        </p>
+                        <div style={{
+                            backgroundColor: '#333',
+                            padding: '10px',
+                            borderRadius: '6px',
+                            wordBreak: 'break-all',
+                            fontSize: '0.8rem',
+                            color: '#aaa',
+                            maxHeight: '100px',
+                            overflowY: 'auto'
+                        }}>
+                            {shareUrl}
+                        </div>
+                        <div className="preview-actions" style={{ marginTop: '15px' }}>
+                            <button className="preview-btn cancel" onClick={() => setShowShareModal(false)}>닫기</button>
+                            <button className="preview-btn confirm" onClick={copyShareUrl}>URL 복사</button>
                         </div>
                     </div>
                 </div>

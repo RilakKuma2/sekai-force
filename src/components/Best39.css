@@ -1,5 +1,5 @@
 .best39-list {
-    width: 100%;
+    width: fit-content;
     background-color: #1e1e1e;
     color: #fff;
     font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -14,7 +14,7 @@
 
 .d-flex {
     display: flex;
-    width: 100%;
+    width: auto;
 }
 
 .vertical-divider {
@@ -24,14 +24,16 @@
 }
 
 .best39-cell {
-    width: calc((100% - 2px) / 3);
+    width: 130px;
     padding: 0;
     box-sizing: border-box;
 }
 
 .best39-item-container {
-    padding: 6px 0 0 0;
-    /* Increased top, removed bottom */
+    padding: 6px 0 0 0 !important;
+    /* Removed bottom padding */
+    display: flex;
+    flex-direction: column;
 }
 
 /* First Row Styles */
@@ -89,31 +91,29 @@
 }
 
 .play-level {
-    padding: 0 6px;
-    /* Reduced padding */
+    padding: 0 4px;
+    /* Reduced padding further */
     border-top-left-radius: 8px;
-    /* Adjusted radius */
     border-bottom-left-radius: 8px;
-    font-size: 11px;
+    font-size: 10px;
     /* Smaller font */
-    font-weight: 700;
-    min-width: 14px;
-    /* Reduced width */
+    font-weight: 900;
+    width: 22px;
+    /* Fixed width to prevent expansion */
     text-align: center;
     line-height: 14.5px;
-    /* Match height */
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .play-level sup {
-    font-size: 75%;
+    font-size: 8px;
     vertical-align: top;
-    margin-left: 1px;
+    margin-left: 0px;
     line-height: 1;
     position: relative;
-    top: -2px;
+    top: -3px;
 }
 
 .rank-badge {
@@ -124,9 +124,9 @@
     border-bottom-right-radius: 8px;
     font-size: 11px;
     /* Smaller font */
-    font-weight: 700;
-    min-width: 14px;
-    /* Reduced width */
+    font-weight: 900;
+    min-width: 20px;
+    /* Increased width */
     text-align: center;
     line-height: 14.5px;
     /* Match height */
@@ -139,7 +139,9 @@
     flex-direction: column;
     /* Stack title and score */
     align-items: flex-start;
-    padding: 0 12px;
+    align-items: flex-start;
+    padding: 0 12px 2px 12px !important;
+    /* Reduced bottom padding */
     margin-top: 2px;
 }
 
@@ -149,7 +151,7 @@
 
 .best39-list .list-item-title.song-title {
     font-size: 12px;
-    font-weight: 400;
+    font-weight: 600;
     color: #ddd;
     /* Slightly dimmer white */
     overflow: hidden;
@@ -163,4 +165,8 @@
     font-size: 11px;
     color: #888;
     /* Dimmer for score details */
+    margin-bottom: 0 !important;
+    line-height: 1;
+    display: block;
+    height: 12px;
 }

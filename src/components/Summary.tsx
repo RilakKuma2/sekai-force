@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { type MusicDifficultyStatus } from '../utils/calculator';
+import { type Song } from '../utils/api';
+import { type MusicDifficultyStatus, type UserMusicResult } from '../utils/calculator';
 import './Summary.css';
 
 interface SummaryProps {
     best39: MusicDifficultyStatus[];
     userResults: UserMusicResult[];
+    songs: Song[];
     totalR: number;
     sekaiRank: string;
     playerId: string;
     twitterId: string;
+    playerName: string;
 }
 
-const Summary: React.FC<SummaryProps> = ({ best39, userResults, totalR, sekaiRank, playerId, twitterId }) => {
+const Summary: React.FC<SummaryProps> = ({ best39, userResults, songs, totalR, sekaiRank, playerId, twitterId, playerName }) => {
     const [showInfo, setShowInfo] = useState(false);
 
     // Calculate summary data
@@ -31,6 +34,16 @@ const Summary: React.FC<SummaryProps> = ({ best39, userResults, totalR, sekaiRan
         }
     });
 
+    // Calculate total songs per difficulty
+    const totalSongsByDifficulty = { easy: 0, normal: 0, hard: 0, expert: 0, master: 0, append: 0 };
+    songs.forEach(song => {
+        difficulties.forEach(diff => {
+            if (song.levels[diff] !== null) {
+                totalSongsByDifficulty[diff]++;
+            }
+        });
+    });
+
     return (
         <div className="summary-container">
             {/* Header Info */}
@@ -38,7 +51,7 @@ const Summary: React.FC<SummaryProps> = ({ best39, userResults, totalR, sekaiRan
                 <div className="list-item" style={{ minHeight: '60px' }}>
                     <div className="list-item-avatar-placeholder"></div>
                     <div className="user-info-header">
-                        <div className="list-item-title">셐붕이</div>
+                        <div className="list-item-title">{playerName}</div>
                         <div className="user-rank-container">
                             <div className="rank-label">Rank</div>
                             <div className="rank-value">{sekaiRank}</div>
@@ -103,7 +116,11 @@ const Summary: React.FC<SummaryProps> = ({ best39, userResults, totalR, sekaiRan
                         <div className="rank-icon all">All</div>
                     </div>
                     <div className="rank-counts">
-                        <div className="count-cell full-width">-</div>
+                        {difficulties.map(diff => (
+                            <div key={diff} className="count-cell">
+                                {totalSongsByDifficulty[diff]}
+                            </div>
+                        ))}
                     </div>
                 </div>
                 <div className="divider"></div>

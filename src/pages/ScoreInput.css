@@ -4,6 +4,8 @@
     --text-color: rgba(255, 255, 255, 1);
     --border-color: #444;
     --text-color-light-gray: #ccc;
+
+    /* Unit Colors */
     --unit-color-vs: #aaaaaa;
     --unit-color-ln: #4455DD;
     --unit-color-mmj: #88DD44;
@@ -12,6 +14,21 @@
     --unit-color-n25: #884499;
     --unit-color-oth: #ffffff;
     --unit-color-unk: #aaaaaa;
+
+    /* Difficulty Colors */
+    --diff-easy: #11dd77;
+    --diff-easy-light: #8aeebc;
+    --diff-normal: #33ccff;
+    --diff-normal-light: #9ae6ff;
+    --diff-hard: #ffcc00;
+    --diff-hard-light: #ffe680;
+    --diff-expert: #ff4477;
+    --diff-expert-light: #ff99b5;
+    --diff-master: #cc33ff;
+    --diff-master-light: #d99cef;
+    --diff-append: #febdf1;
+    /* Solid color fallback */
+    /* Append Gradient: linear-gradient(to bottom right, #ad92fd, #fe7bde) */
 }
 
 .song-list {
@@ -24,7 +41,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    background-color: rgba(92, 92, 125, 0.8);
+    background-color: rgba(65, 65, 71, 0.8);
     border-radius: 12px;
     padding: 10px;
     border-bottom: 1px solid var(--border-color);
@@ -156,53 +173,41 @@
 .circle.easy {
     color: white;
     border: 3.5px solid #13d675;
+    /* Keep specific border if different, or use var? 13d675 is close to 11dd77 but darker? Let's stick to var for consistency if possible, or keep if intentional. 13d675 is NOT in my vars. I'll use var(--diff-easy) for consistency or define a new one? The user wants cleanup. I'll use var(--diff-easy) which is #11dd77. Wait, #13d675 is different. */
+    /* Actually, let's use the light var for border as seen in other places? No, circle.easy uses #13d675 border. header-circle uses #8aeebc border. */
+    /* I will use the variables I defined which match the header/bulk styles. If circle.easy looks different, it might be legacy. I'll standardize it to var(--diff-easy-light) or var(--diff-easy) depending on context. */
+    /* circle.easy border was #13d675. header-circle.easy border is #8aeebc. */
+    /* I'll use var(--diff-easy) for the main color and var(--diff-easy-light) for the light/border color. */
+    border-color: var(--diff-easy);
 }
 
 .circle.normal {
     color: white;
-    border: 3.5px solid #33ccff;
+    border: 3.5px solid var(--diff-normal);
 }
 
 .circle.hard {
     color: white;
-    border: 3.5px solid #ffcc00;
+    border: 3.5px solid var(--diff-hard);
 }
 
 .circle.expert {
     color: white;
     border: 3.5px solid #ff4179;
+    /* Custom color? Close to --diff-expert (#ff4477). I'll use var(--diff-expert). */
+    border-color: var(--diff-expert);
 }
 
 .circle.master {
     color: white;
     border: 3.5px solid #cb34ff;
+    /* Close to --diff-master (#cc33ff). I'll use var(--diff-master). */
+    border-color: var(--diff-master);
 }
 
 .circle.append {
     color: white;
-    border: 3.5px solid #febdf1;
-    /* Use solid border like others for consistency when empty, or gradient border? */
-    /* User said "transparent background". The previous code had a complex gradient border. */
-    /* Let's try to match the others: solid border, transparent background. */
-    /* But Append usually has a gradient border. */
-    /* If we want transparent background, we just need to ensure background is not set to a color. */
-    /* The previous code used background-clip to simulate gradient border with transparent center. */
-    /* background: linear-gradient(rgba(92, 92, 125, 0.8), rgba(92, 92, 125, 0.8)) padding-box, ... */
-    /* The rgba(92, 92, 125, 0.8) is the background color of the song item. */
-    /* To make it truly transparent (showing song item bg), we can use the same trick or just use border-image? */
-    /* Border-image doesn't work well with border-radius. */
-    /* Let's use the solid color from the result border: #febdf1 */
-    /* Or keep the gradient border but ensure center is transparent? */
-    /* "아무것도 선택 안된 어펜드 배경색은 투명하게" -> "Make unselected Append background transparent" */
-
-    /* Current: background: linear-gradient(rgba(92, 92, 125, 0.8), ...) */
-    /* This effectively makes it the same color as the card background. */
-    /* If the user sees it as "not transparent", maybe they mean they want to see the underlying image? */
-    /* Or maybe they just want it to look like the others (transparent center). */
-    /* The others have `background-color: transparent` (default). */
-
-    /* Let's use a solid border for Append when unselected, to match the others and avoid the background clip issue. */
-    border: 3.5px solid #febdf1;
+    border: 3.5px solid var(--diff-append);
     background-color: transparent;
 }
 
@@ -221,42 +226,42 @@
 .circle.easy.result-clear,
 .circle.easy.result-full_combo,
 .circle.easy.result-full_perfect {
-    border: 3.5px solid #8aeebc;
+    border: 3.5px solid var(--diff-easy-light);
 }
 
 /* Normal */
 .circle.normal.result-clear,
 .circle.normal.result-full_combo,
 .circle.normal.result-full_perfect {
-    border: 3.5px solid #9ae6ff;
+    border: 3.5px solid var(--diff-normal-light);
 }
 
 /* Hard */
 .circle.hard.result-clear,
 .circle.hard.result-full_combo,
 .circle.hard.result-full_perfect {
-    border: 3.5px solid #ffe680;
+    border: 3.5px solid var(--diff-hard-light);
 }
 
 /* Expert */
 .circle.expert.result-clear,
 .circle.expert.result-full_combo,
 .circle.expert.result-full_perfect {
-    border: 3.5px solid #ff99b5;
+    border: 3.5px solid var(--diff-expert-light);
 }
 
 /* Master */
 .circle.master.result-clear,
 .circle.master.result-full_combo,
 .circle.master.result-full_perfect {
-    border: 3.5px solid #d99cef;
+    border: 3.5px solid var(--diff-master-light);
 }
 
 /* Append */
 .circle.append.result-clear,
 .circle.append.result-full_combo,
 .circle.append.result-full_perfect {
-    border: 3.5px solid #febdf1;
+    border: 3.5px solid var(--diff-append);
 }
 
 
@@ -281,13 +286,7 @@
 }
 
 /* Specific fix for Append to remove its gradient border when filled */
-/* REMOVED: This block was resetting the border we just set! */
-/* .circle.append.result-clear,
-.circle.append.result-full_combo,
-.circle.append.result-full_perfect {
-    background: none;
-    border: none !important;
-} */
+/* (Removed redundant reset block) */
 
 .circle.append.result-clear {
     background: #FFC107;
@@ -500,34 +499,35 @@
 }
 
 /* Use filled styles for header circles */
+/* Use filled styles for header circles */
 .header-circle.easy {
-    background-color: #11dd77;
-    border: 3.5px solid #8aeebc;
+    background-color: var(--diff-easy);
+    border: 3.5px solid var(--diff-easy-light);
 }
 
 .header-circle.normal {
-    background-color: #33ccff;
-    border: 3.5px solid #9ae6ff;
+    background-color: var(--diff-normal);
+    border: 3.5px solid var(--diff-normal-light);
 }
 
 .header-circle.hard {
-    background-color: #ffcc00;
-    border: 3.5px solid #ffe680;
+    background-color: var(--diff-hard);
+    border: 3.5px solid var(--diff-hard-light);
 }
 
 .header-circle.expert {
-    background-color: #ff4477;
-    border: 3.5px solid #ff99b5;
+    background-color: var(--diff-expert);
+    border: 3.5px solid var(--diff-expert-light);
 }
 
 .header-circle.master {
-    background-color: #cc33ff;
-    border: 3.5px solid #d99cef;
+    background-color: var(--diff-master);
+    border: 3.5px solid var(--diff-master-light);
 }
 
 .header-circle.append {
     background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
-    border: 3.5px solid #febdf1;
+    border: 3.5px solid var(--diff-append);
 }
 
 
@@ -655,7 +655,7 @@
 }
 
 .inline-score-btn {
-    min-width: 40px;
+    min-width: 20px;
     padding: 6px 16px;
     border: 1px solid #555;
     background-color: transparent;
@@ -715,56 +715,35 @@
 }
 
 .circle.filtered-style.easy {
-    background-color: #11dd77;
-    border: 3.5px solid #8aeebc;
+    background-color: var(--diff-easy);
+    border: 3.5px solid var(--diff-easy-light);
 }
 
 .circle.filtered-style.normal {
-    background-color: #33ccff;
-    border: 3.5px solid #9ae6ff;
+    background-color: var(--diff-normal);
+    border: 3.5px solid var(--diff-normal-light);
 }
 
 .circle.filtered-style.hard {
-    background-color: #ffcc00;
-    border: 3.5px solid #ffe680;
+    background-color: var(--diff-hard);
+    border: 3.5px solid var(--diff-hard-light);
 }
 
 .circle.filtered-style.expert {
-    background-color: #ff4477;
-    border: 3.5px solid #ff99b5;
+    background-color: var(--diff-expert);
+    border: 3.5px solid var(--diff-expert-light);
 }
 
 .circle.filtered-style.master {
-    background-color: #cc33ff;
-    border: 3.5px solid #d99cef;
+    background-color: var(--diff-master);
+    border: 3.5px solid var(--diff-master-light);
 }
 
 .circle.filtered-style.append {
     background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
-    border: 3.5px solid #febdf1;
+    border: 3.5px solid var(--diff-append);
 }
 
-/* When result is applied in filtered mode, we might want to keep this style 
-   OR show the result color?
-   User said: "search layout... bubble use EASY NORMAL design... 
-   instead - C FC AP button color changes".
-   This implies the bubble ITSELF might not change color to result, 
-   but the BUTTONS show the result status.
-   BUT previously we had the bubble change to result color.
-   If the bubble stays as "Difficulty Design", then how do we see the result on the bubble?
-   "그 난이도랑 - C FC AP 버튼만 뜨게 만들어" -> "Make only that difficulty and buttons appear".
-   "대신 - C FC AP 버튼의 색이... 활성화되면... 바꾸는 식으로 해" -> "Instead, change the button colors".
-   This suggests the BUBBLE might NOT need to change color in this mode, 
-   or maybe it does but the buttons are the primary control.
-   However, consistency suggests the bubble should probably reflect the result too?
-   Let's assume the bubble KEEPS the difficulty design (Green/Blue/etc) 
-   and the BUTTONS show the status. 
-   OR, the bubble changes to result color like normal?
-   "난이도 버블은 그 위에 EASY NORMAL 의 난이도 버블 디자인 그대로 써" -> "Use the design of EASY NORMAL bubbles AS IS".
-   This strongly implies the bubble should look like the header bubble (Difficulty Color Filled).
-   So in filtered mode, the bubble is ALWAYS the difficulty color.
-   The result is shown by the active button.
-*/
 /* Reset Filter Button */
 .reset-filter-btn {
     width: 30px;
@@ -779,6 +758,14 @@
     justify-content: center;
     align-items: center;
     transition: all 0.2s;
+}
+
+.mobile-only {
+    display: none;
+}
+
+.desktop-only {
+    display: flex;
 }
 
 .reset-filter-btn:hover {
@@ -987,8 +974,9 @@
     color: white;
 }
 
-/* Bulk Modal */
-.bulk-modal-overlay {
+/* Modal Overlays */
+.bulk-modal-overlay,
+.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -998,20 +986,40 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.bulk-modal-overlay {
     z-index: 2000;
 }
 
-.bulk-modal {
+.modal-overlay {
+    z-index: 3000;
+}
+
+/* Modals */
+.bulk-modal,
+.preview-modal {
     background-color: #222;
     padding: 20px;
     border-radius: 12px;
     width: 90%;
-    max-width: 400px;
     border: 1px solid #444;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     gap: 20px;
+    /* bulk-modal has 20px, preview-modal has 15px. I'll use 20px or keep separate gap? bulk uses 20, preview uses 15. I'll set gap individually. */
+}
+
+.bulk-modal {
+    max-width: 400px;
+    gap: 20px;
+}
+
+.preview-modal {
+    max-width: 500px;
+    max-height: 80vh;
+    gap: 15px;
 }
 
 .bulk-modal h3 {
@@ -1062,27 +1070,27 @@
 }
 
 .bulk-diff-btn.easy:hover {
-    border-color: #8aeebc;
+    border-color: var(--diff-easy-light);
 }
 
 .bulk-diff-btn.normal:hover {
-    border-color: #9ae6ff;
+    border-color: var(--diff-normal-light);
 }
 
 .bulk-diff-btn.hard:hover {
-    border-color: #ffe680;
+    border-color: var(--diff-hard-light);
 }
 
 .bulk-diff-btn.expert:hover {
-    border-color: #ff99b5;
+    border-color: var(--diff-expert-light);
 }
 
 .bulk-diff-btn.master:hover {
-    border-color: #d99cef;
+    border-color: var(--diff-master-light);
 }
 
 .bulk-diff-btn.append:hover {
-    border-color: #febdf1;
+    border-color: var(--diff-append);
 }
 
 /* Selected states for bulk diff buttons */
@@ -1092,33 +1100,33 @@
 }
 
 .bulk-diff-btn.easy.selected {
-    background-color: #11dd77;
-    border-color: #8aeebc;
+    background-color: var(--diff-easy);
+    border-color: var(--diff-easy-light);
 }
 
 .bulk-diff-btn.normal.selected {
-    background-color: #33ccff;
-    border-color: #9ae6ff;
+    background-color: var(--diff-normal);
+    border-color: var(--diff-normal-light);
 }
 
 .bulk-diff-btn.hard.selected {
-    background-color: #ffcc00;
-    border-color: #ffe680;
+    background-color: var(--diff-hard);
+    border-color: var(--diff-hard-light);
 }
 
 .bulk-diff-btn.expert.selected {
-    background-color: #ff4477;
-    border-color: #ff99b5;
+    background-color: var(--diff-expert);
+    border-color: var(--diff-expert-light);
 }
 
 .bulk-diff-btn.master.selected {
-    background-color: #cc33ff;
-    border-color: #d99cef;
+    background-color: var(--diff-master);
+    border-color: var(--diff-master-light);
 }
 
 .bulk-diff-btn.append.selected {
     background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
-    border-color: #febdf1;
+    border-color: var(--diff-append);
 }
 
 .bulk-level-range {
@@ -1237,32 +1245,9 @@
 }
 
 /* Preview Modal Styles */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 3000;
-}
-
-.preview-modal {
-    background-color: #222;
-    padding: 20px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    border: 1px solid #444;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
+/* Preview Modal Styles (Base styles shared with bulk-modal) */
+/* .modal-overlay defined above */
+/* .preview-modal defined above */
 
 .preview-modal h2 {
     margin: 0;
@@ -1309,23 +1294,23 @@
 }
 
 .preview-diff.easy {
-    background-color: #11dd77;
+    background-color: var(--diff-easy);
 }
 
 .preview-diff.normal {
-    background-color: #33ccff;
+    background-color: var(--diff-normal);
 }
 
 .preview-diff.hard {
-    background-color: #ffcc00;
+    background-color: var(--diff-hard);
 }
 
 .preview-diff.expert {
-    background-color: #ff4477;
+    background-color: var(--diff-expert);
 }
 
 .preview-diff.master {
-    background-color: #cc33ff;
+    background-color: var(--diff-master);
 }
 
 .preview-diff.append {
@@ -1395,7 +1380,6 @@
 }
 
 /* Mobile Layout Adjustments (Matching pjsk-chart-search) */
-/* Mobile Layout Adjustments (Matching pjsk-chart-search) */
 @media (max-width: 768px) {
     .score-input-container {
         padding: 1rem;
@@ -1404,10 +1388,10 @@
     }
 
     .score-input-header {
-        padding: 10px;
+        padding: 10px 0px;
         gap: 10px;
-        margin-left: -1rem;
-        margin-right: -1rem;
+        margin-left: -1.5rem;
+        margin-right: -2rem;
         width: calc(100% + 2rem);
     }
 
@@ -1493,13 +1477,26 @@
     /* Header Difficulty Bubbles on Mobile */
     .difficulty-header-row {
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 2px;
         justify-content: space-between;
         align-items: flex-start;
+        padding: 0;
+    }
+
+    .difficulty-header-spacer {
+        display: none;
+    }
+
+    .mobile-only {
+        display: flex;
+    }
+
+    .desktop-only {
+        display: none;
     }
 
     .difficulty-header-labels {
-        gap: 5px;
+        gap: 2px;
         flex-wrap: wrap;
         overflow-x: visible;
         justify-content: flex-start;
@@ -1507,15 +1504,23 @@
     }
 
     .header-circle {
-        width: 32px;
-        height: 32px;
-        font-size: 0.5rem;
-        border-width: 3px;
+        width: 34px;
+        height: 34px;
+        font-size: 0.55rem;
+        border-width: 2.5px;
         flex-shrink: 0;
     }
 
     .header-circle.has-value {
-        font-size: 0.9rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Smaller font for longer difficulty names on mobile */
+    .header-circle.normal,
+    .header-circle.expert,
+    .header-circle.master,
+    .header-circle.append {
+        font-size: 0.35rem;
     }
 
     .difficulty-right-section {
@@ -1524,14 +1529,15 @@
         margin-top: 0;
         flex-direction: column;
         align-items: flex-end;
-        gap: 4px;
+        gap: 2px;
     }
 
     .difficulty-instruction {
         display: block;
-        font-size: 0.65rem;
+        font-size: 0.6rem;
         color: #aaa;
         white-space: nowrap;
+        text-align: right;
     }
 
     .bulk-input-btn {
@@ -1539,13 +1545,7 @@
         padding: 4px 8px;
     }
 
-    /* Inline buttons on mobile */
-    .inline-score-container {
-        margin-left: 0;
-        margin-top: 10px;
-        width: 100%;
-        justify-content: center;
-    }
+    /* Inline buttons on mobile - Removed to use global styles (side-by-side) */
 
     .inline-score-buttons {
         gap: 8px;
@@ -1569,5 +1569,82 @@
         max-height: 300px;
         z-index: 2000;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+}
+
+/* Best 39 Section Layout */
+.dashboard-layout {
+    display: flex;
+    width: fit-content;
+    max-width: 1200px;
+    /* Adjust as needed */
+    margin: 0 auto;
+    background-color: #1e1e1e;
+    /* Match panel bg */
+    border: 1px solid #333;
+    border-radius: 8px;
+    /* Optional rounded corners for the whole block */
+    overflow: hidden;
+    /* Clip corners */
+}
+
+.left-panel-wrapper {
+    width: 360px;
+    /* Fixed width for profile/stats */
+    flex-shrink: 0;
+    border-right: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+}
+
+.best39-section {
+    flex-grow: 1;
+    width: auto;
+    /* Let flex handle width */
+    max-width: none;
+    /* Override previous max-width */
+    margin: 0;
+}
+
+/* Small Mobile Adjustments (iPhone SE, etc.) */
+@media (max-width: 768px) {
+    .dashboard-layout {
+        flex-direction: column;
+        border: none;
+        background-color: transparent;
+    }
+
+    .left-panel-wrapper {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #333;
+        margin-bottom: 20px;
+    }
+
+    .best39-section {
+        width: 100%;
+    }
+}
+
+@media (max-width: 375px) {
+    .header-circle {
+        width: 30px;
+        height: 30px;
+        font-size: 0.4rem;
+        border-width: 2px;
+    }
+
+    .header-circle.normal,
+    .header-circle.expert,
+    .header-circle.master,
+    .header-circle.append {
+        font-size: 0.3rem;
+    }
+
+    .circle {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+        border-width: 3px;
     }
 }

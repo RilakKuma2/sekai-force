@@ -24,17 +24,18 @@ const getDifficultyColor = (difficulty: string) => {
 
 const formatLevel = (playLevel: number, baseLevel: number) => {
     // Logic:
-    // If constant (playLevel) is >= baseLevel + 0.7 -> baseLevel + "+"
-    // If constant (playLevel) is <= baseLevel - 0.4 -> baseLevel + "-"
+    // If constant (playLevel) is >= baseLevel + 0.5 -> baseLevel + "+"
+    // If constant (playLevel) is <= baseLevel - 0.3 -> baseLevel + "-"
     // Else -> baseLevel
 
     // Ensure numbers
     const pLevel = Number(playLevel);
     const bLevel = Number(baseLevel);
 
-    if (pLevel >= bLevel + 0.7) {
+    // Use a small epsilon for float comparison if needed, but direct comparison usually works for these ranges
+    if (pLevel >= bLevel + 0.5) {
         return <>{bLevel}<sup>+</sup></>;
-    } else if (pLevel <= bLevel - 0.4) {
+    } else if (pLevel <= bLevel - 0.3) {
         return <>{bLevel}<sup>-</sup></>;
     } else {
         return <>{bLevel}</>;
@@ -86,7 +87,7 @@ const Best39: React.FC<Best39Props> = ({ best39 }) => {
 
                             // Define level badge style
                             const levelBadgeStyle: React.CSSProperties = {
-                                color: isAppend ? '#FFFFFF' : '#222222'
+                                color: isAppend ? '#000000' : '#222222'
                             };
 
                             if (isAppend) {
@@ -109,7 +110,7 @@ const Best39: React.FC<Best39Props> = ({ best39 }) => {
                                                         src={`https://asset.rilaksekai.com/cover/${item.musicId}.jpg`}
                                                         alt={item.title}
                                                         onError={(e) => {
-                                                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/50';
+                                                            (e.target as HTMLImageElement).src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAMElEQVR42u3QwQkAMAwDMYv336j/4CI40Ncg8yI58928/wAAAAAAAAAAAAAAAIBjA8lZAgF/27YAAAAASUVORK5CYII=';
                                                         }}
                                                     />
                                                 </div>
