@@ -1395,21 +1395,20 @@
 }
 
 /* Mobile Layout Adjustments (Matching pjsk-chart-search) */
+/* Mobile Layout Adjustments (Matching pjsk-chart-search) */
 @media (max-width: 768px) {
     .score-input-container {
         padding: 1rem;
-        /* Match .App padding */
+        min-width: 0;
+        width: 100%;
     }
 
     .score-input-header {
         padding: 10px;
         gap: 10px;
         margin-left: -1rem;
-        /* Compensate for container padding to be full width */
         margin-right: -1rem;
         width: calc(100% + 2rem);
-        /* Ensure full width */
-        box-sizing: border-box;
     }
 
     .header-top-row {
@@ -1435,15 +1434,15 @@
     }
 
     .song-item {
-        /* Keep desktop padding: 10px */
         border-radius: 12px;
-        /* Keep desktop radius */
+        min-width: 0;
     }
 
     .song-cover-wrapper,
     .song-cover {
         width: 60px;
         height: 60px;
+        flex-shrink: 0;
     }
 
     .song-details {
@@ -1451,19 +1450,20 @@
         gap: 0.5rem;
         min-width: 0;
         min-height: 0;
-        /* Reset min-height */
+        flex-shrink: 1;
     }
 
     .song-titles {
         flex-shrink: 1;
         min-width: 0;
+        display: flex;
+        flex-wrap: wrap;
     }
 
     .title-ko {
         font-size: 0.9rem;
         white-space: normal;
-        /* Allow wrapping */
-        word-break: keep-all;
+        min-width: 0;
     }
 
     .title-jp,
@@ -1478,39 +1478,40 @@
 
     .difficulty-circles {
         gap: 0.75rem;
-        /* Exact match */
         flex-wrap: wrap;
+        min-width: 0;
     }
 
     .circle {
         width: 35px;
-        /* Exact match */
         height: 35px;
-        /* Exact match */
         font-size: 0.95rem;
-        /* Exact match */
         border-width: 3.5px;
-        /* Keep border width visible */
+        flex-shrink: 0;
     }
 
     /* Header Difficulty Bubbles on Mobile */
     .difficulty-header-row {
         flex-wrap: wrap;
         gap: 10px;
-        justify-content: center;
+        justify-content: space-between;
+        align-items: flex-start;
     }
 
     .difficulty-header-labels {
-        gap: 0.5rem;
+        gap: 5px;
         flex-wrap: wrap;
-        justify-content: center;
+        overflow-x: visible;
+        justify-content: flex-start;
+        max-width: 100%;
     }
 
     .header-circle {
-        width: 35px;
-        height: 35px;
+        width: 32px;
+        height: 32px;
         font-size: 0.5rem;
         border-width: 3px;
+        flex-shrink: 0;
     }
 
     .header-circle.has-value {
@@ -1518,14 +1519,24 @@
     }
 
     .difficulty-right-section {
-        width: 100%;
-        justify-content: space-between;
-        margin-left: 0 !important;
-        margin-top: 5px;
+        width: auto;
+        margin-left: auto !important;
+        margin-top: 0;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
     }
 
     .difficulty-instruction {
-        display: none;
+        display: block;
+        font-size: 0.65rem;
+        color: #aaa;
+        white-space: nowrap;
+    }
+
+    .bulk-input-btn {
+        font-size: 0.8rem;
+        padding: 4px 8px;
     }
 
     /* Inline buttons on mobile */
@@ -1544,5 +1555,19 @@
         min-width: 36px;
         padding: 6px 12px;
         font-size: 0.8rem;
+    }
+
+    /* Fix Dropdown on Mobile (Standard style with wrapping parent) */
+    .filter-dropdown {
+        /* Revert to default absolute positioning */
+        position: absolute;
+        top: 120%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        min-width: 80px;
+        max-height: 300px;
+        z-index: 2000;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
     }
 }

@@ -528,7 +528,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         const isFilteredMode = activeFilters.length > 0;
 
         return (
-            <div className="song-item">
+            <div className={`song-item ${activeEdit?.songId === song.id ? 'active-popover-parent' : ''}`} style={{ zIndex: activeEdit?.songId === song.id ? 100 : 'auto' }}>
                 <div className="song-cover-wrapper">
                     <img
                         src={`https://asset.rilaksekai.com/cover/${song.id}.jpg`}
@@ -545,7 +545,11 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                             <span className="title-ko">{song.title_ko || song.title_jp}</span>
                             <span className="title-jp">{song.title_jp}</span>
                         </div>
-                        <span className="song-bpm">{song.bpm} BPM</span>
+                        <span className="song-bpm">
+                            {typeof song.bpm === 'number' || (typeof song.bpm === 'string' && /^\d+(\.\d+)?$/.test(song.bpm))
+                                ? `${song.bpm} BPM`
+                                : song.bpm}
+                        </span>
                     </div>
 
                     <div className="difficulty-circles">
@@ -725,29 +729,29 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
             {/* Sticky Header */}
             <div className="score-input-header">
                 <div className="header-top-row">
-                    <button onClick={() => navigate('/')} className="back-button">&lt; Back</button>
+                    <button onClick={() => navigate('/')} className="back-button">&lt; 뒤로가기</button>
 
                     {/* Legend Moved Here */}
                     <div className="score-legend">
                         <div className="legend-item">
                             <div className="legend-circle clear">C</div>
-                            <span>Clear</span>
+                            <span> 클리어</span>
                         </div>
                         <div className="legend-item">
                             <div className="legend-circle fc">F</div>
-                            <span>Full Combo</span>
+                            <span>풀콤보</span>
                         </div>
                         <div className="legend-item">
                             <div className="legend-circle ap">P</div>
-                            <span>All Perfect</span>
+                            <span>AP</span>
                         </div>
                     </div>
 
                     <div className="header-actions">
-                        <button onClick={handleShareUrl} className="export-button" style={{ marginRight: '10px' }}>Share URL</button>
-                        <button onClick={handleExport} className="export-button">Export</button>
+                        <button onClick={handleShareUrl} className="export-button" style={{ marginRight: '10px' }}>URL로 데이터 공유</button>
+                        <button onClick={handleExport} className="export-button">내보내기</button>
                         <label className="import-button">
-                            Import
+                            불러오기
                             <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
                         </label>
                     </div>
@@ -755,7 +759,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
                 <input
                     type="text"
-                    placeholder="Search songs (Title, Composer, Choseong)..."
+                    placeholder="곡 검색 (제목, 작곡가, 초성)..."
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     className="search-input"
@@ -780,12 +784,12 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                             <DifficultyFilter diff="append" label="APPEND" value={appendLevel} onChange={(val) => updateFilter('append', val)} />
                         </div>
                         <div className="difficulty-right-section" style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: '10px', position: 'relative' }}>
-                            <div className="difficulty-instruction">
-                                좌측 난이도 버튼 누르면 레벨 선택
-                            </div>
                             <button className="bulk-input-btn" onClick={toggleBulkModal}>
                                 일괄 입력
                             </button>
+                            <div className="difficulty-instruction">
+                                좌측 난이도 버튼 누르면 레벨 선택
+                            </div>
 
                             {/* Bulk Input Panel (Non-blocking) */}
                             {showBulkModal && (

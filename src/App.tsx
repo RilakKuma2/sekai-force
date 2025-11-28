@@ -65,7 +65,7 @@ function App() {
   };
 
   return (
-    <Router>
+    <Router basename="/sekai-force">
       <Routes>
         <Route path="/" element={
           <Dashboard
