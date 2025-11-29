@@ -1563,6 +1563,11 @@
         flex-direction: column;
         border: none;
         background-color: transparent;
+        width: fit-content;
+        /* Wrap content */
+        max-width: 100%;
+        margin: 0 auto;
+        /* Center */
     }
 
     .left-panel-wrapper {
@@ -1578,10 +1583,15 @@
 }
 
 @media (max-width: 375px) {
+    .dashboard-layout {
+        width: 100%;
+        /* Force full width to accommodate larger content */
+    }
+
     .header-circle {
-        width: 30px;
-        height: 30px;
-        font-size: 0.4rem;
+        width: 35px;
+        height: 35px;
+        font-size: 0.48rem;
         border-width: 2px;
     }
 
@@ -1589,7 +1599,7 @@
     .header-circle.expert,
     .header-circle.master,
     .header-circle.append {
-        font-size: 0.3rem;
+        font-size: 0.36rem;
     }
 
     .circle {
@@ -1847,4 +1857,41 @@
         width: 100%;
         max-width: 400px;
     }
+}
+
+/* Per-Song Bulk Input Styles */
+.song-bulk-btn {
+    background-color: #444;
+    /* Brighter background */
+    color: #ccc;
+    border: 1px solid #555;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 8px;
+}
+
+.song-bulk-btn:hover {
+    background-color: #555;
+    color: white;
+}
+
+.fixed-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    background: transparent;
+}
+
+/* Right-aligned popover arrow adjustment */
+.score-popover.right-aligned::before {
+    left: auto;
+    right: 14px;
+    /* Align with center of button (approx) */
+    transform: none;
 }

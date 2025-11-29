@@ -77,17 +77,35 @@ interface SongRowProps {
     activeEdit: { songId: string, diff: Difficulty } | null;
     setActiveEdit: (edit: { songId: string, diff: Difficulty } | null) => void;
     updateResult: (musicId: string, difficulty: Difficulty, result: 'clear' | 'full_combo' | 'full_perfect' | null) => void;
+    updateResultsBulk: (updates: { musicId: string, difficulty: Difficulty, result: 'clear' | 'full_combo' | 'full_perfect' | null }[]) => void;
     activeFilters: Difficulty[];
     songResults: Record<string, string>; // difficulty -> result
 }
 
-const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, activeFilters, songResults }: SongRowProps) => {
+const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, updateResultsBulk, activeFilters, songResults }: SongRowProps) => {
     // Determine unit border class
     const unitClass = `unit-border-${song.unit_code.replace('/', '-')}`;
     const isFilteredMode = activeFilters.length > 0;
+    const [showBulkDropdown, setShowBulkDropdown] = useState(false);
+
+    const handleBulkUpdate = (result: 'clear' | 'full_combo' | 'full_perfect' | null) => {
+        const difficulties: Difficulty[] = ['easy', 'normal', 'hard', 'expert', 'master', 'append'];
+        const updates: { musicId: string, difficulty: Difficulty, result: 'clear' | 'full_combo' | 'full_perfect' | null }[] = [];
+
+        difficulties.forEach(diff => {
+            if (song.levels[diff] !== null) {
+                updates.push({ musicId: song.id, difficulty: diff, result });
+            }
+        });
+
+        if (updates.length > 0) {
+            updateResultsBulk(updates);
+        }
+        setShowBulkDropdown(false);
+    };
 
     return (
-        <div className={`song-item ${activeEdit?.songId === song.id ? 'active-popover-parent' : ''}`} style={{ zIndex: activeEdit?.songId === song.id ? 100 : 'auto' }}>
+        <div className={`song-item ${activeEdit?.songId === song.id ? 'active-popover-parent' : ''}`} style={{ zIndex: (activeEdit?.songId === song.id || showBulkDropdown) ? 1001 : 'auto' }}>
             <div className="song-cover-wrapper">
                 <img
                     src={`https://asset.rilaksekai.com/cover/${song.id}.jpg`}
@@ -104,11 +122,32 @@ const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, act
                         <span className="title-ko">{song.title_ko || song.title_jp}</span>
                         <span className="title-jp">{song.title_jp}</span>
                     </div>
-                    <span className="song-bpm">
-                        {typeof song.bpm === 'number' || (typeof song.bpm === 'string' && /^\d+(\.\d+)?$/.test(song.bpm))
-                            ? `${song.bpm} BPM`
-                            : song.bpm}
-                    </span>
+                    <div className="song-bulk-control" style={{ position: 'relative' }}>
+                        <button
+                            className="song-bulk-btn"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowBulkDropdown(!showBulkDropdown);
+                            }}
+                        >
+                            일괄
+                        </button>
+                        {showBulkDropdown && (
+                            <>
+                                <div className="fixed-overlay" onClick={() => setShowBulkDropdown(false)} />
+                                <div
+                                    className="score-popover right-aligned"
+                                    onClick={(e) => e.stopPropagation()}
+                                    style={{ top: '100%', left: 'auto', right: 0, transform: 'none', marginTop: '5px', zIndex: 1002 }}
+                                >
+                                    <button onClick={() => handleBulkUpdate(null)}>-</button>
+                                    <button className="active-clear" onClick={() => handleBulkUpdate('clear')}>C</button>
+                                    <button className="active-fc" onClick={() => handleBulkUpdate('full_combo')}>FC</button>
+                                    <button className="active-ap" onClick={() => handleBulkUpdate('full_perfect')}>AP</button>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 <div className="difficulty-circles">
@@ -160,7 +199,15 @@ const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, act
 
                                 {/* Standard Popover (Non-filtered mode) */}
                                 {!isFilteredMode && isEditing && (
-                                    <div className="score-popover" onClick={(e) => e.stopPropagation()}>
+                                    <div
+                                        className={`score-popover ${(diff === 'append' || diff === 'master') ? 'right-aligned' : ''}`}
+                                        onClick={(e) => e.stopPropagation()}
+                                        style={
+                                            (diff === 'append' || diff === 'master')
+                                                ? { left: 'auto', right: 0, transform: 'none' }
+                                                : {}
+                                        }
+                                    >
                                         <button className={currentResult === null ? 'active-none' : ''} onClick={() => updateResult(song.id, diff, null)}>-</button>
                                         <button className={currentResult === 'clear' ? 'active-clear' : ''} onClick={() => updateResult(song.id, diff, 'clear')}>C</button>
                                         <button className={currentResult === 'full_combo' ? 'active-fc' : ''} onClick={() => updateResult(song.id, diff, 'full_combo')}>FC</button>
@@ -588,6 +635,42 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         setActiveEdit(null);
     };
 
+    const updateResultsBulk = (updates: { musicId: string, difficulty: Difficulty, result: 'clear' | 'full_combo' | 'full_perfect' | null }[]) => {
+        setLocalResults(prevResults => {
+            const newResults = [...prevResults];
+
+            updates.forEach(({ musicId, difficulty, result }) => {
+                const existingIndex = newResults.findIndex(r => r.musicId === musicId && r.musicDifficulty === difficulty);
+
+                if (result === null) {
+                    if (existingIndex >= 0) {
+                        newResults.splice(existingIndex, 1);
+                    }
+                } else {
+                    const newItem: UserMusicResult = {
+                        musicId,
+                        musicDifficulty: difficulty,
+                        playResult: result,
+                        score: 1000,
+                        createdAt: Date.now(),
+                        updatedAt: Date.now()
+                    };
+
+                    if (existingIndex >= 0) {
+                        newResults[existingIndex] = { ...newResults[existingIndex], playResult: result, updatedAt: Date.now() };
+                    } else {
+                        newResults.push(newItem);
+                    }
+                }
+            });
+
+            onUpdateResults(newResults);
+            return newResults;
+        });
+
+        setActiveEdit(null);
+    };
+
     // Check if any filter is active
     const activeFilters: Difficulty[] = useMemo(() => {
         const filters: Difficulty[] = [];
@@ -850,6 +933,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                         activeEdit={activeEdit}
                         setActiveEdit={setActiveEdit}
                         updateResult={updateResult}
+                        updateResultsBulk={updateResultsBulk}
                         activeFilters={activeFilters}
                         songResults={resultsMap[song.id] || {}}
                     />

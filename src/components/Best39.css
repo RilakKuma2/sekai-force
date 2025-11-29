@@ -170,3 +170,62 @@
     display: block;
     height: 12px;
 }
+
+/* Mobile responsiveness for Best39 */
+/* Layout adjustments to prevent overflow on smaller screens */
+@media (max-width: 450px) {
+    .best39-list {
+        width: fit-content;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .d-flex {
+        justify-content: center;
+        /* Center the grid if it hits max-width */
+    }
+
+    .best39-cell {
+        width: 33.33% !important;
+        max-width: 130px;
+        /* Cap at original size */
+        min-width: 0;
+        /* Allow shrinking */
+    }
+}
+
+/* Content scaling ONLY for very small screens (iPhone SE and smaller) */
+@media (max-width: 375px) {
+    .best39-list {
+        width: 100%;
+        /* Force full width to remove margins */
+        margin: 0;
+    }
+
+    .best39-list .list-item.first-row {
+        padding: 0 4px;
+        /* Reset padding to maximize space */
+    }
+
+    .best39-list .list-item-avatar {
+        margin-right: 6px;
+        min-width: 39px;
+        /* Increased to 39px */
+        height: 39px;
+    }
+
+    .best39-list .list-item-avatar img {
+        width: 39px;
+        height: 39px;
+    }
+
+    .best39-list .list-item-title {
+        font-size: 12px;
+        /* Restored to near original */
+    }
+
+    .best39-list .list-item-subtitle {
+        font-size: 13px;
+        /* Restored to near original */
+    }
+}
