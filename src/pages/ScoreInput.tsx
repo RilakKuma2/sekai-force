@@ -570,9 +570,9 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                         });
                     });
 
-                    setLocalResults(newResults);
-                    handleUpdateResults(newResults);
-                    alert('데이터를 성공적으로 불러왔습니다.');
+                    setPreviewResults(newResults);
+                    setPreviewBest39(processUserBest39(songs, newResults));
+                    setShowPreviewModal(true);
                 } else {
                     alert('올바르지 않은 파일 형식입니다.');
                 }
@@ -725,10 +725,12 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
                 // Exception IDs that should be treated as Cover/Existing even if they are Hako
                 const exceptionIds = ['230', '231', '232', '233', '234'];
+                // Forced Hako IDs (User request)
+                const forcedHakoIds = ['162', '163', '164', '447', '448', '449', '503', '622'];
 
-                // Check if '하코곡' (Commissioned), excluding exceptions
-                const isHakoA = a.classification === '하코곡' && !exceptionIds.includes(a.id);
-                const isHakoB = b.classification === '하코곡' && !exceptionIds.includes(b.id);
+                // Check if '하코곡' (Commissioned), excluding exceptions, OR if forced
+                const isHakoA = (a.classification === '하코곡' && !exceptionIds.includes(a.id)) || forcedHakoIds.includes(a.id);
+                const isHakoB = (b.classification === '하코곡' && !exceptionIds.includes(b.id)) || forcedHakoIds.includes(b.id);
 
                 // If one is Hako and the other isn't, put Hako at the bottom
                 if (isHakoA !== isHakoB) return isHakoA ? 1 : -1;
@@ -946,7 +948,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     <div className="modal-overlay">
                         <div className="preview-modal">
                             <h2>불러올 데이터 미리보기</h2>
-                            <p>공유된 URL에서 데이터를 불러옵니다.</p>
+                            <p>데이터를 불러옵니다.</p>
 
                             <div className="preview-stats">
                                 <div className="stat-item">
