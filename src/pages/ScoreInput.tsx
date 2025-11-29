@@ -771,7 +771,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     // Exception IDs that should be treated as Cover/Existing even if they are Hako
                     const exceptionIds = ['230', '231', '232', '233', '234'];
                     // Forced Hako IDs (User request)
-                    const forcedHakoIds = ['162', '163', '164', '447', '448', '449', '503', '622'];
+                    const forcedHakoIds = ['162', '163', '164', '447', '448', '449', '503', '622', '536'];
 
                     // Check if '하코곡' (Commissioned), excluding exceptions, OR if forced
                     const isHakoA = (a.classification === '하코곡' && !exceptionIds.includes(a.id)) || forcedHakoIds.includes(a.id);
