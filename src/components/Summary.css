@@ -215,8 +215,8 @@
     justify-content: flex-start;
     /* Left aligned as per standard charts usually, but image looks right? Let's stick to flex-start for now as per image analysis */
     padding: 8px 16px;
-    gap: 16px;
-    font-size: 12px;
+    gap: 12px;
+    font-size: 9px;
     color: #fff;
 }
 

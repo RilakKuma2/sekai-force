@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import { type MusicDifficultyStatus, type UserMusicResult } from '../utils/calculator';
 import { type Song } from '../utils/api';
+import '../components/Summary.css';
 
 interface StatisticsChartProps {
     best39: MusicDifficultyStatus[];
@@ -112,9 +113,11 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
             return total > 0 ? (p / total) * 100 : 0;
         });
 
+        // ...
+
         const option: echarts.EChartsOption = {
             backgroundColor: 'transparent',
-            grid: { top: 10, bottom: 10, left: 30, right: 30, containLabel: false },
+            grid: { top: 10, bottom: 10, left: 20, right: 50, containLabel: false },
             xAxis: {
                 type: 'value',
                 show: false,
@@ -204,7 +207,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
 
     return (
         <div className="summary-section">
-            <div className="chart-legend">
+            <div className="chart-legend" style={{ fontSize: '10px' }}>
                 <span className="legend-item"><span className="dot unlocked"></span> Unlocked</span>
                 <span className="legend-item"><span className="dot c"></span> Clear</span>
                 <span className="legend-item"><span className="dot f"></span> Full Combo</span>
