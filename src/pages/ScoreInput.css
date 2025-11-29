@@ -1867,12 +1867,13 @@
     /* Brighter background */
     color: #ccc;
     border: 1px solid #555;
-    padding: 4px 6px;
+    padding: 4px 5px;
     border-radius: 4px;
     font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.2s;
     margin-left: 8px;
+    white-space: nowrap;
 }
 
 .song-bulk-btn:hover {
@@ -1957,4 +1958,5 @@
         padding: 8px;
         font-size: 0.85rem;
     }
+
 }
