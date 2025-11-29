@@ -53,33 +53,49 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
         const song = songMap.get(result.musicId);
         if (!song) return;
 
-        const originalLevel = song.levels[result.musicDifficulty];
-        let playLevel = originalLevel;
-        let isExact = false;
-
-        // Use precise difficulty values if available
-        if (result.musicDifficulty === 'master' && song.mas_diff != null && song.mas_diff > 0) {
-            playLevel = Number(song.mas_diff);
-            isExact = true;
-        } else if (result.musicDifficulty === 'append' && song.apd_diff != null && song.apd_diff > 0) {
-            playLevel = Number(song.apd_diff);
-            isExact = true;
-        }
-
-        if (playLevel === null || isNaN(playLevel)) return;
-
-        // Apply global adjustment: subtract 0.4 from constant ONLY if exact
-        if (isExact) {
-            playLevel = playLevel - 0.4;
-        }
-
-        // Ensure originalLevel is treated as number for baseLevel, defaulting to floor of playLevel (before adjustment would be better, but originalLevel is from API)
-        const baseLevel = originalLevel !== null ? originalLevel : Math.floor(playLevel + (isExact ? 0.4 : 0));
-
         let rank: Rank = '';
         if (result.playResult === 'full_perfect') rank = 'P';
         else if (result.playResult === 'full_combo') rank = 'F';
         else if (result.playResult === 'clear') rank = 'C';
+
+        const originalLevel = song.levels[result.musicDifficulty];
+        let playLevel = originalLevel;
+        let isExact = false;
+
+        // Use precise difficulty values if available, prioritizing specific rank constants
+        if (result.musicDifficulty === 'master') {
+            if (rank === 'P' && song.mas_ap != null && song.mas_ap > 0) {
+                playLevel = Number(song.mas_ap) - 0.4;
+                isExact = true;
+            } else if (rank === 'F' && song.mas_fc != null && song.mas_fc > 0) {
+                playLevel = Number(song.mas_fc);
+                isExact = true;
+            } else if (song.mas_diff != null && song.mas_diff > 0) {
+                playLevel = Number(song.mas_diff) - 0.4;
+                isExact = true;
+            }
+        } else if (result.musicDifficulty === 'append') {
+            if (rank === 'P' && song.apd_ap != null && song.apd_ap > 0) {
+                playLevel = Number(song.apd_ap) - 0.4;
+                isExact = true;
+            } else if (rank === 'F' && song.apd_fc != null && song.apd_fc > 0) {
+                playLevel = Number(song.apd_fc);
+                isExact = true;
+            } else if (song.apd_diff != null && song.apd_diff > 0) {
+                playLevel = Number(song.apd_diff) - 0.4;
+                isExact = true;
+            }
+        } else if (result.musicDifficulty === 'expert') {
+            if (rank === 'F' && song.ex_fc != null && song.ex_fc > 0) {
+                playLevel = Number(song.ex_fc);
+                isExact = true;
+            }
+        }
+
+        if (playLevel === null || isNaN(playLevel)) return;
+
+        // Ensure originalLevel is treated as number for baseLevel, defaulting to floor of playLevel (before adjustment would be better, but originalLevel is from API)
+        const baseLevel = originalLevel !== null ? originalLevel : Math.floor(playLevel);
 
         const r = calculateR(playLevel, rank);
 

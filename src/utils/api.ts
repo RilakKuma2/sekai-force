@@ -26,6 +26,11 @@ export interface Song {
     apd: string;
     mas_diff?: number;
     apd_diff?: number;
+    ex_fc?: number;
+    mas_fc?: number;
+    apd_fc?: number;
+    mas_ap?: number;
+    apd_ap?: number;
 }
 
 export const fetchSongs = async (): Promise<Song[]> => {
