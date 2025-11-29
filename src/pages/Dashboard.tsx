@@ -87,9 +87,9 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                 clone.style.left = '0';
                 clone.style.zIndex = '-9999';
 
-                clone.style.width = '1200px';
-                clone.style.minWidth = '1200px';
-                clone.style.maxWidth = '1200px';
+                clone.style.width = 'fit-content';
+                clone.style.minWidth = 'auto';
+                clone.style.maxWidth = 'none';
                 clone.style.height = 'auto';
                 clone.style.minHeight = '800px';
 
@@ -119,6 +119,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                     leftPanel.style.flexDirection = 'column';
                     leftPanel.style.margin = '0';
                     leftPanel.style.padding = '0';
+                    leftPanel.style.overflow = 'hidden'; // Prevent chart overflow
                 }
 
                 // Force Best39 Section Styles
@@ -138,28 +139,33 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                 const images = clone.querySelectorAll('img');
                 const imagePromises = Array.from(images).map(async (img) => {
                     if (img.src.includes('asset.rilaksekai.com')) {
-                        try {
-                            // Fetch the image as a blob
-                            const response = await fetch(img.src, { mode: 'cors' });
-                            const blob = await response.blob();
+                        return new Promise<void>((resolve) => {
+                            const tempImg = new Image();
+                            tempImg.crossOrigin = 'Anonymous';
+                            // Add timestamp to bypass cache and force CORS request
+                            tempImg.src = img.src + '?t=' + new Date().getTime();
 
-                            // Convert blob to base64
-                            return new Promise<void>((resolve) => {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                    img.src = reader.result as string;
-                                    resolve();
-                                };
-                                reader.onerror = () => {
-                                    console.warn('Failed to convert image to base64:', img.src);
-                                    resolve(); // Resolve anyway to not block
-                                };
-                                reader.readAsDataURL(blob);
-                            });
-                        } catch (e) {
-                            console.warn('Failed to fetch image for base64 conversion:', img.src, e);
-                            return Promise.resolve();
-                        }
+                            tempImg.onload = () => {
+                                try {
+                                    const canvas = document.createElement('canvas');
+                                    canvas.width = tempImg.width;
+                                    canvas.height = tempImg.height;
+                                    const ctx = canvas.getContext('2d');
+                                    if (ctx) {
+                                        ctx.drawImage(tempImg, 0, 0);
+                                        img.src = canvas.toDataURL('image/jpeg');
+                                    }
+                                } catch (e) {
+                                    console.warn('Failed to convert image to base64 via canvas:', img.src, e);
+                                }
+                                resolve();
+                            };
+
+                            tempImg.onerror = () => {
+                                console.warn('Failed to load image for base64 conversion:', img.src);
+                                resolve();
+                            };
+                        });
                     }
                     return Promise.resolve();
                 });
@@ -176,8 +182,8 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                     useCORS: true, // Still keep this true just in case
                     allowTaint: true,
                     logging: false,
-                    width: 1200,
-                    windowWidth: 1200,
+                    // width: 1200, // Removed to allow auto-sizing
+                    // windowWidth: 1200, // Removed to allow auto-sizing
                     scrollX: 0,
                     scrollY: 0,
                     x: 0,
