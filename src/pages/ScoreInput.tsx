@@ -675,7 +675,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
     };
 
     // Check if any filter is active
-    const activeFilters: Difficulty[] = useMemo(() => {
+    const activeFilters = useMemo(() => {
         const filters: Difficulty[] = [];
         if (easyLevel) filters.push('easy');
         if (normalLevel) filters.push('normal');
@@ -686,7 +686,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         return filters;
     }, [easyLevel, normalLevel, hardLevel, expertLevel, masterLevel, appendLevel]);
 
-    const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+    const [unfilteredSortOrder, setUnfilteredSortOrder] = useState<'desc' | 'asc'>('desc');
+    const [filteredSortOrder, setFilteredSortOrder] = useState<'desc' | 'asc'>('asc');
 
     const filteredSongs = useMemo(() => {
         let result = songs;
@@ -723,46 +724,23 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         // 3. Sorting
         const isFiltered = !!(easyLevel || normalLevel || hardLevel || expertLevel || masterLevel || appendLevel);
 
-        // Apply Ascending sort ONLY if NOT filtered (User request: ignore sort setting when filtered)
-        if (sortOrder === 'asc' && !isFiltered) {
-            // ID Priority List for same release date sorting
-            // "If in front sequence, come below (treated as slightly later)"
-            const ID_PRIORITY = [
-                "337", "336", "077", "076", "060", "051", "054", "057", "063",
-                "067", "066", "019", "078", "041", "038", "069", "028", "026",
-                "071", "013", "010", "006", "003", "002", "082", "050", "049",
-                "047", "043", "001"
-            ];
+        if (isFiltered) {
+            // Filtered Mode Logic
+            if (filteredSortOrder === 'desc') {
+                // Descending: Sort by release_date Descending (Newest first)
+                // User Request: If Append filter is active, use 'apd' date if available
+                const useApd = !!appendLevel;
 
-            // Ascending: Sort by release_date Ascending (Oldest first)
-            result = [...result].sort((a, b) => {
-                // 1. Release Date
-                if (a.release_date < b.release_date) return -1;
-                if (a.release_date > b.release_date) return 1;
+                result = [...result].sort((a, b) => {
+                    const dateA = (useApd && a.apd) ? a.apd : a.release_date;
+                    const dateB = (useApd && b.apd) ? b.apd : b.release_date;
 
-                // 2. ID Priority (Same Date)
-                const idxA = ID_PRIORITY.indexOf(a.id);
-                const idxB = ID_PRIORITY.indexOf(b.id);
-
-                // If both in priority list
-                if (idxA !== -1 && idxB !== -1) {
-                    // Lower index (front) -> Later (Below) -> Larger Value
-                    // A(0) vs B(1) -> A > B -> 1
-                    return idxB - idxA;
-                }
-
-                // If only A in priority list -> A is later -> A > B
-                if (idxA !== -1) return 1;
-
-                // If only B in priority list -> B is later -> B > A -> A < B
-                if (idxB !== -1) return -1;
-
-                // 3. Fallback (ID Ascending)
-                return parseInt(a.id) - parseInt(b.id);
-            });
-        } else {
-            // Descending (Default) OR Filtered (Ignore Sort Setting)
-            if (isFiltered) {
+                    if (dateA < dateB) return 1;
+                    if (dateA > dateB) return -1;
+                    return 0;
+                });
+            } else {
+                // Ascending (Default): Use original complex sort (Hako -> Unit -> Release Date Asc)
                 result = [...result].sort((a, b) => {
                     // 1. Grouping: 
                     // Top: Existing/Cover/Contest (기존곡, 커버곡, 공모전곡)
@@ -771,7 +749,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     // Exception IDs that should be treated as Cover/Existing even if they are Hako
                     const exceptionIds = ['230', '231', '232', '233', '234'];
                     // Forced Hako IDs (User request)
-                    const forcedHakoIds = ['162', '163', '164', '447', '448', '449', '503', '622', '536'];
+                    const forcedHakoIds = ['162', '163', '164', '447', '448', '449', '503', '622'];
 
                     // Check if '하코곡' (Commissioned), excluding exceptions, OR if forced
                     const isHakoA = (a.classification === '하코곡' && !exceptionIds.includes(a.id)) || forcedHakoIds.includes(a.id);
@@ -798,10 +776,40 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     return 0;
                 });
             }
+        } else {
+            // Unfiltered Mode Logic
+            if (unfilteredSortOrder === 'asc') {
+                // ID Priority List for same release date sorting
+                const ID_PRIORITY = [
+                    "337", "336", "077", "076", "060", "051", "054", "057", "063",
+                    "067", "066", "019", "078", "041", "038", "069", "028", "026",
+                    "071", "013", "010", "006", "003", "002", "082", "050", "049",
+                    "047", "043", "001"
+                ];
+
+                // Ascending: Sort by release_date Ascending (Oldest first) + ID Priority
+                result = [...result].sort((a, b) => {
+                    // 1. Release Date
+                    if (a.release_date < b.release_date) return -1;
+                    if (a.release_date > b.release_date) return 1;
+
+                    // 2. ID Priority (Same Date)
+                    const idxA = ID_PRIORITY.indexOf(a.id);
+                    const idxB = ID_PRIORITY.indexOf(b.id);
+
+                    if (idxA !== -1 && idxB !== -1) return idxB - idxA;
+                    if (idxA !== -1) return 1;
+                    if (idxB !== -1) return -1;
+
+                    // 3. Fallback (ID Ascending)
+                    return parseInt(a.id) - parseInt(b.id);
+                });
+            }
+            // If 'desc' (Default), do nothing (API Order)
         }
 
         return result;
-    }, [songs, searchTerm, easyLevel, normalLevel, hardLevel, expertLevel, masterLevel, appendLevel, sortOrder]);
+    }, [songs, searchTerm, easyLevel, normalLevel, hardLevel, expertLevel, masterLevel, appendLevel, unfilteredSortOrder, filteredSortOrder]);
 
     const resetFilters = () => {
         setEasyLevel('');
@@ -939,31 +947,35 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
                 {/* Mobile Instruction & Sort Toggle */}
                 <div className="difficulty-instruction mobile-only" style={{ marginTop: '8px', marginBottom: '4px', justifyContent: 'center', alignItems: 'center', position: 'relative', height: '30px' }}>
-                    <span>위의 난이도 버튼 눌러서 레벨 검색</span>
-                    {!isAnyFilterActive && (
-                        <button
-                            className="sort-toggle-btn mobile"
-                            onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
-                            style={{ position: 'absolute', right: '10px', background: 'none', border: 'none', color: '#aaa', fontSize: '1.2rem', outline: 'none' }}
-                        >
-                            {sortOrder === 'desc' ? '↓' : '↑'}
-                        </button>
-                    )}
+                    <span>{isAnyFilterActive ? "오름차순 정렬 시 인겜 순서와 동일" : "위의 난이도 버튼 눌러서 레벨 검색"}</span>
+                    <button
+                        className="sort-toggle-btn mobile"
+                        onClick={() => {
+                            if (isAnyFilterActive) {
+                                setFilteredSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+                            } else {
+                                setUnfilteredSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+                            }
+                        }}
+                        style={{ position: 'absolute', right: '10px', background: 'none', border: 'none', color: '#aaa', fontSize: '1.2rem', outline: 'none' }}
+                    >
+                        {(isAnyFilterActive ? filteredSortOrder : unfilteredSortOrder) === 'desc' ? '↓' : '↑'}
+                    </button>
                 </div>
 
                 {/* Difficulty Header Row */}
                 <div className="difficulty-header-row">
                     <div className="difficulty-header-spacer">
                         {isAnyFilterActive && (
-                            <button className="reset-filter-btn desktop-only" onClick={resetFilters} title="Reset Filters">
-                                &lt;
+                            <button className="reset-filter-btn" onClick={resetFilters} title="필터 초기화">
+                                ↺
                             </button>
                         )}
                     </div>
                     <div className="difficulty-header-content">
                         <div className="difficulty-header-labels">
                             {isAnyFilterActive && (
-                                <button className="reset-filter-btn mobile-only" onClick={resetFilters} title="Reset Filters">
+                                <button className="reset-filter-btn mobile-only" onClick={resetFilters} title="필터 초기화" style={{ marginRight: '4px' }}>
                                     &lt;
                                 </button>
                             )}
@@ -975,29 +987,33 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                             <DifficultyFilter diff="append" label="APPEND" value={appendLevel} onChange={(val) => updateFilter('append', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
 
                             {/* Sort Toggle Button (Desktop) */}
-                            {!isAnyFilterActive && (
-                                <button
-                                    className="sort-toggle-btn desktop-only"
-                                    onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
-                                    title={sortOrder === 'desc' ? "내림차순 (기본)" : "오름차순 (역순)"}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: '#aaa',
-                                        fontSize: '1.2rem',
-                                        cursor: 'pointer',
-                                        padding: '0 8px',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        outline: 'none'
-                                    }}
-                                >
-                                    {sortOrder === 'desc' ? '↓' : '↑'}
-                                </button>
-                            )}
+                            <button
+                                className="sort-toggle-btn desktop-only"
+                                onClick={() => {
+                                    if (isAnyFilterActive) {
+                                        setFilteredSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+                                    } else {
+                                        setUnfilteredSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+                                    }
+                                }}
+                                title={(isAnyFilterActive ? filteredSortOrder : unfilteredSortOrder) === 'desc' ? "내림차순" : "오름차순"}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#aaa',
+                                    fontSize: '1.2rem',
+                                    cursor: 'pointer',
+                                    padding: '0 8px',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    outline: 'none'
+                                }}
+                            >
+                                {(isAnyFilterActive ? filteredSortOrder : unfilteredSortOrder) === 'desc' ? '↓' : '↑'}
+                            </button>
                         </div>
                         <div className="difficulty-instruction desktop-only">
-                            좌측 난이도 버튼 눌러서 레벨 검색
+                            {isAnyFilterActive ? "오름차순 정렬 시 인겜 순서와 동일" : "좌측 난이도 버튼 눌러서 레벨 검색"}
                         </div>
                     </div>
                 </div>
