@@ -95,7 +95,7 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
         if (playLevel === null || isNaN(playLevel)) return;
 
         // Ensure originalLevel is treated as number for baseLevel, defaulting to floor of playLevel (before adjustment would be better, but originalLevel is from API)
-        const baseLevel = originalLevel !== null ? originalLevel : Math.floor(playLevel);
+        const baseLevel = originalLevel !== null ? originalLevel : Math.floor(playLevel + (isExact ? 0.4 : 0));
 
         const r = calculateR(playLevel, rank);
 
