@@ -806,6 +806,11 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     className="search-input"
                 />
 
+                {/* Mobile Instruction */}
+                <div className="difficulty-instruction mobile-only" style={{ marginTop: '8px', marginBottom: '4px', textAlign: 'center', paddingLeft: '4px' }}>
+                    위의 난이도 버튼 눌러서 레벨 검색
+                </div>
+
                 {/* Difficulty Header Row */}
                 <div className="difficulty-header-row">
                     <div className="difficulty-header-spacer">
@@ -829,8 +834,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                             <DifficultyFilter diff="master" label="MASTER" value={masterLevel} onChange={(val) => updateFilter('master', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
                             <DifficultyFilter diff="append" label="APPEND" value={appendLevel} onChange={(val) => updateFilter('append', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
                         </div>
-                        <div className="difficulty-instruction">
-                            좌측 난이도 버튼 누르면 레벨 선택
+                        <div className="difficulty-instruction desktop-only">
+                            좌측 난이도 버튼 눌러서 레벨 검색
                         </div>
                     </div>
                 </div>

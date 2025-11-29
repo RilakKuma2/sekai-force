@@ -363,7 +363,7 @@
     font-weight: 600;
     cursor: pointer;
     border: none;
-    font-size: 0.85rem;
+    font-size: 0.7rem;
     transition: background-color 0.2s;
 }
 
@@ -453,6 +453,8 @@
 .difficulty-header-labels {
     display: flex;
     gap: 1rem;
+    order: 1;
+    /* Keep labels first on desktop */
     /* Match difficulty-circles gap */
 }
 
@@ -463,6 +465,8 @@
     /* Push to the right */
     white-space: nowrap;
     padding-left: 10px;
+    order: 2;
+    /* Keep instruction second on desktop */
 }
 
 .header-circle {
@@ -1322,8 +1326,8 @@
         padding: 10px 0px;
         gap: 10px;
         margin-left: -0.5rem;
-        margin-right: -2rem;
-        width: calc(100% + 2rem);
+        margin-right: 2rem;
+        width: calc(100% + 1rem);
     }
 
     .header-top-row {
@@ -1430,14 +1434,16 @@
         gap: 2px;
         flex-wrap: wrap;
         overflow-x: visible;
-        justify-content: flex-start;
+        justify-content: center;
         max-width: 100%;
+        width: 100%;
+        /* Ensure it takes full width to center properly */
     }
 
     .header-circle {
-        width: 34px;
-        height: 34px;
-        font-size: 0.53rem;
+        width: 40px;
+        height: 40px;
+        font-size: 0.6rem;
         border-width: 2.5px;
         flex-shrink: 0;
     }
@@ -1451,7 +1457,7 @@
     .header-circle.expert,
     .header-circle.master,
     .header-circle.append {
-        font-size: 0.35rem;
+        font-size: 0.43rem;
     }
 
     .difficulty-right-section {
@@ -1463,12 +1469,26 @@
         gap: 2px;
     }
 
-    .difficulty-instruction {
+    .difficulty-header-content {
+        flex-direction: row;
+        /* Keep row for labels */
+        align-items: center;
+        gap: 4px;
+        padding-left: 0;
+    }
+
+    .difficulty-instruction.mobile-only {
         display: block;
-        font-size: 0.6rem;
+        font-size: 0.7rem;
         color: #aaa;
         white-space: nowrap;
-        text-align: right;
+        text-align: left;
+        margin-left: 0;
+        font-weight: 600;
+    }
+
+    .difficulty-instruction.desktop-only {
+        display: none;
     }
 
     .bulk-input-btn {
