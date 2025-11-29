@@ -11,10 +11,11 @@ interface SummaryProps {
     sekaiRank: string;
     playerId: string;
     twitterId: string;
+    registrationDate: string;
     playerName: string;
 }
 
-const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank, playerId, twitterId, playerName }) => {
+const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank, playerId, twitterId, registrationDate, playerName }) => {
     const [showInfo, setShowInfo] = useState(false);
 
     // Calculate summary data
@@ -81,7 +82,7 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank
                 <div className="divider"></div>
                 <div className="list-item">
                     <div className="list-item-content">Registration at</div>
-                    <div className="list-item-action">2020/10/3 15:39:39</div>
+                    <div className="list-item-action">{registrationDate.replace('T', ' ').replace(/-/g, '/')}</div>
                 </div>
                 <div className="divider"></div>
                 <div className="list-item">

@@ -22,6 +22,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
     const [sekaiRank, setSekaiRank] = useState('399');
     const [playerId, setPlayerId] = useState('6393939393939393');
     const [twitterId, setTwitterId] = useState('');
+    const [registrationDate, setRegistrationDate] = useState('2020-10-03T15:39:39');
     const [playerName, setPlayerName] = useState('셐붕이');
     const [showProfileModal, setShowProfileModal] = useState(false);
     const dashboardRef = useRef<HTMLDivElement>(null);
@@ -35,6 +36,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                 setSekaiRank(parsed.sekaiRank || '399');
                 setPlayerId(parsed.playerId || '6393939393939393');
                 setTwitterId(parsed.twitterId || '');
+                setRegistrationDate(parsed.registrationDate || '2020-10-03T15:39:39');
                 setPlayerName(parsed.playerName || '셐붕이');
             } catch (e) {
                 console.error("Failed to load profile", e);
@@ -43,7 +45,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
     }, []);
 
     const handleSaveProfile = () => {
-        const profile = { sekaiRank, playerId, twitterId, playerName };
+        const profile = { sekaiRank, playerId, twitterId, registrationDate, playerName };
         localStorage.setItem('userProfile', JSON.stringify(profile));
         setShowProfileModal(false);
     };
@@ -53,6 +55,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
             setSekaiRank('399');
             setPlayerId('6393939393939393');
             setTwitterId('');
+            setRegistrationDate('2020-10-03T15:39:39');
             setPlayerName('셐붕이');
             localStorage.removeItem('userProfile');
             setShowProfileModal(false);
@@ -228,6 +231,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                             sekaiRank={sekaiRank}
                             playerId={playerId}
                             twitterId={twitterId}
+                            registrationDate={registrationDate}
                             playerName={playerName}
                         />
                     </div>
@@ -283,7 +287,31 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Twitter ID (Registerion at)</label>
+                                    <label>Registration at</label>
+                                    <div className="date-time-group" style={{ display: 'flex', gap: '10px' }}>
+                                        <input
+                                            type="date"
+                                            value={registrationDate.split('T')[0]}
+                                            onChange={(e) => {
+                                                const time = registrationDate.split('T')[1] || '00:00:00';
+                                                setRegistrationDate(`${e.target.value}T${time}`);
+                                            }}
+                                            style={{ flex: 1 }}
+                                        />
+                                        <input
+                                            type="time"
+                                            step="1"
+                                            value={registrationDate.split('T')[1]}
+                                            onChange={(e) => {
+                                                const date = registrationDate.split('T')[0];
+                                                setRegistrationDate(`${date}T${e.target.value}`);
+                                            }}
+                                            style={{ flex: 1 }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>Twitter ID</label>
                                     <input
                                         type="text"
                                         value={twitterId}

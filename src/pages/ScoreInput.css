@@ -1035,6 +1035,8 @@
 .preview-modal {
     max-width: 500px;
     max-height: 85vh;
+    overflow-y: auto;
+    /* Enable scrolling */
 }
 
 .share-modal {
@@ -1894,4 +1896,65 @@
     right: 14px;
     /* Align with center of button (approx) */
     transform: none;
+}
+
+/* Profile Edit Form Styles */
+.profile-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    color: #aaa;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.form-group input {
+    background-color: #333;
+    border: 1px solid #555;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #888;
+}
+
+/* Fix for date/time inputs in dark mode */
+.form-group input[type="date"],
+.form-group input[type="time"] {
+    color-scheme: dark;
+    width: 150px;
+    font-family: inherit;
+}
+
+@media (max-width: 375px) {
+    .preview-modal {
+        width: 95%;
+        padding: 16px;
+        max-height: 90vh;
+    }
+
+    .date-time-group {
+        flex-direction: row;
+        gap: 5px !important;
+    }
+
+    .form-group input {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
 }
