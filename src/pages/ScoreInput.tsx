@@ -686,6 +686,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         return filters;
     }, [easyLevel, normalLevel, hardLevel, expertLevel, masterLevel, appendLevel]);
 
+    const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+
     const filteredSongs = useMemo(() => {
         let result = songs;
         const term = searchTerm.toLowerCase().replace(/\s/g, '');
@@ -718,47 +720,88 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
             else result = result.filter(song => song.levels.append === parseInt(appendLevel));
         }
 
-        // 3. Sorting (Only when difficulty filter is active)
+        // 3. Sorting
         const isFiltered = !!(easyLevel || normalLevel || hardLevel || expertLevel || masterLevel || appendLevel);
-        if (isFiltered) {
+
+        // Apply Ascending sort ONLY if NOT filtered (User request: ignore sort setting when filtered)
+        if (sortOrder === 'asc' && !isFiltered) {
+            // ID Priority List for same release date sorting
+            // "If in front sequence, come below (treated as slightly later)"
+            const ID_PRIORITY = [
+                "337", "336", "077", "076", "060", "051", "054", "057", "063",
+                "067", "066", "019", "078", "041", "038", "069", "028", "026",
+                "071", "013", "010", "006", "003", "002", "082", "050", "049",
+                "047", "043", "001"
+            ];
+
+            // Ascending: Sort by release_date Ascending (Oldest first)
             result = [...result].sort((a, b) => {
-                // 1. Grouping: 
-                // Top: Existing/Cover/Contest (기존곡, 커버곡, 공모전곡)
-                // Bottom: Commissioned (하코곡)
-
-                // Exception IDs that should be treated as Cover/Existing even if they are Hako
-                const exceptionIds = ['230', '231', '232', '233', '234'];
-                // Forced Hako IDs (User request)
-                const forcedHakoIds = ['162', '163', '164', '447', '448', '449', '503', '622'];
-
-                // Check if '하코곡' (Commissioned), excluding exceptions, OR if forced
-                const isHakoA = (a.classification === '하코곡' && !exceptionIds.includes(a.id)) || forcedHakoIds.includes(a.id);
-                const isHakoB = (b.classification === '하코곡' && !exceptionIds.includes(b.id)) || forcedHakoIds.includes(b.id);
-
-                // If one is Hako and the other isn't, put Hako at the bottom
-                if (isHakoA !== isHakoB) return isHakoA ? 1 : -1;
-
-                // 2. Unit Order: VS -> L/N -> MMJ -> VBS -> WxS -> 25 -> Other
-                const unitOrder = ['VS', 'L/n', 'MMJ', 'VBS', 'WxS', 'N25', 'Oth'];
-                const idxA = unitOrder.indexOf(a.unit_code);
-                const idxB = unitOrder.indexOf(b.unit_code);
-
-                // Treat 'Other' (not found) as last
-                const sortIdxA = idxA === -1 ? 999 : idxA;
-                const sortIdxB = idxB === -1 ? 999 : idxB;
-
-                if (sortIdxA !== sortIdxB) return sortIdxA - sortIdxB;
-
-                // 3. Release Date (Ascending: Earlier first)
+                // 1. Release Date
                 if (a.release_date < b.release_date) return -1;
                 if (a.release_date > b.release_date) return 1;
 
-                return 0;
+                // 2. ID Priority (Same Date)
+                const idxA = ID_PRIORITY.indexOf(a.id);
+                const idxB = ID_PRIORITY.indexOf(b.id);
+
+                // If both in priority list
+                if (idxA !== -1 && idxB !== -1) {
+                    // Lower index (front) -> Later (Below) -> Larger Value
+                    // A(0) vs B(1) -> A > B -> 1
+                    return idxB - idxA;
+                }
+
+                // If only A in priority list -> A is later -> A > B
+                if (idxA !== -1) return 1;
+
+                // If only B in priority list -> B is later -> B > A -> A < B
+                if (idxB !== -1) return -1;
+
+                // 3. Fallback (ID Ascending)
+                return parseInt(a.id) - parseInt(b.id);
             });
+        } else {
+            // Descending (Default) OR Filtered (Ignore Sort Setting)
+            if (isFiltered) {
+                result = [...result].sort((a, b) => {
+                    // 1. Grouping: 
+                    // Top: Existing/Cover/Contest (기존곡, 커버곡, 공모전곡)
+                    // Bottom: Commissioned (하코곡)
+
+                    // Exception IDs that should be treated as Cover/Existing even if they are Hako
+                    const exceptionIds = ['230', '231', '232', '233', '234'];
+                    // Forced Hako IDs (User request)
+                    const forcedHakoIds = ['162', '163', '164', '447', '448', '449', '503', '622'];
+
+                    // Check if '하코곡' (Commissioned), excluding exceptions, OR if forced
+                    const isHakoA = (a.classification === '하코곡' && !exceptionIds.includes(a.id)) || forcedHakoIds.includes(a.id);
+                    const isHakoB = (b.classification === '하코곡' && !exceptionIds.includes(b.id)) || forcedHakoIds.includes(b.id);
+
+                    // If one is Hako and the other isn't, put Hako at the bottom
+                    if (isHakoA !== isHakoB) return isHakoA ? 1 : -1;
+
+                    // 2. Unit Order: VS -> L/N -> MMJ -> VBS -> WxS -> 25 -> Other
+                    const unitOrder = ['VS', 'L/n', 'MMJ', 'VBS', 'WxS', 'N25', 'Oth'];
+                    const idxA = unitOrder.indexOf(a.unit_code);
+                    const idxB = unitOrder.indexOf(b.unit_code);
+
+                    // Treat 'Other' (not found) as last
+                    const sortIdxA = idxA === -1 ? 999 : idxA;
+                    const sortIdxB = idxB === -1 ? 999 : idxB;
+
+                    if (sortIdxA !== sortIdxB) return sortIdxA - sortIdxB;
+
+                    // 3. Release Date (Ascending: Earlier first)
+                    if (a.release_date < b.release_date) return -1;
+                    if (a.release_date > b.release_date) return 1;
+
+                    return 0;
+                });
+            }
         }
 
         return result;
-    }, [songs, searchTerm, easyLevel, normalLevel, hardLevel, expertLevel, masterLevel, appendLevel]);
+    }, [songs, searchTerm, easyLevel, normalLevel, hardLevel, expertLevel, masterLevel, appendLevel, sortOrder]);
 
     const resetFilters = () => {
         setEasyLevel('');
@@ -894,9 +937,18 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     className="search-input"
                 />
 
-                {/* Mobile Instruction */}
-                <div className="difficulty-instruction mobile-only" style={{ marginTop: '8px', marginBottom: '4px', textAlign: 'center', paddingLeft: '4px' }}>
-                    위의 난이도 버튼 눌러서 레벨 검색
+                {/* Mobile Instruction & Sort Toggle */}
+                <div className="difficulty-instruction mobile-only" style={{ marginTop: '8px', marginBottom: '4px', justifyContent: 'center', alignItems: 'center', position: 'relative', height: '30px' }}>
+                    <span>위의 난이도 버튼 눌러서 레벨 검색</span>
+                    {!isAnyFilterActive && (
+                        <button
+                            className="sort-toggle-btn mobile"
+                            onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                            style={{ position: 'absolute', right: '10px', background: 'none', border: 'none', color: '#aaa', fontSize: '1.2rem', outline: 'none' }}
+                        >
+                            {sortOrder === 'desc' ? '↓' : '↑'}
+                        </button>
+                    )}
                 </div>
 
                 {/* Difficulty Header Row */}
@@ -921,6 +973,28 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                             <DifficultyFilter diff="expert" label="EXPERT" value={expertLevel} onChange={(val) => updateFilter('expert', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
                             <DifficultyFilter diff="master" label="MASTER" value={masterLevel} onChange={(val) => updateFilter('master', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
                             <DifficultyFilter diff="append" label="APPEND" value={appendLevel} onChange={(val) => updateFilter('append', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
+
+                            {/* Sort Toggle Button (Desktop) */}
+                            {!isAnyFilterActive && (
+                                <button
+                                    className="sort-toggle-btn desktop-only"
+                                    onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                                    title={sortOrder === 'desc' ? "내림차순 (기본)" : "오름차순 (역순)"}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#aaa',
+                                        fontSize: '1.2rem',
+                                        cursor: 'pointer',
+                                        padding: '0 8px',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        outline: 'none'
+                                    }}
+                                >
+                                    {sortOrder === 'desc' ? '↓' : '↑'}
+                                </button>
+                            )}
                         </div>
                         <div className="difficulty-instruction desktop-only">
                             좌측 난이도 버튼 눌러서 레벨 검색
