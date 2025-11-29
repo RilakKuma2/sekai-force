@@ -345,7 +345,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
     }, []);
 
     // Base64 characters for encoding (standard)
-    const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
     const encodeScoreMap = (results: UserMusicResult[], maxId: number): string => {
         const resultBySong: Record<number, Record<Difficulty, number>> = {};
@@ -394,6 +394,9 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
     };
 
     const decodeScoreMap = (encoded: string): UserMusicResult[] => {
+        // Support legacy URL-unsafe characters
+        encoded = encoded.replace(/\+/g, '-').replace(/\//g, '_');
+
         const results: UserMusicResult[] = [];
         const now = Date.now();
 
