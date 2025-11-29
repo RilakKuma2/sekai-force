@@ -1,9 +1,9 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getChoseong } from 'es-hangul';
-import { type Difficulty, type UserMusicResult, processUserBest39, calculateTotalR, type MusicDifficultyStatus } from '../utils/calculator';
+import { type Difficulty, type UserMusicResult, calculateTotalR, processUserBest39, type MusicDifficultyStatus } from '../utils/calculator';
 import { type Song } from '../utils/api';
-import FloatingButton from '../components/FloatingButton';
 import './ScoreInput.css';
 
 interface ScoreInputProps {
@@ -231,7 +231,7 @@ const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, upd
                     })}
                 </div>
             </div>
-        </div>
+        </div >
     );
 });
 
@@ -254,9 +254,10 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
     const [appendLevel, setAppendLevel] = useState('');
 
     const [activeFilter, setActiveFilter] = useState<Difficulty | null>(null);
+    const [showBulkModal, setShowBulkModal] = useState(false);
+    const [bulkModalPos, setBulkModalPos] = useState<{ top: number, left?: number, right?: number } | null>(null);
 
     // Bulk Input State
-    const [showBulkModal, setShowBulkModal] = useState(false);
     const [bulkDiffs, setBulkDiffs] = useState<Set<Difficulty>>(new Set());
     const [bulkMinLevel, setBulkMinLevel] = useState<number>(5);
     const [bulkMaxLevel, setBulkMaxLevel] = useState<number>(38);
@@ -834,8 +835,34 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         setBulkDiffs(newSet);
     };
 
-    const toggleBulkModal = () => {
-        setShowBulkModal(!showBulkModal);
+    const toggleBulkModal = (e?: React.MouseEvent<HTMLButtonElement>) => {
+        if (showBulkModal) {
+            setShowBulkModal(false);
+            setBulkModalPos(null);
+        } else {
+            if (e) {
+                const rect = e.currentTarget.getBoundingClientRect();
+                // Calculate position to be below the button, aligned to the right if possible, or left
+                // Default to aligning right edge of modal with right edge of button, but ensure it fits
+                // Actually, let's just center it below the button or align left/right based on space.
+                // Simple approach: Top = button bottom + 10px. Left/Right handled via CSS or calc.
+                // Let's try to align the top-right of the modal with the bottom-right of the button for mobile,
+                // and top-left with bottom-left for desktop if space permits.
+
+                // Since we want "directly below", let's use fixed positioning based on the rect.
+                // For PC, align right edge of modal with right edge of button (expand to left).
+                // For Mobile, we use CSS centering so left/right in state doesn't matter as much, but we can set them.
+
+                const isMobile = window.innerWidth <= 768;
+
+                setBulkModalPos({
+                    top: rect.bottom + 10,
+                    left: isMobile ? 0 : undefined, // Not used for PC right alignment
+                    right: isMobile ? 0 : window.innerWidth - rect.right // Align right edge
+                });
+            }
+            setShowBulkModal(true);
+        }
     };
 
     const applyBulkUpdate = () => {
@@ -949,6 +976,13 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                 <div className="difficulty-instruction mobile-only" style={{ marginTop: '8px', marginBottom: '4px', justifyContent: 'center', alignItems: 'center', position: 'relative', height: '30px' }}>
                     <span>{isAnyFilterActive ? "오름차순 정렬 시 인겜 순서와 동일" : "위의 난이도 버튼 눌러서 레벨 검색"}</span>
                     <button
+                        className="bulk-input-trigger-btn mobile"
+                        onClick={toggleBulkModal}
+                        style={{ position: 'absolute', right: '60px' }}
+                    >
+                        일괄 입력
+                    </button>
+                    <button
                         className="sort-toggle-btn mobile"
                         onClick={() => {
                             if (isAnyFilterActive) {
@@ -957,7 +991,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                                 setUnfilteredSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
                             }
                         }}
-                        style={{ position: 'absolute', right: '10px', background: 'none', border: 'none', color: '#aaa', fontSize: '1.2rem', outline: 'none' }}
+                        style={{ position: 'absolute', right: '0px', background: 'none', border: 'none', color: '#aaa', fontSize: '1.2rem', outline: 'none' }}
                     >
                         {(isAnyFilterActive ? filteredSortOrder : unfilteredSortOrder) === 'desc' ? '↓' : '↑'}
                     </button>
@@ -1012,8 +1046,14 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                                 {(isAnyFilterActive ? filteredSortOrder : unfilteredSortOrder) === 'desc' ? '↓' : '↑'}
                             </button>
                         </div>
-                        <div className="difficulty-instruction desktop-only">
-                            {isAnyFilterActive ? "오름차순 정렬 시 인겜 순서와 동일" : "좌측 난이도 버튼 눌러서 레벨 검색"}
+                        <div className="difficulty-instruction desktop-only desktop-instruction-container">
+                            <span>{isAnyFilterActive ? "오름차순 정렬 시 인겜 순서와 동일" : "좌측 난이도 버튼 눌러서 레벨 검색"}</span>
+                            <button
+                                className="bulk-input-trigger-btn desktop"
+                                onClick={toggleBulkModal}
+                            >
+                                일괄 입력
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1103,10 +1143,23 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     </div>
                 )
             }
-            {/* Bulk Input Panel (Fixed Bottom Right) */}
+            {/* Bulk Input Panel (Fixed/Absolute Position) */}
             {
                 showBulkModal && (
-                    <div className="bulk-panel-container">
+                    <div
+                        className="bulk-panel-container"
+                        style={bulkModalPos ? {
+                            position: 'fixed',
+                            top: `${bulkModalPos.top}px`,
+                            left: window.innerWidth <= 768 ? '0' : (bulkModalPos.left !== undefined ? `${bulkModalPos.left}px` : 'auto'),
+                            right: window.innerWidth <= 768 ? '0' : (bulkModalPos.right !== undefined ? `${bulkModalPos.right}px` : 'auto'),
+                            margin: window.innerWidth <= 768 ? '0 auto' : '0',
+                            bottom: 'auto',
+                            transform: 'none',
+                            width: window.innerWidth <= 768 ? '90%' : 'auto', // Ensure it fits on mobile
+                            maxWidth: '400px'
+                        } : {}}
+                    >
                         <div className="bulk-panel">
                             <div className="bulk-header">
                                 <h3>일괄 입력</h3>
@@ -1159,10 +1212,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                 )
             }
 
-            <FloatingButton
-                onBulkInput={toggleBulkModal}
-                isScoreInputPage={true}
-            />
+
         </div >
     );
 };
