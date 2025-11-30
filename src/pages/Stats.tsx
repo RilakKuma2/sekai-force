@@ -177,12 +177,19 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
         return song ? (song.title_ko || song.title_jp) : '';
     };
 
+    const [zoomScale, setZoomScale] = useState(1);
+
     const handleSongClick = (song: SongStats) => {
         setSelectedSong(song);
+        // Check for visual viewport scale on mobile
+        if (window.visualViewport) {
+            setZoomScale(window.visualViewport.scale);
+        }
     };
 
     const closeModal = () => {
         setSelectedSong(null);
+        setZoomScale(1);
     };
 
     const getDifficultyLabel = () => {
@@ -395,7 +402,17 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
 
             {selectedSong && (
                 <div className="popover-overlay" onClick={closeModal}>
-                    <div className="popover-content" onClick={e => e.stopPropagation()}>
+                    <div
+                        className="popover-content"
+                        onClick={e => e.stopPropagation()}
+                        style={{
+                            transform: zoomScale < 1 ? `scale(${1 / zoomScale})` : 'none',
+                            transformOrigin: 'bottom center',
+                            width: zoomScale < 1 ? `${zoomScale * 96}%` : '100%',
+                            maxWidth: zoomScale < 1 ? 'none' : '600px',
+                            marginBottom: '0'
+                        }}
+                    >
                         <div className="popover-header">
                             <img
                                 src={`https://asset.rilaksekai.com/cover/${String(selectedSong.song_no).padStart(3, '0')}.jpg`}
