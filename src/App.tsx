@@ -4,6 +4,7 @@ import { fetchSongs, type Song } from './utils/api';
 import { processUserBest39, calculateTotalR, type MusicDifficultyStatus, type UserMusicResult } from './utils/calculator';
 import Dashboard from './pages/Dashboard';
 import ScoreInput from './pages/ScoreInput';
+import Stats from './pages/Stats';
 import './App.css';
 
 function App() {
@@ -89,6 +90,7 @@ function App() {
             onUpdateResults={handleUpdateResults}
           />
         } />
+        <Route path="/stats" element={<Stats songs={songs} />} />
       </Routes>
     </Router>
   );
