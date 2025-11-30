@@ -202,6 +202,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     // 0.6 ~ 0.7: +1
                     // 0.8 ~ 0.9: +2
 
+                    level = Math.floor(apConstant);
                     const decimalPart = Math.round((apConstant % 1) * 10) / 10;
 
                     if (decimalPart <= 0.1) judgment = '최하위';
