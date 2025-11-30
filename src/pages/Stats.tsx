@@ -72,6 +72,16 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         localStorage.setItem('dimCleared', JSON.stringify(checked));
     };
 
+    const [dimApOnly, setDimApOnly] = useState(() => {
+        const saved = localStorage.getItem('dimApOnly');
+        return saved !== null ? JSON.parse(saved) : false;
+    });
+
+    const handleDimApOnlyToggle = (checked: boolean) => {
+        setDimApOnly(checked);
+        localStorage.setItem('dimApOnly', JSON.stringify(checked));
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -377,6 +387,16 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                 />
                                 풀콤된 곡 어둡게 표시
                             </label>
+                            {dimCleared && (
+                                <label className="dim-toggle-label">
+                                    <input
+                                        type="checkbox"
+                                        checked={dimApOnly}
+                                        onChange={(e) => handleDimApOnlyToggle(e.target.checked)}
+                                    />
+                                    AP된 곡만 어둡게 표시
+                                </label>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -456,9 +476,15 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             const targetDifficulty = song.isExpert ? 'expert' : difficulty;
                                                             const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
                                                             if (!result) return '';
-                                                            if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
-                                                            if (result.playResult === 'full_combo') return 'dimmed';
-                                                            return '';
+
+                                                            if (dimApOnly) {
+                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
+                                                                return '';
+                                                            } else {
+                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
+                                                                if (result.playResult === 'full_combo') return 'dimmed';
+                                                                return '';
+                                                            }
                                                         })()}`}
                                                         title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
                                                         onClick={() => handleSongClick(song)}
@@ -485,9 +511,14 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             const targetDifficulty = song.isExpert ? 'expert' : difficulty;
                                                             const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
                                                             if (!result) return '';
-                                                            if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
-                                                            if (result.playResult === 'full_combo') return 'dimmed';
-                                                            return '';
+                                                            if (dimApOnly) {
+                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
+                                                                return '';
+                                                            } else {
+                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
+                                                                if (result.playResult === 'full_combo') return 'dimmed';
+                                                                return '';
+                                                            }
                                                         })()}`}
                                                         title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
                                                         onClick={() => handleSongClick(song)}
@@ -514,9 +545,14 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             const targetDifficulty = song.isExpert ? 'expert' : difficulty;
                                                             const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
                                                             if (!result) return '';
-                                                            if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
-                                                            if (result.playResult === 'full_combo') return 'dimmed';
-                                                            return '';
+                                                            if (dimApOnly) {
+                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
+                                                                return '';
+                                                            } else {
+                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
+                                                                if (result.playResult === 'full_combo') return 'dimmed';
+                                                                return '';
+                                                            }
                                                         })()}`}
                                                         title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
                                                         onClick={() => handleSongClick(song)}
