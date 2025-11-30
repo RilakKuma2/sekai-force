@@ -105,7 +105,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
     const handleStatusUpdate = (resultType: 'clear' | 'full_combo' | 'full_perfect' | null) => {
         if (!selectedSong) return;
 
-        const songId = String(selectedSong.song_no);
+        const songId = String(selectedSong.song_no).padStart(3, '0');
         const targetDifficulty = selectedSong.isExpert ? 'expert' : difficulty;
 
         // Find existing result index
@@ -556,7 +556,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     >
                         <div className="popover-header">
                             <img
-                                src={`https://asset.rilaksekai.com/cover/${String(selectedSong.song_no).padStart(3, '0')}.?v=1`}
+                                src={`https://asset.rilaksekai.com/cover/${String(selectedSong.song_no).padStart(3, '0')}.jpg?v=1`}
                                 alt={selectedSong.song_name}
                                 className="popover-cover"
                             />
