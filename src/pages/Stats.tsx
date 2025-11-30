@@ -88,7 +88,7 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
         if (apiData.length > 0) {
             processData(apiData, difficulty);
         }
-    }, [apiData, difficulty]);
+    }, [apiData, difficulty, songs]);
 
     const processData = (data: ApiSongStats[], diff: Difficulty) => {
         const parsedData: SongStats[] = [];
@@ -109,7 +109,7 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                     judgment = item.Judgment_mas || '-';
                     elements = item.Elements_mas || '';
                     memo = item.Memo_mas || '';
-                    if (songFromApi?.PhBr_mas !== undefined && songFromApi.PhBr_mas !== null) {
+                    if (songFromApi?.PhBr_mas !== undefined && songFromApi.PhBr_mas !== null && String(songFromApi.PhBr_mas).trim() !== '') {
                         phBrStr = String(songFromApi.PhBr_mas);
                     } else {
                         phBrStr = item.PhBr_mas || '0';
@@ -119,7 +119,7 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                     judgment = item.Judgment_ex || '-';
                     elements = item.Elements_ex || '';
                     memo = item.Memo_ex || '';
-                    if (songFromApi?.PhBr_ex !== undefined && songFromApi.PhBr_ex !== null) {
+                    if (songFromApi?.PhBr_ex !== undefined && songFromApi.PhBr_ex !== null && String(songFromApi.PhBr_ex).trim() !== '') {
                         phBrStr = String(songFromApi.PhBr_ex);
                     } else {
                         phBrStr = item.PhBr_ex || '0';
@@ -262,7 +262,7 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
     return (
         <div className="stats-container">
             <div className="stats-header">
-                <button onClick={() => navigate('/')} className="back-button">&lt; 뒤로가기</button>
+                <button onClick={() => navigate(-1)} className="back-button">&lt; 뒤로가기</button>
                 <div className="header-controls">
                     <div className="difficulty-toggles">
                         <button
