@@ -65,6 +65,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         return saved !== null ? JSON.parse(saved) : false;
     });
     const [difficulty, setDifficulty] = useState<Difficulty>('master');
+    const [apMode, setApMode] = useState(false);
     const [showSourceInfo, setShowSourceInfo] = useState(false);
 
     const handleDimToggle = (checked: boolean) => {
@@ -72,15 +73,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         localStorage.setItem('dimCleared', JSON.stringify(checked));
     };
 
-    const [dimApOnly, setDimApOnly] = useState(() => {
-        const saved = localStorage.getItem('dimApOnly');
-        return saved !== null ? JSON.parse(saved) : false;
-    });
 
-    const handleDimApOnlyToggle = (checked: boolean) => {
-        setDimApOnly(checked);
-        localStorage.setItem('dimApOnly', JSON.stringify(checked));
-    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -108,9 +101,9 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
 
     useEffect(() => {
         if (apiData.length > 0) {
-            processData(apiData, difficulty);
+            processData(apiData, difficulty, apMode);
         }
-    }, [apiData, difficulty, songs]);
+    }, [apiData, difficulty, apMode, songs]);
 
     const handleStatusUpdate = (resultType: 'clear' | 'full_combo' | 'full_perfect' | null) => {
         if (!selectedSong) return;
@@ -149,7 +142,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         onUpdateResults(newResults);
     };
 
-    const processData = (data: ApiSongStats[], diff: Difficulty) => {
+    const processData = (data: ApiSongStats[], diff: Difficulty, isApMode: boolean) => {
         const parsedData: SongStats[] = [];
 
         data.forEach(item => {
@@ -162,6 +155,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                 let elements = '';
                 let memo = '';
                 let phBrStr = '0';
+                let apConstant: number | undefined;
 
                 if (d === 'master') {
                     level = item.levels.master;
@@ -173,6 +167,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     } else {
                         phBrStr = item.PhBr_mas || '0';
                     }
+                    if (songFromApi?.mas_ap) apConstant = Number(songFromApi.mas_ap);
                 } else if (d === 'expert') {
                     level = item.levels.expert;
                     judgment = item.Judgment_ex || '-';
@@ -189,9 +184,36 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     elements = item.Elements_apd || '';
                     memo = item.Memo_apd || '';
                     phBrStr = item.PhBr_apd || '0';
+                    if (songFromApi?.apd_ap) apConstant = Number(songFromApi.apd_ap);
                 }
 
                 if (!level) return;
+
+                // AP Mode Logic
+                if (isApMode && apConstant !== undefined && !isNaN(apConstant)) {
+                    // Calculate tier based on decimal part
+                    // Original constant (e.g., 33.4) -> decimal 0.4
+                    // But wait, the user said "based on original constant without -0.4"
+                    // The constant in DB usually is like 33.4.
+                    // Range logic:
+                    // 0.0 ~ 0.1: -2
+                    // 0.2 ~ 0.3: -1
+                    // 0.4 ~ 0.5: 0
+                    // 0.6 ~ 0.7: +1
+                    // 0.8 ~ 0.9: +2
+
+                    const decimalPart = Math.round((apConstant % 1) * 10) / 10;
+
+                    if (decimalPart <= 0.1) judgment = '최하위';
+                    else if (decimalPart <= 0.3) judgment = '하위';
+                    else if (decimalPart <= 0.5) judgment = '적정';
+                    else if (decimalPart <= 0.7) judgment = '상위';
+                    else if (decimalPart >= 0.8) judgment = '최상위';
+                } else if (isApMode) {
+                    // If AP mode is on but no constant, maybe exclude or put in '?'
+                    // For now, let's keep it as is or mark as '-'
+                    judgment = '-';
+                }
 
                 const song: SongStats = {
                     song_name: item.title_ko || item.title_jp,
@@ -209,14 +231,11 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
             };
 
             if (diff === 'master') {
-                // Add Master song
                 processSong('master');
-                // Add Expert song if level >= 27
-                if (item.levels.expert >= 27) {
+                if (item.levels.expert >= 27 && !isApMode) { // Exclude Expert from AP Mode for now as requested (only MAS/APD buttons)
                     processSong('expert', true);
                 }
             } else if (diff === 'expert') {
-                // Only add Expert song if level <= 26
                 if (item.levels.expert <= 26) {
                     processSong('expert');
                 }
@@ -324,24 +343,43 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                 <button onClick={() => navigate(-1)} className="back-button">&lt; 뒤로가기</button>
                 <div className="header-controls">
                     <div className="difficulty-toggles">
-                        <button
-                            className={`diff-btn master ${difficulty === 'master' ? 'active' : ''}`}
-                            onClick={() => setDifficulty('master')}
-                        >
-                            MAS
-                        </button>
-                        <button
-                            className={`diff-btn expert ${difficulty === 'expert' ? 'active' : ''}`}
-                            onClick={() => setDifficulty('expert')}
-                        >
-                            EXP
-                        </button>
-                        <button
-                            className={`diff-btn append ${difficulty === 'append' ? 'active' : ''}`}
-                            onClick={() => setDifficulty('append')}
-                        >
-                            APD
-                        </button>
+                        <div className="diff-col">
+                            <button
+                                className={`diff-btn master ${difficulty === 'master' && !apMode ? 'active' : ''}`}
+                                onClick={() => { setDifficulty('master'); setApMode(false); }}
+                            >
+                                MAS
+                            </button>
+                            <button
+                                className={`diff-btn master-ap ${difficulty === 'master' && apMode ? 'active' : ''}`}
+                                onClick={() => { setDifficulty('master'); setApMode(true); }}
+                            >
+                                AP
+                            </button>
+                        </div>
+                        <div className="diff-col">
+                            <button
+                                className={`diff-btn expert ${difficulty === 'expert' ? 'active' : ''}`}
+                                onClick={() => { setDifficulty('expert'); setApMode(false); }}
+                            >
+                                EXP
+                            </button>
+                            <div className="diff-placeholder"></div>
+                        </div>
+                        <div className="diff-col">
+                            <button
+                                className={`diff-btn append ${difficulty === 'append' && !apMode ? 'active' : ''}`}
+                                onClick={() => { setDifficulty('append'); setApMode(false); }}
+                            >
+                                APD
+                            </button>
+                            <button
+                                className={`diff-btn append-ap ${difficulty === 'append' && apMode ? 'active' : ''}`}
+                                onClick={() => { setDifficulty('append'); setApMode(true); }}
+                            >
+                                AP
+                            </button>
+                        </div>
                     </div>
                     <div className="info-box">
                         <p>⚠️ 뇌지컬/피지컬 분류는 정확하지 않을 수 있습니다.</p>
@@ -385,18 +423,8 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                     checked={dimCleared}
                                     onChange={(e) => handleDimToggle(e.target.checked)}
                                 />
-                                풀콤된 곡 어둡게 표시
+                                {apMode ? 'AP된 곡 어둡게 표시' : '풀콤된 곡 어둡게 표시'}
                             </label>
-                            {dimCleared && (
-                                <label className="dim-toggle-label">
-                                    <input
-                                        type="checkbox"
-                                        checked={dimApOnly}
-                                        onChange={(e) => handleDimApOnlyToggle(e.target.checked)}
-                                    />
-                                    AP된 곡만 어둡게 표시
-                                </label>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -405,7 +433,10 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
             <div className="tier-list-scroll-container">
                 <div className="tier-grid">
                     {/* Header Row */}
-                    <div className="grid-header level-tier-header">Lv</div>
+                    {/* Header Row */}
+                    <div className="grid-header level-tier-header">
+                        {apMode ? <span className="ap-header-badge">AP</span> : 'Lv'}
+                    </div>
                     <div className="grid-header category-header physical">
                         <span>피지컬</span>
                     </div>
@@ -477,7 +508,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
                                                             if (!result) return '';
 
-                                                            if (dimApOnly) {
+                                                            if (apMode) {
                                                                 if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
                                                                 return '';
                                                             } else {
@@ -486,7 +517,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                                 return '';
                                                             }
                                                         })()}`}
-                                                        title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
+                                                        title={`${song.song_name}`}
                                                         onClick={() => handleSongClick(song)}
                                                     >
                                                         <img
@@ -511,7 +542,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             const targetDifficulty = song.isExpert ? 'expert' : difficulty;
                                                             const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
                                                             if (!result) return '';
-                                                            if (dimApOnly) {
+                                                            if (apMode) {
                                                                 if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
                                                                 return '';
                                                             } else {
@@ -520,7 +551,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                                 return '';
                                                             }
                                                         })()}`}
-                                                        title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
+                                                        title={`${song.song_name}`}
                                                         onClick={() => handleSongClick(song)}
                                                     >
                                                         <img
@@ -545,7 +576,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             const targetDifficulty = song.isExpert ? 'expert' : difficulty;
                                                             const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
                                                             if (!result) return '';
-                                                            if (dimApOnly) {
+                                                            if (apMode) {
                                                                 if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
                                                                 return '';
                                                             } else {
