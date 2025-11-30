@@ -26,11 +26,14 @@ export interface Song {
     apd: string;
     mas_diff?: number;
     apd_diff?: number;
+    ex_diff?: number;
     ex_fc?: number;
     mas_fc?: number;
     apd_fc?: number;
     mas_ap?: number;
     apd_ap?: number;
+    PhBr_mas?: number;
+    PhBr_ex?: number;
 }
 
 export const fetchSongs = async (): Promise<Song[]> => {

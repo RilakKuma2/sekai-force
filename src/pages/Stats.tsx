@@ -9,7 +9,7 @@ interface ApiSongStats {
     title_jp: string;
     unit_code: string;
     release_date: string;
-    bpm: number;
+    bpm: number | string;
     levels: {
         easy: number;
         normal: number;
@@ -41,13 +41,16 @@ interface SongStats {
     Memo: string;
     PY_BR: number;
     song_no: number;
+    bpm: number | string;
+    song_time: string;
+    isExpert?: boolean;
 }
+
+type Difficulty = 'master' | 'expert' | 'append';
 
 interface StatsProps {
     songs: Song[];
 }
-
-type Difficulty = 'master' | 'expert' | 'append';
 
 const Stats: React.FC<StatsProps> = ({ songs }) => {
     const navigate = useNavigate();
@@ -91,46 +94,76 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
         const parsedData: SongStats[] = [];
 
         data.forEach(item => {
-            let level = 0;
-            let judgment = '';
-            let elements = '';
-            let memo = '';
-            let phBrStr = '0';
+            // Find corresponding song in songs prop
+            const songFromApi = songs.find(s => s.id === item.id);
 
-            if (diff === 'master') {
-                level = item.levels.master;
-                judgment = item.Judgment_mas || '-';
-                elements = item.Elements_mas || '';
-                memo = item.Memo_mas || '';
-                phBrStr = item.PhBr_mas || '0';
-            } else if (diff === 'expert') {
-                level = item.levels.expert;
-                judgment = item.Judgment_ex || '-';
-                elements = item.Elements_ex || '';
-                memo = item.Memo_ex || '';
-                phBrStr = item.PhBr_ex || '0';
-            } else if (diff === 'append') {
-                level = item.levels.append;
-                judgment = item.Judgment_apd || '-';
-                elements = item.Elements_apd || '';
-                memo = item.Memo_apd || '';
-                phBrStr = item.PhBr_apd || '0';
-            }
+            const processSong = (d: Difficulty, isExpertOverride: boolean = false) => {
+                let level = 0;
+                let judgment = '';
+                let elements = '';
+                let memo = '';
+                let phBrStr = '0';
 
-            // Skip if level is 0 or invalid
-            if (!level) return;
+                if (d === 'master') {
+                    level = item.levels.master;
+                    judgment = item.Judgment_mas || '-';
+                    elements = item.Elements_mas || '';
+                    memo = item.Memo_mas || '';
+                    if (songFromApi?.PhBr_mas !== undefined && songFromApi.PhBr_mas !== null) {
+                        phBrStr = String(songFromApi.PhBr_mas);
+                    } else {
+                        phBrStr = item.PhBr_mas || '0';
+                    }
+                } else if (d === 'expert') {
+                    level = item.levels.expert;
+                    judgment = item.Judgment_ex || '-';
+                    elements = item.Elements_ex || '';
+                    memo = item.Memo_ex || '';
+                    if (songFromApi?.PhBr_ex !== undefined && songFromApi.PhBr_ex !== null) {
+                        phBrStr = String(songFromApi.PhBr_ex);
+                    } else {
+                        phBrStr = item.PhBr_ex || '0';
+                    }
+                } else if (d === 'append') {
+                    level = item.levels.append;
+                    judgment = item.Judgment_apd || '-';
+                    elements = item.Elements_apd || '';
+                    memo = item.Memo_apd || '';
+                    phBrStr = item.PhBr_apd || '0';
+                }
 
-            const song: SongStats = {
-                song_name: item.title_ko || item.title_jp,
-                Level: level,
-                Judgment: judgment,
-                Elements: elements,
-                Memo: memo,
-                PY_BR: parseFloat(phBrStr) || 0,
-                song_no: parseInt(item.id) || 0
+                if (!level) return;
+
+                const song: SongStats = {
+                    song_name: item.title_ko || item.title_jp,
+                    Level: level,
+                    Judgment: judgment,
+                    Elements: elements,
+                    Memo: memo,
+                    PY_BR: parseFloat(phBrStr) || 0,
+                    song_no: parseInt(item.id) || 0,
+                    bpm: item.bpm,
+                    song_time: item.length,
+                    isExpert: isExpertOverride
+                };
+                parsedData.push(song);
             };
 
-            parsedData.push(song);
+            if (diff === 'master') {
+                // Add Master song
+                processSong('master');
+                // Add Expert song if level >= 27
+                if (item.levels.expert >= 27) {
+                    processSong('expert', true);
+                }
+            } else if (diff === 'expert') {
+                // Only add Expert song if level <= 26
+                if (item.levels.expert <= 26) {
+                    processSong('expert');
+                }
+            } else {
+                processSong(diff);
+            }
         });
 
         const newGroupedData: Record<number, Record<number, SongStats[]>> = {};
@@ -172,34 +205,39 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
         return 'general';
     };
 
-    const getKoreanTitle = (songNo: number) => {
-        const song = songs.find(s => parseInt(s.id) === songNo);
-        return song ? (song.title_ko || song.title_jp) : '';
-    };
-
     const [zoomScale, setZoomScale] = useState(1);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.visualViewport) {
+                setZoomScale(window.visualViewport.scale);
+            }
+        };
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleResize);
+            // Initial set
+            setZoomScale(window.visualViewport.scale);
+        }
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', handleResize);
+            }
+        };
+    }, []);
 
     const handleSongClick = (song: SongStats) => {
         setSelectedSong(song);
-        // Check for visual viewport scale on mobile
-        if (window.visualViewport) {
-            setZoomScale(window.visualViewport.scale);
-        }
+        // Zoom scale is now handled by useEffect
     };
 
     const closeModal = () => {
         setSelectedSong(null);
-        setZoomScale(1);
+        // We don't reset zoomScale here so it stays consistent if opened again immediately
     };
 
-    const getDifficultyLabel = () => {
-        switch (difficulty) {
-            case 'master': return 'MASTER';
-            case 'expert': return 'EXPERT';
-            case 'append': return 'APPEND';
-            default: return '';
-        }
-    };
+
 
     const getJpTierListUrl = () => {
         switch (difficulty) {
@@ -283,7 +321,7 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                     </div>
 
                     {/* Data Rows */}
-                    {sortedLevels.map((level, levelIndex) => {
+                    {sortedLevels.map((level) => {
                         const judgments = groupedData[level];
                         const sortedJudgments = Object.keys(judgments)
                             .map(Number)
@@ -348,6 +386,7 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
                                                         />
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
+                                                        {song.isExpert && <div className="expert-indicator">EX</div>}
                                                     </div>
                                                 ))}
                                             </div>
@@ -368,6 +407,7 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
                                                         />
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
+                                                        {song.isExpert && <div className="expert-indicator">EX</div>}
                                                     </div>
                                                 ))}
                                             </div>
@@ -388,6 +428,7 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
                                                         />
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
+                                                        {song.isExpert && <div className="expert-indicator">EX</div>}
                                                     </div>
                                                 ))}
                                             </div>
@@ -406,10 +447,10 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                         className="popover-content"
                         onClick={e => e.stopPropagation()}
                         style={{
-                            transform: zoomScale < 1 ? `scale(${1 / zoomScale})` : 'none',
+                            transform: window.innerWidth > 768 ? 'none' : `scale(${0.9 / zoomScale})`,
                             transformOrigin: 'bottom center',
-                            width: zoomScale < 1 ? `${zoomScale * 96}%` : '100%',
-                            maxWidth: zoomScale < 1 ? 'none' : '600px',
+                            width: '100%',
+                            maxWidth: window.innerWidth > 768 ? '600px' : `${600 * zoomScale}px`,
                             marginBottom: '0'
                         }}
                     >
@@ -420,15 +461,45 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                                 className="popover-cover"
                             />
                             <div className="popover-title-section">
-                                <h2>{getKoreanTitle(selectedSong.song_no) || selectedSong.song_name}</h2>
-                                <div className="popover-subtitle">
-                                    <span className="popover-level">Lv.{selectedSong.Level}</span>
-                                    <span className={`popover-category ${getCategory(selectedSong.PY_BR)}`}>
-                                        {getCategory(selectedSong.PY_BR) === 'physical' ? '피지컬' :
-                                            getCategory(selectedSong.PY_BR) === 'brain' ? '뇌지컬' : '종합'}
-                                    </span>
+                                <h2>{selectedSong.song_name}</h2>
+                                <div className="popover-subtitle-rows">
+                                    <div className="popover-row">
+                                        <span className="popover-level">Lv.{selectedSong.Level}</span>
+                                        <span className={`popover-category ${getCategory(selectedSong.PY_BR)}`}>
+                                            {getCategory(selectedSong.PY_BR) === 'physical' ? '피지컬' :
+                                                getCategory(selectedSong.PY_BR) === 'brain' ? '뇌지컬' : '종합'}
+                                        </span>
+                                    </div>
+                                    <div className="popover-row">
+                                        <span className="popover-info">
+                                            {/^\d+$/.test(String(selectedSong.bpm)) ? `${selectedSong.bpm} BPM` : selectedSong.bpm}
+                                        </span>
+                                        <span className="popover-info">{selectedSong.song_time}</span>
+                                        {(() => {
+                                            const song = songs.find(s => parseInt(s.id) === selectedSong.song_no);
+                                            let constant = 0;
+                                            if (song) {
+                                                if (selectedSong.isExpert) {
+                                                    constant = song.ex_diff || 0;
+                                                } else if (difficulty === 'master') {
+                                                    constant = song.mas_diff || 0;
+                                                } else if (difficulty === 'append') {
+                                                    constant = song.apd_diff || 0;
+                                                }
+                                            }
+                                            return constant > 0 ? <span className="popover-info">상수 {constant}</span> : null;
+                                        })()}
+                                    </div>
                                 </div>
                             </div>
+                            <a
+                                href={`https://asset.rilaksekai.com/charts/${String(selectedSong.song_no).padStart(3, '0')}/${difficulty}.html`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="popover-chart-btn"
+                            >
+                                채보
+                            </a>
                         </div>
                         <div className="popover-body">
                             {selectedSong.Elements && selectedSong.Elements !== '-' && (
@@ -448,8 +519,9 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };
 

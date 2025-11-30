@@ -20,6 +20,8 @@ export interface MusicDifficultyStatus {
     rank: Rank;
     r: number;
     title: string;
+    title_ko: string;
+    title_jp: string;
     isExact: boolean;
 }
 
@@ -68,7 +70,7 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
                 playLevel = Number(song.mas_ap) - 0.4;
                 isExact = true;
             } else if (rank === 'F' && song.mas_fc != null && song.mas_fc > 0) {
-                playLevel = Number(song.mas_fc);
+                playLevel = Number(song.mas_fc) - 0.4;
                 isExact = true;
             } else if (song.mas_diff != null && song.mas_diff > 0) {
                 playLevel = Number(song.mas_diff) - 0.4;
@@ -79,7 +81,7 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
                 playLevel = Number(song.apd_ap) - 0.4;
                 isExact = true;
             } else if (rank === 'F' && song.apd_fc != null && song.apd_fc > 0) {
-                playLevel = Number(song.apd_fc);
+                playLevel = Number(song.apd_fc) - 0.4;
                 isExact = true;
             } else if (song.apd_diff != null && song.apd_diff > 0) {
                 playLevel = Number(song.apd_diff) - 0.4;
@@ -87,7 +89,10 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
             }
         } else if (result.musicDifficulty === 'expert') {
             if (rank === 'F' && song.ex_fc != null && song.ex_fc > 0) {
-                playLevel = Number(song.ex_fc);
+                playLevel = Number(song.ex_fc) - 0.4;
+                isExact = true;
+            } else if (song.ex_diff != null && song.ex_diff > 0) {
+                playLevel = Number(song.ex_diff) - 0.4;
                 isExact = true;
             }
         }
@@ -110,6 +115,8 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
             rank: rank,
             r: r,
             title: song.title_ko || song.title_jp,
+            title_ko: song.title_ko,
+            title_jp: song.title_jp,
             isExact: isExact
         });
     });

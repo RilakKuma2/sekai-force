@@ -24,6 +24,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
     const [twitterId, setTwitterId] = useState('');
     const [registrationDate, setRegistrationDate] = useState('2020-10-03T15:39:39');
     const [playerName, setPlayerName] = useState('셐붕이');
+    const [language, setLanguage] = useState<'ko' | 'jp'>('ko');
     const [showProfileModal, setShowProfileModal] = useState(false);
     const dashboardRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +39,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                 setTwitterId(parsed.twitterId || '');
                 setRegistrationDate(parsed.registrationDate || '2020-10-03T15:39:39');
                 setPlayerName(parsed.playerName || '셐붕이');
+                setLanguage(parsed.language || 'ko');
             } catch (e) {
                 console.error("Failed to load profile", e);
             }
@@ -45,7 +47,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
     }, []);
 
     const handleSaveProfile = () => {
-        const profile = { sekaiRank, playerId, twitterId, registrationDate, playerName };
+        const profile = { sekaiRank, playerId, twitterId, registrationDate, playerName, language };
         localStorage.setItem('userProfile', JSON.stringify(profile));
         setShowProfileModal(false);
     };
@@ -57,10 +59,12 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
             setTwitterId('');
             setRegistrationDate('2020-10-03T15:39:39');
             setPlayerName('셐붕이');
+            setLanguage('ko');
             localStorage.removeItem('userProfile');
             setShowProfileModal(false);
         }
     };
+
 
     const handleCapture = async () => {
         if (dashboardRef.current) {
@@ -242,7 +246,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                 </div >
 
                 <div className="best39-section">
-                    <Best39 best39={best39} />
+                    <Best39 best39={best39} language={language} />
                 </div>
 
             </div>
@@ -255,10 +259,29 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
             {/* Profile Edit Modal */}
             {
                 showProfileModal && (
-                    <div className="modal-overlay">
-                        <div className="preview-modal" style={{ maxWidth: '400px' }}>
+                    <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
+                        <div className="preview-modal" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
                             <h2>프로필 수정</h2>
                             <div className="profile-edit-form">
+                                <div className="form-group">
+                                    <label>곡명 표기 언어 설정</label>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <button
+                                            className={`preview-btn ${language === 'ko' ? 'confirm' : 'cancel'}`}
+                                            onClick={() => setLanguage('ko')}
+                                            style={{ flex: 1 }}
+                                        >
+                                            한국어
+                                        </button>
+                                        <button
+                                            className={`preview-btn ${language === 'jp' ? 'confirm' : 'cancel'}`}
+                                            onClick={() => setLanguage('jp')}
+                                            style={{ flex: 1 }}
+                                        >
+                                            日本語
+                                        </button>
+                                    </div>
+                                </div>
                                 <div className="form-group">
                                     <label>플레이어 이름</label>
                                     <input

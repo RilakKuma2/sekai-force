@@ -4,6 +4,7 @@ import './Best39.css';
 
 interface Best39Props {
     best39: MusicDifficultyStatus[];
+    language: 'ko' | 'jp';
 }
 
 const getDifficultyColor = (difficulty: string) => {
@@ -42,7 +43,7 @@ const formatLevel = (playLevel: number, baseLevel: number) => {
     }
 };
 
-const Best39: React.FC<Best39Props> = ({ best39 }) => {
+const Best39: React.FC<Best39Props> = ({ best39, language }) => {
     // Always render 39 slots (13 rows * 3 columns)
     const rows = 13;
 
@@ -137,7 +138,9 @@ const Best39: React.FC<Best39Props> = ({ best39 }) => {
                                             {/* Second Row: Title + Score Details */}
                                             <div className="list-item second-row">
                                                 <div className="list-item-content">
-                                                    <div className="list-item-title song-title">{item.title}</div>
+                                                    <div className="list-item-title song-title">
+                                                        {language === 'ko' ? (item.title_ko || item.title) : (item.title_jp || item.title)}
+                                                    </div>
                                                     <div className="list-item-action-text">
                                                         <span className="score-detail">
                                                             {Number(item.playLevel).toFixed(1)}{item.isExact ? '' : '?'} → {Math.round(item.r)}

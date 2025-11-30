@@ -1,4 +1,4 @@
-```css .stats-container {
+.stats-container {
     padding: 20px;
     background: linear-gradient(180deg, #4b5563 0%, #374151 100%);
     /* Lighter gray gradient */
@@ -501,10 +501,19 @@
     color: #fff;
 }
 
-.popover-subtitle {
+
+
+.popover-subtitle-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.popover-row {
     display: flex;
     gap: 8px;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .popover-level {
@@ -512,7 +521,7 @@
     padding: 2px 6px;
     border-radius: 4px;
     font-weight: bold;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #bbb;
     border: 1px solid #444;
 }
@@ -521,7 +530,58 @@
     padding: 2px 6px;
     border-radius: 4px;
     font-weight: bold;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+}
+
+.popover-info {
+    background-color: #333;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.75rem;
+    color: #bbb;
+    border: 1px solid #444;
+}
+
+.popover-chart-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #3b82f6;
+    color: white;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    height: fit-content;
+    align-self: center;
+}
+
+.popover-chart-btn:hover {
+    background-color: #2563eb;
+}
+
+@media (min-width: 769px) {
+
+    .popover-level,
+    .popover-category,
+    .popover-info {
+        font-size: 0.9rem;
+        padding: 4px 8px;
+    }
+
+    .popover-title-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .popover-chart-btn {
+        padding: 12px 20px;
+        font-size: 1.1rem;
+    }
 }
 
 .popover-category.physical {
@@ -686,5 +746,37 @@
 
     .content-cell {
         padding: 4px;
+    }
+}
+
+/* Expert Indicator Badge */
+.expert-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    background-color: #d32f2f;
+    /* Red */
+    border-radius: 6px 0 6px 0;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    z-index: 2;
+    pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .expert-indicator {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        top: 0;
+        left: 0;
     }
 }
