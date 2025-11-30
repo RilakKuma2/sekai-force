@@ -146,7 +146,6 @@
 
 .diff-header.append {
     background-image: linear-gradient(to bottom right, #ad92fd, #fe7bde);
-    color: #fff;
     /* White text for better contrast on gradient */
 }
 

@@ -115,7 +115,7 @@
 }
 
 .tier-list-scroll-container {
-    overflow-x: auto;
+    /* overflow-x: auto; Removed to allow sticky header */
     border: 1px solid #4b5563;
     border-radius: 8px;
     background-color: rgba(55, 65, 81, 0.8);
@@ -124,6 +124,8 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     display: flex;
     justify-content: center;
+    width: fit-content;
+    min-width: 100%;
 }
 
 .tier-grid {
