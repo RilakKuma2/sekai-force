@@ -223,6 +223,23 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
+    /* Prevent wrapping */
+}
+
+.legend-text {
+    font-weight: bold;
+}
+
+.legend-text.fc {
+    color: #F06292;
+    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+}
+
+.legend-text.ap {
+    color: #000;
+    /* Black text for visibility with white border */
+    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
 }
 
 .dot {

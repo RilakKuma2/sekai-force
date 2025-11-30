@@ -280,8 +280,8 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
             <div className="chart-legend" style={{ fontSize: '10px' }}>
                 <span className="legend-item"><span className="dot unlocked"></span> Unlocked</span>
                 <span className="legend-item"><span className="dot c"></span> Clear</span>
-                <span className="legend-item"><span className="dot f"></span> Full Combo</span>
-                <span className="legend-item"><span className="dot p"></span> All Perfect</span>
+                <span className="legend-item"><span className="dot f"></span> <span className="legend-text fc">Full Combo</span></span>
+                <span className="legend-item"><span className="dot p"></span> <span className="legend-text ap">All Perfect</span></span>
             </div>
             <div ref={chartRef} style={{ width: '100%', height: '600px' }} />
         </div>
