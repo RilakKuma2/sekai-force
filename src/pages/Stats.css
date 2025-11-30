@@ -11,7 +11,8 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
 .stats-header h1 {
@@ -19,6 +20,82 @@
     font-size: 1.8rem;
     color: #fff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.difficulty-toggles {
+    display: flex;
+    gap: 8px;
+}
+
+.info-box {
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.info-box p {
+    margin: 2px 0;
+}
+
+.diff-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #6b7280;
+    background-color: #374151;
+    color: #9ca3af;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.diff-btn:hover {
+    background-color: #4b5563;
+    color: #fff;
+}
+
+.diff-btn.active {
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.diff-btn.master.active {
+    background-color: #9333ea;
+    /* Purple for Master */
+}
+
+.diff-btn.expert.active {
+    background-color: #ef4444;
+    /* Red for Expert */
+}
+
+.diff-btn.append.active {
+    background: linear-gradient(45deg, #f97316, #3b82f6);
+    /* Orange/Blue for Append */
 }
 
 .back-button {
@@ -30,6 +107,7 @@
     cursor: pointer;
     font-weight: bold;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .back-button:hover {
@@ -119,7 +197,7 @@
     background-color: transparent;
     display: flex;
     align-items: center;
-    min-height: 70px;
+    min-height: 60px;
 }
 
 .level-border-bottom {
@@ -133,6 +211,61 @@
     border-right: 1px solid #6b7280;
 }
 
+.external-links {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.link-btn {
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.link-btn.jp-tier {
+    background-color: #3f51b5;
+    color: white;
+    border: 1px solid #5c6bc0;
+}
+
+.link-btn.jp-tier:hover {
+    background-color: #303f9f;
+}
+
+.link-btn.gallery-tier {
+    background-color: #dc4c64;
+    color: white;
+    border: 1px solid #e4b5b9;
+}
+
+.link-btn.gallery-tier:hover {
+    background-color: #c0392b;
+}
+
+.negative-indicator-inline {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 16px;
+    height: 16px;
+    background-color: #d32f2f;
+    border-radius: 50%;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    margin-right: 6px;
+    vertical-align: middle;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
 .level-tier-cell::before {
     content: '';
     position: absolute;
@@ -143,6 +276,26 @@
     background-color: #4b5563;
     transform: translateX(-50%);
     z-index: 0;
+}
+
+.judgment-border-bottom {
+    border-bottom: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+.warning-container {
+    background-color: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    color: #ffd54f;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.warning-container p {
+    margin: 4px 0;
 }
 
 .content-cell {
@@ -205,9 +358,11 @@
 }
 
 .judgment-minus {
-    color: #ff8a80;
-    border-color: #ff5252;
-    background-color: #b71c1c;
+    color: #ffffff;
+    /* White text for better contrast */
+    border-color: #ef5350;
+    background-color: #c62828;
+    /* Slightly brighter red background */
 }
 
 .song-grid {
@@ -462,18 +617,33 @@
 @media (max-width: 768px) {
     .stats-container {
         padding: 10px;
+        /* Allow container to expand with content on mobile so zooming works */
+        width: fit-content;
+        min-width: 100vw;
+    }
+
+    .stats-header {
+        /* Allow header to wrap or stay contained */
+        width: 100%;
+        box-sizing: border-box;
+        flex-wrap: wrap;
     }
 
     .stats-header h1 {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
+        white-space: nowrap;
     }
 
     .tier-list-scroll-container {
-        -webkit-overflow-scrolling: touch;
+        /* Remove scroll on mobile to allow page-level zooming */
+        overflow-x: visible;
+        display: block;
+        /* Reset flex display */
+        width: fit-content;
     }
 
     .grid-header {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         padding: 5px;
     }
 
@@ -482,31 +652,39 @@
     }
 
     .judgment-badge {
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
+    }
+
+    .level-label {
         width: 30px;
         height: 30px;
         font-size: 0.9rem;
     }
 
-    .level-label {
-        width: 36px;
-        height: 36px;
-        font-size: 1rem;
-    }
-
     .song-card {
-        width: 45px;
-        height: 45px;
+        width: 40px;
+        height: 40px;
     }
 
     .song-grid {
-        gap: 4px;
+        gap: 2px;
     }
 
     .negative-indicator {
-        width: 14px;
-        height: 14px;
-        font-size: 10px;
-        top: 1px;
-        right: 1px;
+        width: 12px;
+        height: 12px;
+        font-size: 9px;
+        top: 0;
+        right: 0;
+    }
+
+    .grid-cell {
+        min-height: 45px;
+    }
+
+    .content-cell {
+        padding: 4px;
     }
 }

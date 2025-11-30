@@ -5,7 +5,8 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #374151;
+  /* Match Stats page bottom gradient */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -33,6 +34,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #374151;
+  /* Ensure body has the color */
 }
 
 h1 {
@@ -64,7 +67,8 @@ button:focus-visible {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background-color: #000000;
+    /* Force dark background even in light mode */
   }
 
   a:hover {

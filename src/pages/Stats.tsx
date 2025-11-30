@@ -3,6 +3,36 @@ import { useNavigate } from 'react-router-dom';
 import type { Song } from '../utils/api';
 import './Stats.css';
 
+interface ApiSongStats {
+    id: string;
+    title_ko: string;
+    title_jp: string;
+    unit_code: string;
+    release_date: string;
+    bpm: number;
+    levels: {
+        easy: number;
+        normal: number;
+        hard: number;
+        expert: number;
+        master: number;
+        append: number;
+    };
+    length: string;
+    Judgment_mas?: string;
+    Elements_mas?: string;
+    Memo_mas?: string;
+    PhBr_mas?: string;
+    Judgment_ex?: string;
+    Elements_ex?: string;
+    Memo_ex?: string;
+    PhBr_ex?: string;
+    Judgment_apd?: string;
+    Elements_apd?: string;
+    Memo_apd?: string;
+    PhBr_apd?: string;
+}
+
 interface SongStats {
     song_name: string;
     Level: number;
@@ -17,34 +47,30 @@ interface StatsProps {
     songs: Song[];
 }
 
+type Difficulty = 'master' | 'expert' | 'append';
+
 const Stats: React.FC<StatsProps> = ({ songs }) => {
     const navigate = useNavigate();
+    const [apiData, setApiData] = useState<ApiSongStats[]>([]);
     const [groupedData, setGroupedData] = useState<Record<number, Record<number, SongStats[]>>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedSong, setSelectedSong] = useState<SongStats | null>(null);
+    const [difficulty, setDifficulty] = useState<Difficulty>('master');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                console.log("Fetching CSV...");
-                let response = await fetch('/append_diff.csv');
-                if (!response.ok) {
-                    response = await fetch('/sekai-force/append_diff.csv');
-                }
+                console.log("Fetching API data...");
+                const response = await fetch('https://api.rilaksekai.com/api/songs_stats');
 
                 if (!response.ok) {
-                    throw new Error(`Failed to fetch CSV data: ${response.status} ${response.statusText}`);
+                    throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
                 }
 
-                const text = await response.text();
-                if (text.trim().startsWith('<')) {
-                    setError('데이터 파일 경로 오류 (HTML 응답)');
-                    setLoading(false);
-                    return;
-                }
-
-                parseCSV(text);
+                const data: ApiSongStats[] = await response.json();
+                setApiData(data);
+                setLoading(false);
             } catch (err) {
                 console.error("Fetch error:", err);
                 setError(`데이터를 불러오는 중 오류가 발생했습니다: ${err}`);
@@ -55,48 +81,57 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
         fetchData();
     }, []);
 
-    const parseCSV = (text: string) => {
-        const lines = text.split('\n');
+    useEffect(() => {
+        if (apiData.length > 0) {
+            processData(apiData, difficulty);
+        }
+    }, [apiData, difficulty]);
+
+    const processData = (data: ApiSongStats[], diff: Difficulty) => {
         const parsedData: SongStats[] = [];
 
-        for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue;
+        data.forEach(item => {
+            let level = 0;
+            let judgment = '';
+            let elements = '';
+            let memo = '';
+            let phBrStr = '0';
 
-            const values: string[] = [];
-            let currentVal = '';
-            let inQuotes = false;
-
-            for (let j = 0; j < line.length; j++) {
-                const char = line[j];
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    values.push(currentVal);
-                    currentVal = '';
-                } else {
-                    currentVal += char;
-                }
+            if (diff === 'master') {
+                level = item.levels.master;
+                judgment = item.Judgment_mas || '-';
+                elements = item.Elements_mas || '';
+                memo = item.Memo_mas || '';
+                phBrStr = item.PhBr_mas || '0';
+            } else if (diff === 'expert') {
+                level = item.levels.expert;
+                judgment = item.Judgment_ex || '-';
+                elements = item.Elements_ex || '';
+                memo = item.Memo_ex || '';
+                phBrStr = item.PhBr_ex || '0';
+            } else if (diff === 'append') {
+                level = item.levels.append;
+                judgment = item.Judgment_apd || '-';
+                elements = item.Elements_apd || '';
+                memo = item.Memo_apd || '';
+                phBrStr = item.PhBr_apd || '0';
             }
-            values.push(currentVal);
 
-            if (values.length < 7) continue;
+            // Skip if level is 0 or invalid
+            if (!level) return;
 
-            const levelStr = values[1].replace('Lv', '').trim();
             const song: SongStats = {
-                song_name: values[0],
-                Level: parseInt(levelStr) || 0,
-                Judgment: values[2],
-                Elements: values[3],
-                Memo: values[4],
-                PY_BR: parseFloat(values[5]) || 0,
-                song_no: parseInt(values[6]) || 0
+                song_name: item.title_ko || item.title_jp,
+                Level: level,
+                Judgment: judgment,
+                Elements: elements,
+                Memo: memo,
+                PY_BR: parseFloat(phBrStr) || 0,
+                song_no: parseInt(item.id) || 0
             };
 
-            if (song.song_no > 0) {
-                parsedData.push(song);
-            }
-        }
+            parsedData.push(song);
+        });
 
         const newGroupedData: Record<number, Record<number, SongStats[]>> = {};
         const judgmentMap: Record<string, number> = {
@@ -125,7 +160,6 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
         });
 
         setGroupedData(newGroupedData);
-        setLoading(false);
     };
 
     const sortedLevels = Object.keys(groupedData)
@@ -151,6 +185,32 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
         setSelectedSong(null);
     };
 
+    const getDifficultyLabel = () => {
+        switch (difficulty) {
+            case 'master': return 'MASTER';
+            case 'expert': return 'EXPERT';
+            case 'append': return 'APPEND';
+            default: return '';
+        }
+    };
+
+    const getJpTierListUrl = () => {
+        switch (difficulty) {
+            case 'master': return 'https://pjsekai.com/?aa95a0f97c';
+            case 'expert': return 'https://pjsekai.com/?d58e7e100c';
+            case 'append': return 'https://pjsekai.com/?163b58c097';
+            default: return '#';
+        }
+    };
+
+    const getGalleryTierListUrl = () => {
+        switch (difficulty) {
+            case 'master': return 'https://gall.dcinside.com/mgallery/board/view/?id=pjsekai&no=2282122';
+            case 'append': return 'https://gall.dcinside.com/mgallery/board/view/?id=pjsekai&no=2197158';
+            default: return null;
+        }
+    };
+
     if (loading) return <div className="loading">Loading...</div>;
     if (error) return <div className="error">{error}</div>;
 
@@ -158,7 +218,47 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
         <div className="stats-container">
             <div className="stats-header">
                 <button onClick={() => navigate('/')} className="back-button">&lt; 뒤로가기</button>
-                <h1>APPEND 서열표</h1>
+                <div className="header-controls">
+                    <div className="difficulty-toggles">
+                        <button
+                            className={`diff-btn master ${difficulty === 'master' ? 'active' : ''}`}
+                            onClick={() => setDifficulty('master')}
+                        >
+                            MAS
+                        </button>
+                        <button
+                            className={`diff-btn expert ${difficulty === 'expert' ? 'active' : ''}`}
+                            onClick={() => setDifficulty('expert')}
+                        >
+                            EXP
+                        </button>
+                        <button
+                            className={`diff-btn append ${difficulty === 'append' ? 'active' : ''}`}
+                            onClick={() => setDifficulty('append')}
+                        >
+                            APD
+                        </button>
+                    </div>
+                    <div className="info-box">
+                        <p>⚠️ 뇌지컬/피지컬 분류는 정확하지 않을 수 있습니다.</p>
+                        <p>⚠️ 같은 세부 난이도 내의 곡들은 위치(좌우)에 상관없이 동등한 난이도입니다.</p>
+                        <p>ℹ️ 곡 이미지를 클릭하면 상세 설명을 확인할 수 있습니다.</p>
+                        <p>
+                            <span className="negative-indicator-inline">?</span>
+                            <span>표시된 악곡은 아직 세부 난이도가 정해지지 않은 악곡입니다.</span>
+                        </p>
+                    </div>
+                    <div className="external-links">
+                        <a href={getJpTierListUrl()} target="_blank" rel="noopener noreferrer" className="link-btn jp-tier">
+                            🇯🇵 원본 서열표
+                        </a>
+                        {getGalleryTierListUrl() && (
+                            <a href={getGalleryTierListUrl()!} target="_blank" rel="noopener noreferrer" className="link-btn gallery-tier">
+                                🇰🇷 갤 서열표
+                            </a>
+                        )}
+                    </div>
+                </div>
             </div>
 
             <div className="tier-list-scroll-container">
@@ -188,82 +288,106 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                             const general = songs.filter(s => getCategory(s.PY_BR) === 'general').sort((a, b) => a.PY_BR - b.PY_BR);
                             const brain = songs.filter(s => getCategory(s.PY_BR) === 'brain').sort((a, b) => a.PY_BR - b.PY_BR);
 
+                            // Calculate number of rows needed
+                            const totalSongs = physical.length + general.length + brain.length;
+                            const rowCount = totalSongs > 15 ? Math.ceil(totalSongs / 15) : 1;
+
+                            // Calculate chunk sizes for even distribution
+                            const pChunk = Math.ceil(physical.length / rowCount);
+                            const gChunk = Math.ceil(general.length / rowCount);
+                            const bChunk = Math.ceil(brain.length / rowCount);
+
                             // If judgment is 0, show Level. Otherwise show signed judgment.
                             const label = judgment === 0 ? String(level) : (judgment > 0 ? `+${judgment}` : `${judgment}`);
                             const isLevelLabel = judgment === 0;
 
                             // Determine if this is the last row of the current level group
-                            const isLastRowOfLevel = idx === sortedJudgments.length - 1;
+                            const isLastJudgment = idx === sortedJudgments.length - 1;
 
-                            return (
-                                <React.Fragment key={`${level}-${judgment}`}>
-                                    <div className={`grid-cell level-tier-cell ${isLastRowOfLevel ? 'level-border-bottom' : ''}`}>
-                                        <span className={`judgment-badge ${isLevelLabel ? 'level-label' : (judgment > 0 ? 'judgment-plus' : 'judgment-minus')}`}>
-                                            {label}
-                                        </span>
-                                    </div>
-                                    <div className={`grid-cell content-cell physical ${isLastRowOfLevel ? 'level-border-bottom' : ''}`}>
-                                        <div className="song-grid center-align">
-                                            {physical.map(song => (
-                                                <div
-                                                    key={song.song_no}
-                                                    className="song-card"
-                                                    title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
-                                                    onClick={() => handleSongClick(song)}
-                                                >
-                                                    <img
-                                                        src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg`}
-                                                        alt={song.song_name}
-                                                        loading="lazy"
-                                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
-                                                    />
-                                                    {song.Judgment === '-' && <div className="negative-indicator">?</div>}
-                                                </div>
-                                            ))}
+                            return Array.from({ length: rowCount }).map((_, r) => {
+                                const isLastSubRow = r === rowCount - 1;
+                                const isLevelBorder = isLastJudgment && isLastSubRow;
+                                const isJudgmentBorder = isLastSubRow && !isLastJudgment;
+
+                                const pSlice = physical.slice(r * pChunk, (r + 1) * pChunk);
+                                const gSlice = general.slice(r * gChunk, (r + 1) * gChunk);
+                                const bSlice = brain.slice(r * bChunk, (r + 1) * bChunk);
+
+                                return (
+                                    <React.Fragment key={`${level}-${judgment}-${r}`}>
+                                        {r === 0 && (
+                                            <div
+                                                className={`grid-cell level-tier-cell ${isLevelBorder ? 'level-border-bottom' : ''} ${isJudgmentBorder ? 'judgment-border-bottom' : ''}`}
+                                                style={{ gridRow: `span ${rowCount}` }}
+                                            >
+                                                <span className={`judgment-badge ${isLevelLabel ? 'level-label' : (judgment > 0 ? 'judgment-plus' : 'judgment-minus')}`}>
+                                                    {label}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className={`grid-cell content-cell physical ${isLevelBorder ? 'level-border-bottom' : ''} ${isJudgmentBorder ? 'judgment-border-bottom' : ''}`}>
+                                            <div className="song-grid center-align">
+                                                {pSlice.map(song => (
+                                                    <div
+                                                        key={song.song_no}
+                                                        className="song-card"
+                                                        title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
+                                                        onClick={() => handleSongClick(song)}
+                                                    >
+                                                        <img
+                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg`}
+                                                            alt={song.song_name}
+                                                            loading="lazy"
+                                                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
+                                                        />
+                                                        {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className={`grid-cell content-cell general ${isLastRowOfLevel ? 'level-border-bottom' : ''}`}>
-                                        <div className="song-grid center-align">
-                                            {general.map(song => (
-                                                <div
-                                                    key={song.song_no}
-                                                    className="song-card"
-                                                    title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
-                                                    onClick={() => handleSongClick(song)}
-                                                >
-                                                    <img
-                                                        src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg`}
-                                                        alt={song.song_name}
-                                                        loading="lazy"
-                                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
-                                                    />
-                                                    {song.Judgment === '-' && <div className="negative-indicator">?</div>}
-                                                </div>
-                                            ))}
+                                        <div className={`grid-cell content-cell general ${isLevelBorder ? 'level-border-bottom' : ''} ${isJudgmentBorder ? 'judgment-border-bottom' : ''}`}>
+                                            <div className="song-grid center-align">
+                                                {gSlice.map(song => (
+                                                    <div
+                                                        key={song.song_no}
+                                                        className="song-card"
+                                                        title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
+                                                        onClick={() => handleSongClick(song)}
+                                                    >
+                                                        <img
+                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg`}
+                                                            alt={song.song_name}
+                                                            loading="lazy"
+                                                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
+                                                        />
+                                                        {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className={`grid-cell content-cell brain ${isLastRowOfLevel ? 'level-border-bottom' : ''}`}>
-                                        <div className="song-grid center-align">
-                                            {brain.map(song => (
-                                                <div
-                                                    key={song.song_no}
-                                                    className="song-card"
-                                                    title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
-                                                    onClick={() => handleSongClick(song)}
-                                                >
-                                                    <img
-                                                        src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg`}
-                                                        alt={song.song_name}
-                                                        loading="lazy"
-                                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
-                                                    />
-                                                    {song.Judgment === '-' && <div className="negative-indicator">?</div>}
-                                                </div>
-                                            ))}
+                                        <div className={`grid-cell content-cell brain ${isLevelBorder ? 'level-border-bottom' : ''} ${isJudgmentBorder ? 'judgment-border-bottom' : ''}`}>
+                                            <div className="song-grid center-align">
+                                                {bSlice.map(song => (
+                                                    <div
+                                                        key={song.song_no}
+                                                        className="song-card"
+                                                        title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
+                                                        onClick={() => handleSongClick(song)}
+                                                    >
+                                                        <img
+                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg`}
+                                                            alt={song.song_name}
+                                                            loading="lazy"
+                                                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
+                                                        />
+                                                        {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                </React.Fragment>
-                            );
+                                    </React.Fragment>
+                                );
+                            });
                         });
                     })}
                 </div>
