@@ -94,7 +94,7 @@
 }
 
 .diff-btn.append.active {
-    background: linear-gradient(45deg, #f97316, #3b82f6);
+    background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
     /* Orange/Blue for Append */
 }
 
@@ -354,17 +354,16 @@
 }
 
 .judgment-plus {
-    color: #82b1ff;
-    border-color: #448aff;
-    background-color: #1a237e;
+    color: #ffffff;
+    border-color: #ef5350;
+    background-color: #c62828;
 }
 
 .judgment-minus {
     color: #ffffff;
     /* White text for better contrast */
-    border-color: #ef5350;
-    background-color: #c62828;
-    /* Slightly brighter red background */
+    border-color: #448aff;
+    background-color: #1a237e;
 }
 
 .song-grid {

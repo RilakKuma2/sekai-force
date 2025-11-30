@@ -480,14 +480,14 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                                             let constant = 0;
                                             if (song) {
                                                 if (selectedSong.isExpert) {
-                                                    constant = song.ex_diff || 0;
+                                                    constant = song.ex_fc ? song.ex_fc - 0.4 : 0;
                                                 } else if (difficulty === 'master') {
-                                                    constant = song.mas_diff || 0;
+                                                    constant = song.mas_fc ? song.mas_fc - 0.4 : 0;
                                                 } else if (difficulty === 'append') {
-                                                    constant = song.apd_diff || 0;
+                                                    constant = song.apd_fc ? song.apd_fc - 0.4 : 0;
                                                 }
                                             }
-                                            return constant > 0 ? <span className="popover-info">상수 {constant}</span> : null;
+                                            return constant > 0 ? <span className="popover-info">상수 {constant.toFixed(1)}</span> : null;
                                         })()}
                                     </div>
                                 </div>
