@@ -72,9 +72,6 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
             } else if (rank === 'F' && song.mas_fc != null && song.mas_fc > 0) {
                 playLevel = Number(song.mas_fc) - 0.4;
                 isExact = true;
-            } else if (song.mas_diff != null && song.mas_diff > 0) {
-                playLevel = Number(song.mas_diff) - 0.4;
-                isExact = true;
             }
         } else if (result.musicDifficulty === 'append') {
             if (rank === 'P' && song.apd_ap != null && song.apd_ap > 0) {
@@ -82,9 +79,6 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
                 isExact = true;
             } else if (rank === 'F' && song.apd_fc != null && song.apd_fc > 0) {
                 playLevel = Number(song.apd_fc) - 0.4;
-                isExact = true;
-            } else if (song.apd_diff != null && song.apd_diff > 0) {
-                playLevel = Number(song.apd_diff) - 0.4;
                 isExact = true;
             }
         } else if (result.musicDifficulty === 'expert') {

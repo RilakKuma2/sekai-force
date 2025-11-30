@@ -505,7 +505,7 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                             {selectedSong.Elements && selectedSong.Elements !== '-' && (
                                 <div className="popover-section">
                                     <div className="elements-container">
-                                        {selectedSong.Elements.split('_').map((el, idx) => (
+                                        {selectedSong.Elements.split(/[_,]/).map((el, idx) => (
                                             <span key={idx} className="element-tag">{el.trim()}</span>
                                         ))}
                                     </div>

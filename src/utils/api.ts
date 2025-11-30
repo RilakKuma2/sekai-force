@@ -24,8 +24,7 @@ export interface Song {
     classification: string;
     ver: string;
     apd: string;
-    mas_diff?: number;
-    apd_diff?: number;
+
     ex_diff?: number;
     ex_fc?: number;
     mas_fc?: number;
