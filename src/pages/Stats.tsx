@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Song } from '../utils/api';
+import { type Difficulty, type UserMusicResult } from '../utils/calculator';
 import './Stats.css';
 
 interface ApiSongStats {
@@ -33,33 +34,42 @@ interface ApiSongStats {
     PhBr_apd?: string;
 }
 
+interface StatsProps {
+    songs: Song[];
+    userResults: UserMusicResult[];
+    onUpdateResults: (newResults: UserMusicResult[]) => void;
+}
+
 interface SongStats {
+    song_no: number;
     song_name: string;
     Level: number;
     Judgment: string;
     Elements: string;
     Memo: string;
     PY_BR: number;
-    song_no: number;
     bpm: number | string;
     song_time: string;
     isExpert?: boolean;
 }
 
-type Difficulty = 'master' | 'expert' | 'append';
-
-interface StatsProps {
-    songs: Song[];
-}
-
-const Stats: React.FC<StatsProps> = ({ songs }) => {
+const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) => {
     const navigate = useNavigate();
     const [apiData, setApiData] = useState<ApiSongStats[]>([]);
     const [groupedData, setGroupedData] = useState<Record<number, Record<number, SongStats[]>>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedSong, setSelectedSong] = useState<SongStats | null>(null);
+    const [dimCleared, setDimCleared] = useState(() => {
+        const saved = localStorage.getItem('dimCleared');
+        return saved !== null ? JSON.parse(saved) : false;
+    });
     const [difficulty, setDifficulty] = useState<Difficulty>('master');
+
+    const handleDimToggle = (checked: boolean) => {
+        setDimCleared(checked);
+        localStorage.setItem('dimCleared', JSON.stringify(checked));
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -84,11 +94,49 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
         fetchData();
     }, []);
 
+
     useEffect(() => {
         if (apiData.length > 0) {
             processData(apiData, difficulty);
         }
     }, [apiData, difficulty, songs]);
+
+    const handleStatusUpdate = (resultType: 'clear' | 'full_combo' | 'full_perfect' | null) => {
+        if (!selectedSong) return;
+
+        const songId = String(selectedSong.song_no);
+        const targetDifficulty = selectedSong.isExpert ? 'expert' : difficulty;
+
+        // Find existing result index
+        const existingIndex = userResults.findIndex(r => r.musicId === songId && r.musicDifficulty === targetDifficulty);
+
+        let newResults = [...userResults];
+
+        if (resultType === null) {
+            // Remove result
+            if (existingIndex !== -1) {
+                newResults.splice(existingIndex, 1);
+            }
+        } else {
+            const now = Date.now();
+            const newResult: UserMusicResult = {
+                musicId: songId,
+                musicDifficulty: targetDifficulty,
+                playResult: resultType,
+                score: 0, // Default score
+                createdAt: existingIndex !== -1 ? userResults[existingIndex].createdAt : now,
+                updatedAt: now
+            };
+
+            if (existingIndex !== -1) {
+                newResults[existingIndex] = newResult;
+            } else {
+                newResults.push(newResult);
+            }
+        }
+
+        onUpdateResults(newResults);
+    };
 
     const processData = (data: ApiSongStats[], diff: Difficulty) => {
         const parsedData: SongStats[] = [];
@@ -293,15 +341,27 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                             <span>표시된 악곡은 아직 세부 난이도가 정해지지 않은 악곡입니다.</span>
                         </p>
                     </div>
-                    <div className="external-links">
-                        <a href={getJpTierListUrl()} target="_blank" rel="noopener noreferrer" className="link-btn jp-tier">
-                            🇯🇵 원본 서열표
-                        </a>
-                        {getGalleryTierListUrl() && (
-                            <a href={getGalleryTierListUrl()!} target="_blank" rel="noopener noreferrer" className="link-btn gallery-tier">
-                                🇰🇷 갤 서열표
+                    <div className="external-links-container">
+                        <div className="external-links">
+                            <a href={getJpTierListUrl()} target="_blank" rel="noopener noreferrer" className="link-btn jp-tier">
+                                🇯🇵 원본 서열표
                             </a>
-                        )}
+                            {getGalleryTierListUrl() && (
+                                <a href={getGalleryTierListUrl()!} target="_blank" rel="noopener noreferrer" className="link-btn gallery-tier">
+                                    🇰🇷 갤 서열표
+                                </a>
+                            )}
+                        </div>
+                        <div className="dim-toggle-container">
+                            <label className="dim-toggle-label">
+                                <input
+                                    type="checkbox"
+                                    checked={dimCleared}
+                                    onChange={(e) => handleDimToggle(e.target.checked)}
+                                />
+                                풀콤된 곡 어둡게 표시
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -375,7 +435,15 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                                                 {pSlice.map(song => (
                                                     <div
                                                         key={song.song_no}
-                                                        className="song-card"
+                                                        className={`song-card ${(() => {
+                                                            if (!dimCleared) return '';
+                                                            const targetDifficulty = song.isExpert ? 'expert' : difficulty;
+                                                            const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
+                                                            if (!result) return '';
+                                                            if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
+                                                            if (result.playResult === 'full_combo') return 'dimmed';
+                                                            return '';
+                                                        })()}`}
                                                         title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
                                                         onClick={() => handleSongClick(song)}
                                                     >
@@ -396,7 +464,15 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                                                 {gSlice.map(song => (
                                                     <div
                                                         key={song.song_no}
-                                                        className="song-card"
+                                                        className={`song-card ${(() => {
+                                                            if (!dimCleared) return '';
+                                                            const targetDifficulty = song.isExpert ? 'expert' : difficulty;
+                                                            const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
+                                                            if (!result) return '';
+                                                            if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
+                                                            if (result.playResult === 'full_combo') return 'dimmed';
+                                                            return '';
+                                                        })()}`}
                                                         title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
                                                         onClick={() => handleSongClick(song)}
                                                     >
@@ -417,7 +493,15 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                                                 {bSlice.map(song => (
                                                     <div
                                                         key={song.song_no}
-                                                        className="song-card"
+                                                        className={`song-card ${(() => {
+                                                            if (!dimCleared) return '';
+                                                            const targetDifficulty = song.isExpert ? 'expert' : difficulty;
+                                                            const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
+                                                            if (!result) return '';
+                                                            if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
+                                                            if (result.playResult === 'full_combo') return 'dimmed';
+                                                            return '';
+                                                        })()}`}
                                                         title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
                                                         onClick={() => handleSongClick(song)}
                                                     >
@@ -517,11 +601,38 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
                                 </div>
                             )}
                         </div>
+                        <div className="popover-section status-control">
+                            <div className="status-buttons">
+                                <button
+                                    className={`status-btn ${!userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty)) ? 'active' : ''}`}
+                                    onClick={() => handleStatusUpdate(null)}
+                                >
+                                    -
+                                </button>
+                                <button
+                                    className={`status-btn clear ${userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty))?.playResult === 'clear' ? 'active' : ''}`}
+                                    onClick={() => handleStatusUpdate('clear')}
+                                >
+                                    C
+                                </button>
+                                <button
+                                    className={`status-btn fc ${userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty))?.playResult === 'full_combo' ? 'active' : ''}`}
+                                    onClick={() => handleStatusUpdate('full_combo')}
+                                >
+                                    FC
+                                </button>
+                                <button
+                                    className={`status-btn ap ${userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty))?.playResult === 'full_perfect' ? 'active' : ''}`}
+                                    onClick={() => handleStatusUpdate('full_perfect')}
+                                >
+                                    AP
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            )
-            }
-        </div >
+            )}
+        </div>
     );
 };
 

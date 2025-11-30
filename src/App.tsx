@@ -90,7 +90,13 @@ function App() {
             onUpdateResults={handleUpdateResults}
           />
         } />
-        <Route path="/stats" element={<Stats songs={songs} />} />
+        <Route path="/stats" element={
+          <Stats
+            songs={songs}
+            userResults={userResults}
+            onUpdateResults={handleUpdateResults}
+          />
+        } />
       </Routes>
     </Router>
   );

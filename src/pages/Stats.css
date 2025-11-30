@@ -343,8 +343,8 @@
 }
 
 .level-label {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     font-size: 1.2rem;
     font-weight: 900;
     background-color: #2e7d32;
@@ -474,7 +474,8 @@
 }
 
 .popover-header {
-    padding: 20px;
+    padding: 24px;
+    /* Increased padding */
     display: flex;
     gap: 15px;
     border-bottom: 1px solid #333;
@@ -604,7 +605,8 @@
 }
 
 .popover-body {
-    padding: 20px;
+    padding: 24px;
+    /* Increased padding */
 }
 
 .popover-section {
@@ -778,6 +780,141 @@
         height: 18px;
         font-size: 10px;
         top: 0;
-        left: 0;
     }
+}
+
+.external-links-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.dim-toggle-container {
+    display: flex;
+    align-items: center;
+}
+
+.dim-toggle-label {
+    display: flex;
+    align-items: center;
+    color: #e5e7eb;
+    font-size: 1.1rem;
+    /* Increased font size */
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.dim-toggle-label input {
+    margin-right: 8px;
+    width: 20px;
+    /* Increased checkbox size */
+    height: 20px;
+    cursor: pointer;
+}
+
+.song-card.dimmed img {
+    filter: brightness(0.4) grayscale(0.5);
+    transition: filter 0.3s ease;
+}
+
+.song-card.dimmed:hover img {
+    filter: brightness(0.8) grayscale(0.2);
+}
+
+.popover-section.status-control {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #374151;
+}
+
+.status-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.status-btn {
+    flex: 1;
+    padding: 6px 0;
+    /* Reduced padding */
+    border-radius: 6px;
+    border: 1px solid #4b5563;
+    background-color: #1f2937;
+    color: #9ca3af;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    /* Reduced font size */
+}
+
+.status-btn:hover {
+    background-color: #374151;
+}
+
+.status-btn.active {
+    color: white;
+    border-color: transparent;
+}
+
+.status-btn.clear.active {
+    background-color: #FFC107;
+    /* Yellow */
+    color: black;
+    /* Black text for yellow background */
+}
+
+.status-btn.fc.active {
+    background-color: #FF5252;
+    /* Red */
+}
+
+.status-btn.ap.active {
+    background: linear-gradient(to bottom right, #F06292, #64B5F6);
+    /* Pink/Blue Gradient */
+}
+
+/* Removed rainbow animation */
+
+.status-btn:first-child.active {
+    background-color: #6b7280;
+    /* Gray for None */
+}
+
+.song-card.dimmed-ap {
+    position: relative;
+    overflow: hidden;
+    /* Ensure border radius is respected */
+}
+
+.song-card.dimmed-ap::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 4px;
+    padding: 3px;
+    background: linear-gradient(to bottom right, #C2185B, #1976D2);
+    /* Darker Pink to Darker Blue */
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.song-card.dimmed-ap img {
+    filter: brightness(0.3) grayscale(0.8);
+    /* Darker again to show border */
+}
+
+.status-btn:first-child.active {
+    background-color: #6b7280;
+    /* Gray for None */
 }
