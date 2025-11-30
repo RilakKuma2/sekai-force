@@ -2,7 +2,7 @@
     width: fit-content;
     background-color: #1e1e1e;
     color: #fff;
-    font-family: Avenir, Helvetica, Arial, sans-serif;
+    font-family: Avenir, Lato, Helvetica, Arial, sans-serif;
     border-top: 1px solid #333;
 }
 
@@ -97,7 +97,7 @@
     border-bottom-left-radius: 8px;
     font-size: 11px;
     /* Smaller font */
-    font-weight: 900;
+    font-weight: 800;
     width: 26px;
     /* Fixed width to prevent expansion */
     text-align: center;
@@ -124,7 +124,7 @@
     border-bottom-right-radius: 8px;
     font-size: 11px;
     /* Smaller font */
-    font-weight: 900;
+    font-weight: 800;
     min-width: 26px;
     /* Increased width */
     text-align: center;

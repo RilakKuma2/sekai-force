@@ -76,6 +76,7 @@ const Best39: React.FC<Best39Props> = ({ best39, language }) => {
                                 rankStyle.border = '1px solid #FFFFFF';
                                 rankStyle.color = '#FFFFFF';
                                 rankStyle.backgroundImage = 'linear-gradient(to bottom, #F06292, #64B5F6)';
+                                rankStyle.fontWeight = 900;
                             } else if (item.rank === 'F') {
                                 rankStyle.border = '1px solid #F06292';
                                 rankStyle.color = '#00000099';
@@ -108,9 +109,8 @@ const Best39: React.FC<Best39Props> = ({ best39, language }) => {
                                             <div className="list-item first-row">
                                                 <div className="list-item-avatar">
                                                     <img
-                                                        src={`https://asset.rilaksekai.com/cover/${item.musicId}.jpg?v=1`}
+                                                        src={`https://asset.rilaksekai.com/cover/${item.musicId}.jpg`}
                                                         alt={item.title}
-                                                        crossOrigin="anonymous"
                                                         onError={(e) => {
                                                             (e.target as HTMLImageElement).src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAMElEQVR42u3QwQkAMAwDMYv336j/4CI40Ncg8yI58928/wAAAAAAAAAAAAAAAIBjA8lZAgF/27YAAAAASUVORK5CYII=';
                                                         }}

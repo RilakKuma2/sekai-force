@@ -142,13 +142,51 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                 // Append to body to render (hidden)
                 document.body.appendChild(clone);
 
-                // Wait for images to load (if any)
+                // Handle Images: Convert to Base64 to bypass CORS issues in html2canvas
+                const images = clone.querySelectorAll('img');
+                const imagePromises = Array.from(images).map(async (img) => {
+                    if (img.src.includes('asset.rilaksekai.com')) {
+                        return new Promise<void>((resolve) => {
+                            const tempImg = new Image();
+                            tempImg.crossOrigin = 'Anonymous';
+                            // Add timestamp to bypass cache and force CORS request
+                            tempImg.src = img.src + '?t=' + new Date().getTime();
+
+                            tempImg.onload = () => {
+                                try {
+                                    const canvas = document.createElement('canvas');
+                                    canvas.width = tempImg.width;
+                                    canvas.height = tempImg.height;
+                                    const ctx = canvas.getContext('2d');
+                                    if (ctx) {
+                                        ctx.drawImage(tempImg, 0, 0);
+                                        img.src = canvas.toDataURL('image/jpeg');
+                                    }
+                                } catch (e) {
+                                    console.warn('Failed to convert image to base64 via canvas:', img.src, e);
+                                }
+                                resolve();
+                            };
+
+                            tempImg.onerror = () => {
+                                console.warn('Failed to load image for base64 conversion:', img.src);
+                                resolve();
+                            };
+                        });
+                    }
+                    return Promise.resolve();
+                });
+
+                // Wait for all image conversions
+                await Promise.all(imagePromises);
+
+                // Wait for the new base64 images to render
                 await new Promise(resolve => setTimeout(resolve, 500));
 
                 const canvas = await html2canvas(clone, {
                     backgroundColor: '#1e1e1e',
                     scale: 2,
-                    useCORS: true, // Enable CORS to load cross-origin images
+                    useCORS: true, // Still keep this true just in case
                     allowTaint: true,
                     logging: false,
                     scrollX: 0,

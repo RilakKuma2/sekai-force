@@ -335,7 +335,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     </div>
                     <div className="info-box">
                         <p>⚠️ 뇌지컬/피지컬 분류는 정확하지 않을 수 있습니다.</p>
-                        <p>⚠️ 같은 세부 난이도 내의 곡들은 위치(좌우)에 상관없이 동등한 난이도입니다.</p>
+                        <p>⚠️ 같은 세부 난이도 내의 곡들은 위치(상하)에 상관없이 동등한 난이도입니다.</p>
                         <p>ℹ️ 곡 이미지를 클릭하면 상세 설명을 확인할 수 있습니다.</p>
                         <p>
                             <span className="negative-indicator-inline">?</span>
@@ -464,7 +464,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                         onClick={() => handleSongClick(song)}
                                                     >
                                                         <img
-                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg`}
+                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg?v=1`}
                                                             alt={song.song_name}
                                                             loading="lazy"
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
@@ -493,7 +493,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                         onClick={() => handleSongClick(song)}
                                                     >
                                                         <img
-                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg`}
+                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg?v=1`}
                                                             alt={song.song_name}
                                                             loading="lazy"
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
@@ -522,7 +522,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                         onClick={() => handleSongClick(song)}
                                                     >
                                                         <img
-                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg`}
+                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg?v=1`}
                                                             alt={song.song_name}
                                                             loading="lazy"
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
@@ -556,7 +556,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     >
                         <div className="popover-header">
                             <img
-                                src={`https://asset.rilaksekai.com/cover/${String(selectedSong.song_no).padStart(3, '0')}.jpg`}
+                                src={`https://asset.rilaksekai.com/cover/${String(selectedSong.song_no).padStart(3, '0')}.?v=1`}
                                 alt={selectedSong.song_name}
                                 className="popover-cover"
                             />
@@ -597,7 +597,10 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                             let apConstant: number | undefined;
 
                                             if (song) {
-                                                if (difficulty === 'master') {
+                                                if (selectedSong.isExpert) {
+                                                    // Expert songs don't have AP constant in this context
+                                                    apConstant = undefined;
+                                                } else if (difficulty === 'master') {
                                                     apConstant = song.mas_ap ? Number(song.mas_ap) - 0.4 : undefined;
                                                 } else if (difficulty === 'append') {
                                                     apConstant = song.apd_ap ? Number(song.apd_ap) - 0.4 : undefined;
