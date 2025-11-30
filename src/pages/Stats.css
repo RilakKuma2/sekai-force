@@ -243,13 +243,61 @@
 }
 
 .link-btn.gallery-tier {
-    background-color: #dc4c64;
+    background-color: #3f51b5;
     color: white;
-    border: 1px solid #e4b5b9;
 }
 
 .link-btn.gallery-tier:hover {
-    background-color: #c0392b;
+    background-color: #303f9f;
+}
+
+.source-info-container {
+    position: relative;
+    display: inline-block;
+}
+
+.source-info-btn {
+    background-color: #607d8b;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.source-info-btn:hover {
+    background-color: #455a64;
+}
+
+.source-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 100;
+    width: max-content;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    margin-top: 4px;
+}
+
+.source-tooltip a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.source-tooltip a:hover {
+    background-color: #444;
+    text-decoration: underline;
 }
 
 .negative-indicator-inline {

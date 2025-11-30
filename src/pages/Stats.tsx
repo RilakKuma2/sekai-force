@@ -65,6 +65,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         return saved !== null ? JSON.parse(saved) : false;
     });
     const [difficulty, setDifficulty] = useState<Difficulty>('master');
+    const [showSourceInfo, setShowSourceInfo] = useState(false);
 
     const handleDimToggle = (checked: boolean) => {
         setDimCleared(checked);
@@ -351,6 +352,21 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                     🇰🇷 갤 서열표
                                 </a>
                             )}
+                            <div
+                                className="source-info-container"
+                                onMouseEnter={() => setShowSourceInfo(true)}
+                                onMouseLeave={() => setShowSourceInfo(false)}
+                            >
+                                <button className="link-btn source-info-btn">
+                                    ℹ️ 상수 출처
+                                </button>
+                                {showSourceInfo && (
+                                    <div className="source-tooltip">
+                                        <a href="https://docs.google.com/spreadsheets/d/1KUZukWiCN5SV_DpUxGMSnj5qM8heqVQ4v2eW8TvRnR4/edit?usp=sharing" target="_blank" rel="noopener noreferrer">AP 상수</a>
+                                        <a href="https://docs.google.com/spreadsheets/d/16riiKd5B5SZDaiePjo9AQNEP1RI2kUzj_7MipbyCneY/edit?usp=sharing" target="_blank" rel="noopener noreferrer">FC 상수</a>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="dim-toggle-container">
                             <label className="dim-toggle-label">
@@ -553,6 +569,23 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                             {getCategory(selectedSong.PY_BR) === 'physical' ? '피지컬' :
                                                 getCategory(selectedSong.PY_BR) === 'brain' ? '뇌지컬' : '종합'}
                                         </span>
+                                        {(() => {
+                                            const song = songs.find(s => parseInt(s.id) === selectedSong.song_no);
+                                            let fcConstant: number | undefined;
+
+                                            if (song) {
+                                                if (selectedSong.isExpert) {
+                                                    fcConstant = song.ex_fc ? Number(song.ex_fc) - 0.4 : undefined;
+                                                } else if (difficulty === 'master') {
+                                                    fcConstant = song.mas_fc ? Number(song.mas_fc) - 0.4 : undefined;
+                                                } else if (difficulty === 'append') {
+                                                    fcConstant = song.apd_fc ? Number(song.apd_fc) - 0.4 : undefined;
+                                                }
+                                            }
+                                            return fcConstant !== undefined && !isNaN(fcConstant) ? (
+                                                <span className="popover-info">FC {fcConstant.toFixed(1)}</span>
+                                            ) : null;
+                                        })()}
                                     </div>
                                     <div className="popover-row">
                                         <span className="popover-info">
@@ -561,17 +594,18 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                         <span className="popover-info">{selectedSong.song_time}</span>
                                         {(() => {
                                             const song = songs.find(s => parseInt(s.id) === selectedSong.song_no);
-                                            let constant = 0;
+                                            let apConstant: number | undefined;
+
                                             if (song) {
-                                                if (selectedSong.isExpert) {
-                                                    constant = song.ex_fc ? song.ex_fc - 0.4 : 0;
-                                                } else if (difficulty === 'master') {
-                                                    constant = song.mas_fc ? song.mas_fc - 0.4 : 0;
+                                                if (difficulty === 'master') {
+                                                    apConstant = song.mas_ap ? Number(song.mas_ap) - 0.4 : undefined;
                                                 } else if (difficulty === 'append') {
-                                                    constant = song.apd_fc ? song.apd_fc - 0.4 : 0;
+                                                    apConstant = song.apd_ap ? Number(song.apd_ap) - 0.4 : undefined;
                                                 }
                                             }
-                                            return constant > 0 ? <span className="popover-info">상수 {constant.toFixed(1)}</span> : null;
+                                            return apConstant !== undefined && !isNaN(apConstant) ? (
+                                                <span className="popover-info">AP {apConstant.toFixed(1)}</span>
+                                            ) : null;
                                         })()}
                                     </div>
                                 </div>
