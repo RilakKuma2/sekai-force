@@ -142,55 +142,15 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                 // Append to body to render (hidden)
                 document.body.appendChild(clone);
 
-                // Handle Images: Convert to Base64 to bypass CORS issues in html2canvas
-                const images = clone.querySelectorAll('img');
-                const imagePromises = Array.from(images).map(async (img) => {
-                    if (img.src.includes('asset.rilaksekai.com')) {
-                        return new Promise<void>((resolve) => {
-                            const tempImg = new Image();
-                            tempImg.crossOrigin = 'Anonymous';
-                            // Add timestamp to bypass cache and force CORS request
-                            tempImg.src = img.src + '?t=' + new Date().getTime();
-
-                            tempImg.onload = () => {
-                                try {
-                                    const canvas = document.createElement('canvas');
-                                    canvas.width = tempImg.width;
-                                    canvas.height = tempImg.height;
-                                    const ctx = canvas.getContext('2d');
-                                    if (ctx) {
-                                        ctx.drawImage(tempImg, 0, 0);
-                                        img.src = canvas.toDataURL('image/jpeg');
-                                    }
-                                } catch (e) {
-                                    console.warn('Failed to convert image to base64 via canvas:', img.src, e);
-                                }
-                                resolve();
-                            };
-
-                            tempImg.onerror = () => {
-                                console.warn('Failed to load image for base64 conversion:', img.src);
-                                resolve();
-                            };
-                        });
-                    }
-                    return Promise.resolve();
-                });
-
-                // Wait for all image conversions
-                await Promise.all(imagePromises);
-
-                // Wait for the new base64 images to render
+                // Wait for images to load (if any)
                 await new Promise(resolve => setTimeout(resolve, 500));
 
                 const canvas = await html2canvas(clone, {
                     backgroundColor: '#1e1e1e',
                     scale: 2,
-                    useCORS: true, // Still keep this true just in case
+                    useCORS: true, // Enable CORS to load cross-origin images
                     allowTaint: true,
                     logging: false,
-                    // width: 1200, // Removed to allow auto-sizing
-                    // windowWidth: 1200, // Removed to allow auto-sizing
                     scrollX: 0,
                     scrollY: 0,
                     x: 0,
@@ -206,7 +166,13 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                 link.click();
             } catch (error) {
                 console.error('Capture failed:', error);
-                alert('이미지 저장 중 오류가 발생했습니다.');
+                alert('이미지 저장 중 오류가 발생했습니다. (Error: ' + (error instanceof Error ? error.message : String(error)) + ')');
+
+                // Ensure clone is removed if it exists
+                const existingClone = document.body.lastElementChild;
+                if (existingClone && (existingClone as HTMLElement).style.zIndex === '-9999') {
+                    document.body.removeChild(existingClone);
+                }
             }
         }
     };

@@ -83,7 +83,9 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
                         dataTotalCount[index]++;
 
                         // Check for User Result
-                        const result = resultMap.get(`${song.id}-${diff}`);
+                        // Ensure ID is padded to 3 digits to match userResults format
+                        const paddedId = String(song.id).padStart(3, '0');
+                        const result = resultMap.get(`${paddedId}-${diff}`);
                         if (result) {
                             if (result === 'full_perfect') dataPCount[index]++;
                             if (result === 'full_combo' || result === 'full_perfect') dataFCount[index]++;
@@ -152,10 +154,19 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
                         position: 'right',
                         formatter: (params: any) => {
                             const index = params.dataIndex;
-                            return dataTotalCount[index].toString();
+                            const total = dataTotalCount[index];
+                            if (total === 0) return '';
+
+                            const clear = dataCCount[index]; // Inclusive
+                            const pClear = (clear / total) * 100;
+                            const pTotal = 100;
+
+                            // Show Total only if distance from Clear is enough
+                            return (pTotal - pClear) > 12 ? total.toString() : '';
                         },
                         color: '#666',
-                        fontSize: 9
+                        fontSize: 9,
+                        distance: 5
                     }
                 },
                 // Clear (Yellow/Orange)
@@ -166,7 +177,28 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
                     itemStyle: { color: '#FFB74D', borderRadius: 2 },
                     barWidth: 10,
                     barGap: '-100%',
-                    z: 2
+                    z: 2,
+                    label: {
+                        show: true,
+                        position: 'right',
+                        formatter: (params: any) => {
+                            const index = params.dataIndex;
+                            const total = dataTotalCount[index];
+                            if (total === 0) return '';
+
+                            const clear = dataCCount[index]; // Inclusive
+                            const fc = dataFCount[index]; // Inclusive
+
+                            const pClear = (clear / total) * 100;
+                            const pFC = (fc / total) * 100;
+
+                            // Show Clear only if distance from FC is enough
+                            return (pClear - pFC) > 12 ? clear.toString() : '';
+                        },
+                        color: '#FFB74D',
+                        fontSize: 9,
+                        distance: 5
+                    }
                 },
                 // Full Combo (Pink)
                 {
@@ -176,7 +208,31 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
                     itemStyle: { color: '#F06292', borderRadius: 2 },
                     barWidth: 10,
                     barGap: '-100%',
-                    z: 3
+                    z: 3,
+                    label: {
+                        show: true,
+                        position: 'right',
+                        formatter: (params: any) => {
+                            const index = params.dataIndex;
+                            const total = dataTotalCount[index];
+                            if (total === 0) return '';
+
+                            const fc = dataFCount[index]; // Inclusive
+                            const ap = dataPCount[index]; // Inclusive
+
+                            const pFC = (fc / total) * 100;
+                            const pAP = (ap / total) * 100;
+
+                            // Show FC only if distance from AP is enough
+                            return (pFC - pAP) > 12 ? fc.toString() : '';
+                        },
+                        color: '#F06292',
+                        fontSize: 9,
+                        distance: 5,
+                        textBorderColor: 'white',
+                        fontWeight: 700,
+                        textBorderWidth: 1
+                    }
                 },
                 // All Perfect (White/Gradient)
                 {
@@ -189,7 +245,21 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
                     },
                     barWidth: 10,
                     barGap: '-100%',
-                    z: 4
+                    z: 4,
+                    label: {
+                        show: true,
+                        position: 'right',
+                        formatter: (params: any) => {
+                            const index = params.dataIndex;
+                            const ap = dataPCount[index];
+                            return ap > 0 ? ap.toString() : '';
+                        },
+                        color: '#ffffff',
+                        fontSize: 9,
+                        distance: 5,
+                        textBorderColor: 'white',
+                        textBorderWidth: 1
+                    }
                 }
             ]
         };
