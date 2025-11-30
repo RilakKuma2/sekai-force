@@ -164,18 +164,15 @@ const Stats: React.FC<StatsProps> = ({ songs }) => {
             <div className="tier-list-scroll-container">
                 <div className="tier-grid">
                     {/* Header Row */}
-                    <div className="grid-header level-tier-header">Lv / Tier</div>
+                    <div className="grid-header level-tier-header">Lv</div>
                     <div className="grid-header category-header physical">
                         <span>피지컬</span>
-                        <span className="sub-label">(PY_BR ≤ -5)</span>
                     </div>
                     <div className="grid-header category-header general">
                         <span>종합</span>
-                        <span className="sub-label">(-5 &lt; PY_BR &lt; 5)</span>
                     </div>
                     <div className="grid-header category-header brain">
                         <span>뇌지컬</span>
-                        <span className="sub-label">(PY_BR ≥ 5)</span>
                     </div>
 
                     {/* Data Rows */}
