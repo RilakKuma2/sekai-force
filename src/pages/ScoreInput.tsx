@@ -108,7 +108,7 @@ const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, upd
         <div className={`song-item ${activeEdit?.songId === song.id ? 'active-popover-parent' : ''}`} style={{ zIndex: (activeEdit?.songId === song.id || showBulkDropdown) ? 1001 : 'auto' }}>
             <div className="song-cover-wrapper">
                 <img
-                    src={`https://asset.rilaksekai.com/cover/${song.id}.jpg?v=1`}
+                    src={`https://asset.rilaksekai.com/cover/${song.id}.webp`}
                     alt={song.title_ko || song.title_jp}
                     loading="lazy"
                     className={`song-cover ${unitClass}`}

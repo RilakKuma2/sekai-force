@@ -109,7 +109,7 @@ const Best39: React.FC<Best39Props> = ({ best39, language }) => {
                                             <div className="list-item first-row">
                                                 <div className="list-item-avatar">
                                                     <img
-                                                        src={`https://asset.rilaksekai.com/cover/${item.musicId}.jpg`}
+                                                        src={`https://asset.rilaksekai.com/cover/${item.musicId}.webp`}
                                                         alt={item.title}
                                                         onError={(e) => {
                                                             (e.target as HTMLImageElement).src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAMElEQVR42u3QwQkAMAwDMYv336j/4CI40Ncg8yI58928/wAAAAAAAAAAAAAAAIBjA8lZAgF/27YAAAAASUVORK5CYII=';

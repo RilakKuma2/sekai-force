@@ -522,7 +522,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                         onClick={() => handleSongClick(song)}
                                                     >
                                                         <img
-                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg?v=1`}
+                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.webp`}
                                                             alt={song.song_name}
                                                             loading="lazy"
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
@@ -556,7 +556,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                         onClick={() => handleSongClick(song)}
                                                     >
                                                         <img
-                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg?v=1`}
+                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.webp`}
                                                             alt={song.song_name}
                                                             loading="lazy"
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
@@ -590,7 +590,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                         onClick={() => handleSongClick(song)}
                                                     >
                                                         <img
-                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.jpg?v=1`}
+                                                            src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.webp`}
                                                             alt={song.song_name}
                                                             loading="lazy"
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
@@ -624,7 +624,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     >
                         <div className="popover-header">
                             <img
-                                src={`https://asset.rilaksekai.com/cover/${String(selectedSong.song_no).padStart(3, '0')}.jpg?v=1`}
+                                src={`https://asset.rilaksekai.com/cover/${String(selectedSong.song_no).padStart(3, '0')}.webp`}
                                 alt={selectedSong.song_name}
                                 className="popover-cover"
                             />
