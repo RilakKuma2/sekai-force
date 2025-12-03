@@ -287,8 +287,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
             {
                 showProfileModal && (
                     <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
-                        <div className="preview-modal" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
-                            <h2>프로필 수정</h2>
+                        <div className="preview-modal" style={{ maxWidth: '400px', paddingTop: '15px' }} onClick={e => e.stopPropagation()}>
                             <div className="profile-edit-form">
                                 <div className="form-group">
                                     <label>곡명 표기 언어 설정</label>
@@ -323,38 +322,6 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                                             border: '1px solid #444',
                                             flexShrink: 0 // Prevent oval shape
                                         }}></div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
-                                            <label
-                                                htmlFor="profile-image-upload"
-                                                className="preview-btn"
-                                                style={{
-                                                    width: 'auto',
-                                                    height: '32px',
-                                                    backgroundColor: '#333',
-                                                    color: '#ccc',
-                                                    whiteSpace: 'nowrap',
-                                                    padding: '0 12px',
-                                                    textAlign: 'center',
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.8rem',
-                                                    border: '1px solid #555',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    boxSizing: 'border-box',
-                                                    lineHeight: '2.5'
-                                                }}
-                                            >
-                                                파일 선택
-                                            </label>
-                                            <input
-                                                id="profile-image-upload"
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageChange}
-                                                style={{ display: 'none' }}
-                                            />
-                                        </div>
                                         <button
                                             className="preview-btn"
                                             style={{
@@ -376,6 +343,37 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                                         >
                                             카드 일러 선택
                                         </button>
+                                        <label
+                                            htmlFor="profile-image-upload"
+                                            className="preview-btn"
+                                            style={{
+                                                width: 'auto',
+                                                height: '32px',
+                                                backgroundColor: '#333',
+                                                color: '#ccc',
+                                                whiteSpace: 'nowrap',
+                                                padding: '0 12px',
+                                                textAlign: 'center',
+                                                cursor: 'pointer',
+                                                fontSize: '0.8rem',
+                                                border: '1px solid #555',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxSizing: 'border-box',
+                                                lineHeight: '2.5',
+                                                flex: 1
+                                            }}
+                                        >
+                                            파일 업로드
+                                        </label>
+                                        <input
+                                            id="profile-image-upload"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            style={{ display: 'none' }}
+                                        />
                                     </div>
                                 </div>
                                 <div className="form-group">
