@@ -93,8 +93,8 @@ const Best39: React.FC<Best39Props> = ({ best39, language }) => {
                             };
 
                             if (isAppend) {
-                                levelBadgeStyle.backgroundImage = 'linear-gradient(to bottom right, #ad92fd, #fe7bde)';
-                                levelBadgeStyle.border = '1px solid transparent'; // Keep border width for alignment
+                                levelBadgeStyle.backgroundImage = 'linear-gradient(to bottom right, #ab94fe, #fe7bde)';
+                                levelBadgeStyle.border = '0.1px solid #fff'; // White border for distinction
                             } else {
                                 levelBadgeStyle.backgroundColor = diffColor!;
                                 levelBadgeStyle.border = `1px solid ${diffColor}`;
