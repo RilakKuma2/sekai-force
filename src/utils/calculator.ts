@@ -67,26 +67,29 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
         // Use precise difficulty values if available, prioritizing specific rank constants
         if (result.musicDifficulty === 'master') {
             if (rank === 'P' && song.mas_ap != null && song.mas_ap > 0) {
-                playLevel = Number(song.mas_ap) - 0.4;
+                playLevel = Number(song.mas_ap);
                 isExact = true;
             } else if (rank === 'F' && song.mas_fc != null && song.mas_fc > 0) {
-                playLevel = Number(song.mas_fc) - 0.4;
+                playLevel = Number(song.mas_fc);
                 isExact = true;
             }
         } else if (result.musicDifficulty === 'append') {
             if (rank === 'P' && song.apd_ap != null && song.apd_ap > 0) {
-                playLevel = Number(song.apd_ap) - 0.4;
+                playLevel = Number(song.apd_ap);
                 isExact = true;
             } else if (rank === 'F' && song.apd_fc != null && song.apd_fc > 0) {
-                playLevel = Number(song.apd_fc) - 0.4;
+                playLevel = Number(song.apd_fc);
                 isExact = true;
             }
         } else if (result.musicDifficulty === 'expert') {
-            if (rank === 'F' && song.ex_fc != null && song.ex_fc > 0) {
-                playLevel = Number(song.ex_fc) - 0.4;
+            if (rank === 'P' && song.ex_ap != null && song.ex_ap > 0) {
+                playLevel = Number(song.ex_ap);
+                isExact = true;
+            } else if (rank === 'F' && song.ex_fc != null && song.ex_fc > 0) {
+                playLevel = Number(song.ex_fc);
                 isExact = true;
             } else if (song.ex_diff != null && song.ex_diff > 0) {
-                playLevel = Number(song.ex_diff) - 0.4;
+                playLevel = Number(song.ex_diff);
                 isExact = true;
             }
         }

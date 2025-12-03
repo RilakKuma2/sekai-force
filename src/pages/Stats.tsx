@@ -6,32 +6,23 @@ import './Stats.css';
 
 interface ApiSongStats {
     id: string;
-    title_ko: string;
-    title_jp: string;
-    unit_code: string;
-    release_date: string;
-    bpm: number | string;
-    levels: {
-        easy: number;
-        normal: number;
-        hard: number;
-        expert: number;
-        master: number;
-        append: number;
-    };
-    length: string;
-    Judgment_mas?: string;
-    Elements_mas?: string;
-    Memo_mas?: string;
-    PhBr_mas?: string;
-    Judgment_ex?: string;
-    Elements_ex?: string;
-    Memo_ex?: string;
-    PhBr_ex?: string;
-    Judgment_apd?: string;
-    Elements_apd?: string;
-    Memo_apd?: string;
-    PhBr_apd?: string;
+    ex_el?: string;
+    ex_mm?: string;
+    ex_ph?: string;
+    ex_kst?: string;
+    ex_jst?: string;
+    mas_el?: string;
+    mas_mm?: string;
+    mas_ap_mm?: string;
+    mas_ph?: string;
+    mas_kst?: string;
+    mas_jst?: string;
+    apd_el?: string;
+    apd_mm?: string;
+    apd_ap_mm?: string;
+    apd_ph?: string;
+    apd_kst?: string;
+    apd_jst?: string;
 }
 
 interface StatsProps {
@@ -51,6 +42,8 @@ interface SongStats {
     bpm: number | string;
     song_time: string;
     isExpert?: boolean;
+    ApMemo?: string;
+    modifier?: '+' | '-' | '±' | null;
 }
 
 const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) => {
@@ -66,7 +59,17 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
     });
     const [difficulty, setDifficulty] = useState<Difficulty>('master');
     const [apMode, setApMode] = useState(false);
+    const [tierSource, setTierSource] = useState<'jp' | 'gallery'>(() => {
+        const saved = localStorage.getItem('tierSource');
+        return (saved === 'jp' || saved === 'gallery') ? saved : 'jp';
+    });
     const [showSourceInfo, setShowSourceInfo] = useState(false);
+
+    const handleTierSourceChange = (checked: boolean) => {
+        const newSource = checked ? 'gallery' : 'jp';
+        setTierSource(newSource);
+        localStorage.setItem('tierSource', newSource);
+    };
 
     const handleDimToggle = (checked: boolean) => {
         setDimCleared(checked);
@@ -101,9 +104,9 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
 
     useEffect(() => {
         if (apiData.length > 0) {
-            processData(apiData, difficulty, apMode);
+            processData(apiData, difficulty, apMode, tierSource);
         }
-    }, [apiData, difficulty, apMode, songs]);
+    }, [apiData, difficulty, apMode, tierSource, songs]);
 
     const handleStatusUpdate = (resultType: 'clear' | 'full_combo' | 'full_perfect' | null) => {
         if (!selectedSong) return;
@@ -142,66 +145,90 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         onUpdateResults(newResults);
     };
 
-    const processData = (data: ApiSongStats[], diff: Difficulty, isApMode: boolean) => {
+    const processData = (data: ApiSongStats[], diff: Difficulty, isApMode: boolean, source: 'jp' | 'gallery') => {
         const parsedData: SongStats[] = [];
 
         data.forEach(item => {
             // Find corresponding song in songs prop
             const songFromApi = songs.find(s => s.id === item.id);
 
+            // Defensive check for levels
+            const levels = songFromApi?.levels;
+            if (!levels || !songFromApi) {
+                console.warn(`No levels or song info found for song ${item.id}`);
+                return;
+            }
+
             const processSong = (d: Difficulty, isExpertOverride: boolean = false) => {
                 let level = 0;
                 let judgment = '';
                 let elements = '';
                 let memo = '';
+                let apMemo = '';
                 let phBrStr = '0';
                 let apConstant: number | undefined;
+                let modifier: '+' | '-' | '±' | null = null;
+
+                const parseGalleryTier = (kstStr: string | undefined): { tier: string, mod: '+' | '-' | '±' | null } => {
+                    if (!kstStr) return { tier: '-', mod: null };
+
+                    // Format 1: "33 0(-)" or "33 0" or "33 0(+)" or "33 0(±)" -> Tier is 0, Mod is -/+/±
+                    // Format 2: "29 +1" or "29 -1" -> Tier is +1/-1, Mod is null (or implied by tier value)
+                    // Format 3: "29 +1 (+)" -> Tier is +1, Mod is +
+
+                    // Regex 1: Level (space) Tier(Modifier)
+                    // e.g. "33 0(-)" -> match[1]=33, match[2]=0, match[3]=-
+                    // e.g. "29 +1 (+)" -> match[1]=29, match[2]=+1, match[3]=+
+                    const match1 = kstStr.match(/(\d+)\s+([+-]?\d+)(?:\s*\(([+-±])\))?/);
+                    if (match1) {
+                        return { tier: match1[2], mod: (match1[3] as '+' | '-' | '±') || null };
+                    }
+
+                    return { tier: '-', mod: null };
+                };
 
                 if (d === 'master') {
-                    level = item.levels.master;
-                    judgment = item.Judgment_mas || '-';
-                    elements = item.Elements_mas || '';
-                    memo = item.Memo_mas || '';
-                    if (songFromApi?.PhBr_mas !== undefined && songFromApi.PhBr_mas !== null && String(songFromApi.PhBr_mas).trim() !== '') {
-                        phBrStr = String(songFromApi.PhBr_mas);
+                    level = levels.master || 0;
+                    if (source === 'jp') {
+                        let rawJudgment = item.mas_jst || item.mas_kst || '-';
+                        judgment = rawJudgment.split(' ')[0];
                     } else {
-                        phBrStr = item.PhBr_mas || '0';
+                        const { tier, mod } = parseGalleryTier(item.mas_kst);
+                        judgment = tier;
+                        modifier = mod;
                     }
+                    elements = item.mas_el || '';
+                    memo = item.mas_mm || '';
+                    apMemo = isApMode ? (item.mas_ap_mm || '') : '';
+                    phBrStr = item.mas_ph || '0';
                     if (songFromApi?.mas_ap) apConstant = Number(songFromApi.mas_ap);
                 } else if (d === 'expert') {
-                    level = item.levels.expert;
-                    judgment = item.Judgment_ex || '-';
-                    elements = item.Elements_ex || '';
-                    memo = item.Memo_ex || '';
-                    if (songFromApi?.PhBr_ex !== undefined && songFromApi.PhBr_ex !== null && String(songFromApi.PhBr_ex).trim() !== '') {
-                        phBrStr = String(songFromApi.PhBr_ex);
-                    } else {
-                        phBrStr = item.PhBr_ex || '0';
-                    }
+                    level = levels.expert || 0;
+                    // Force JP source for Expert
+                    let rawJudgment = item.ex_jst || item.ex_kst || '-';
+                    judgment = rawJudgment.split(' ')[0];
+
+                    elements = item.ex_el || '';
+                    memo = item.ex_mm || '';
+                    phBrStr = item.ex_ph || '0';
+                    if (songFromApi?.ex_ap) apConstant = Number(songFromApi.ex_ap);
                 } else if (d === 'append') {
-                    level = item.levels.append;
-                    judgment = item.Judgment_apd || '-';
-                    elements = item.Elements_apd || '';
-                    memo = item.Memo_apd || '';
-                    phBrStr = item.PhBr_apd || '0';
+                    level = levels.append || 0;
+                    // Force JP source for Append
+                    let rawJudgment = item.apd_jst || item.apd_kst || '-';
+                    judgment = rawJudgment.split(' ')[0];
+
+                    elements = item.apd_el || '';
+                    memo = item.apd_mm || '';
+                    apMemo = isApMode ? (item.apd_ap_mm || '') : '';
+                    phBrStr = item.apd_ph || '0';
                     if (songFromApi?.apd_ap) apConstant = Number(songFromApi.apd_ap);
                 }
 
                 if (!level) return;
 
-                // AP Mode Logic
+                // AP Mode Logic (Overrides source logic if active and constant exists)
                 if (isApMode && apConstant !== undefined && !isNaN(apConstant)) {
-                    // Calculate tier based on decimal part
-                    // Original constant (e.g., 33.4) -> decimal 0.4
-                    // But wait, the user said "based on original constant without -0.4"
-                    // The constant in DB usually is like 33.4.
-                    // Range logic:
-                    // 0.0 ~ 0.1: -2
-                    // 0.2 ~ 0.3: -1
-                    // 0.4 ~ 0.5: 0
-                    // 0.6 ~ 0.7: +1
-                    // 0.8 ~ 0.9: +2
-
                     level = Math.floor(apConstant);
                     const decimalPart = Math.round((apConstant % 1) * 10) / 10;
 
@@ -210,34 +237,38 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     else if (decimalPart <= 0.5) judgment = '적정';
                     else if (decimalPart <= 0.7) judgment = '상위';
                     else if (decimalPart >= 0.8) judgment = '최상위';
+
+                    // Reset modifier in AP mode as it uses calculated tiers
+                    modifier = null;
                 } else if (isApMode) {
-                    // If AP mode is on but no constant, maybe exclude or put in '?'
-                    // For now, let's keep it as is or mark as '-'
                     judgment = '-';
+                    modifier = null;
                 }
 
                 const song: SongStats = {
-                    song_name: item.title_ko || item.title_jp,
+                    song_name: songFromApi.title_ko || songFromApi.title_jp,
                     Level: level,
                     Judgment: judgment,
                     Elements: elements,
                     Memo: memo,
                     PY_BR: parseFloat(phBrStr) || 0,
                     song_no: parseInt(item.id) || 0,
-                    bpm: item.bpm,
-                    song_time: item.length,
-                    isExpert: isExpertOverride
+                    bpm: songFromApi.bpm,
+                    song_time: songFromApi.length,
+                    isExpert: isExpertOverride,
+                    ApMemo: apMemo,
+                    modifier: modifier
                 };
                 parsedData.push(song);
             };
 
             if (diff === 'master') {
                 processSong('master');
-                if (item.levels.expert >= 27 && !isApMode) { // Exclude Expert from AP Mode for now as requested (only MAS/APD buttons)
+                if ((levels.expert || 0) >= 27 && !isApMode) { // Exclude Expert from AP Mode for now as requested (only MAS/APD buttons)
                     processSong('expert', true);
                 }
             } else if (diff === 'expert') {
-                if (item.levels.expert <= 26) {
+                if ((levels.expert || 0) <= 26) {
                     processSong('expert');
                 }
             } else {
@@ -248,11 +279,20 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         const newGroupedData: Record<number, Record<number, SongStats[]>> = {};
         const judgmentMap: Record<string, number> = {
             '최상위': 2,
+            '最上位': 2,
+            '最上位＋': 3,
             '상위': 1,
+            '上位': 1,
             '적정': 0,
+            '中位': 0,
+            '適正': 0,
             '-': 0,
             '하위': -1,
-            '최하위': -2
+            '下位': -1,
+            '최하위': -2,
+            '最下位': -2,
+            '2': 2, '1': 1, '0': 0, '-1': -1, '-2': -2, // Numeric strings
+            '+2': 2, '+1': 1 // Signed numeric strings
         };
 
         parsedData.forEach(song => {
@@ -381,6 +421,23 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                 AP
                             </button>
                         </div>
+                        {difficulty === 'master' && !apMode && (
+                            <div className="source-toggle-container">
+                                <div className="toggle-switch">
+                                    <input
+                                        type="checkbox"
+                                        id="source-toggle"
+                                        checked={tierSource === 'gallery'}
+                                        onChange={(e) => handleTierSourceChange(e.target.checked)}
+                                    />
+                                    <label htmlFor="source-toggle" className="toggle-label">
+                                        <span className="toggle-option jp">🇯🇵 위키서열</span>
+                                        <span className="toggle-option gallery">🇰🇷 갤서열</span>
+                                        <span className="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <div className="info-box">
                         <p>⚠️ 뇌지컬/피지컬 분류는 정확하지 않을 수 있습니다.</p>
@@ -394,7 +451,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     <div className="external-links-container">
                         <div className="external-links">
                             <a href={getJpTierListUrl()} target="_blank" rel="noopener noreferrer" className="link-btn jp-tier">
-                                🇯🇵 원본 서열표
+                                🇯🇵 위키 서열표
                             </a>
                             {getGalleryTierListUrl() && (
                                 <a href={getGalleryTierListUrl()!} target="_blank" rel="noopener noreferrer" className="link-btn gallery-tier">
@@ -457,9 +514,27 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
 
                         return sortedJudgments.map((judgment, idx) => {
                             const songs = judgments[judgment];
-                            const physical = songs.filter(s => getCategory(s.PY_BR) === 'physical').sort((a, b) => a.PY_BR - b.PY_BR);
-                            const general = songs.filter(s => getCategory(s.PY_BR) === 'general').sort((a, b) => a.PY_BR - b.PY_BR);
-                            const brain = songs.filter(s => getCategory(s.PY_BR) === 'brain').sort((a, b) => a.PY_BR - b.PY_BR);
+                            const physical = songs.filter(s => getCategory(s.PY_BR) === 'physical').sort((a, b) => {
+                                if (a.modifier !== b.modifier) {
+                                    const modVal = (m: string | null | undefined) => m === '+' ? 1 : (m === '-' ? -1 : 0);
+                                    return modVal(b.modifier) - modVal(a.modifier);
+                                }
+                                return a.PY_BR - b.PY_BR;
+                            });
+                            const general = songs.filter(s => getCategory(s.PY_BR) === 'general').sort((a, b) => {
+                                if (a.modifier !== b.modifier) {
+                                    const modVal = (m: string | null | undefined) => m === '+' ? 1 : (m === '-' ? -1 : 0);
+                                    return modVal(b.modifier) - modVal(a.modifier);
+                                }
+                                return a.PY_BR - b.PY_BR;
+                            });
+                            const brain = songs.filter(s => getCategory(s.PY_BR) === 'brain').sort((a, b) => {
+                                if (a.modifier !== b.modifier) {
+                                    const modVal = (m: string | null | undefined) => m === '+' ? 1 : (m === '-' ? -1 : 0);
+                                    return modVal(b.modifier) - modVal(a.modifier);
+                                }
+                                return a.PY_BR - b.PY_BR;
+                            });
 
                             // Calculate number of rows needed
                             const totalSongs = physical.length + general.length + brain.length;
@@ -529,6 +604,18 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                         />
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
                                                         {song.isExpert && <div className="expert-indicator">EX</div>}
+                                                        {(song.modifier === '+' || song.modifier === '±') && (
+                                                            <>
+                                                                <div className="modifier-bg up"></div>
+                                                                <div className="modifier-arrow up"></div>
+                                                            </>
+                                                        )}
+                                                        {(song.modifier === '-' || song.modifier === '±') && (
+                                                            <>
+                                                                <div className="modifier-bg down"></div>
+                                                                <div className="modifier-arrow down"></div>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>
@@ -563,6 +650,18 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                         />
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
                                                         {song.isExpert && <div className="expert-indicator">EX</div>}
+                                                        {(song.modifier === '+' || song.modifier === '±') && (
+                                                            <>
+                                                                <div className="modifier-bg up"></div>
+                                                                <div className="modifier-arrow up"></div>
+                                                            </>
+                                                        )}
+                                                        {(song.modifier === '-' || song.modifier === '±') && (
+                                                            <>
+                                                                <div className="modifier-bg down"></div>
+                                                                <div className="modifier-arrow down"></div>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>
@@ -597,6 +696,18 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                         />
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
                                                         {song.isExpert && <div className="expert-indicator">EX</div>}
+                                                        {(song.modifier === '+' || song.modifier === '±') && (
+                                                            <>
+                                                                <div className="modifier-bg up"></div>
+                                                                <div className="modifier-arrow up"></div>
+                                                            </>
+                                                        )}
+                                                        {(song.modifier === '-' || song.modifier === '±') && (
+                                                            <>
+                                                                <div className="modifier-bg down"></div>
+                                                                <div className="modifier-arrow down"></div>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>
@@ -609,135 +720,141 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                 </div>
             </div>
 
-            {selectedSong && (
-                <div className="popover-overlay" onClick={closeModal}>
-                    <div
-                        className="popover-content"
-                        onClick={e => e.stopPropagation()}
-                        style={{
-                            transform: window.innerWidth > 768 ? 'none' : `scale(${0.9 / zoomScale})`,
-                            transformOrigin: 'bottom center',
-                            width: '100%',
-                            maxWidth: window.innerWidth > 768 ? '600px' : `${600 * zoomScale}px`,
-                            marginBottom: '0'
-                        }}
-                    >
-                        <div className="popover-header">
-                            <img
-                                src={`https://asset.rilaksekai.com/cover/${String(selectedSong.song_no).padStart(3, '0')}.webp`}
-                                alt={selectedSong.song_name}
-                                className="popover-cover"
-                            />
-                            <div className="popover-title-section">
-                                <h2>{selectedSong.song_name}</h2>
-                                <div className="popover-subtitle-rows">
-                                    <div className="popover-row">
-                                        <span className="popover-level">Lv.{selectedSong.Level}</span>
-                                        <span className={`popover-category ${getCategory(selectedSong.PY_BR)}`}>
-                                            {getCategory(selectedSong.PY_BR) === 'physical' ? '피지컬' :
-                                                getCategory(selectedSong.PY_BR) === 'brain' ? '뇌지컬' : '종합'}
-                                        </span>
-                                        {(() => {
-                                            const song = songs.find(s => parseInt(s.id) === selectedSong.song_no);
-                                            let fcConstant: number | undefined;
+            {
+                selectedSong && (
+                    <div className="popover-overlay" onClick={closeModal}>
+                        <div
+                            className="popover-content"
+                            onClick={e => e.stopPropagation()}
+                            style={{
+                                transform: window.innerWidth > 768 ? 'none' : `scale(${0.9 / zoomScale})`,
+                                transformOrigin: 'bottom center',
+                                width: '100%',
+                                maxWidth: window.innerWidth > 768 ? '600px' : `${600 * zoomScale}px`,
+                                marginBottom: '0'
+                            }}
+                        >
+                            <div className="popover-header">
+                                <img
+                                    src={`https://asset.rilaksekai.com/cover/${String(selectedSong.song_no).padStart(3, '0')}.webp`}
+                                    alt={selectedSong.song_name}
+                                    className="popover-cover"
+                                />
+                                <div className="popover-title-section">
+                                    <h2>{selectedSong.song_name}</h2>
+                                    <div className="popover-subtitle-rows">
+                                        <div className="popover-row">
+                                            <span className="popover-level">Lv.{selectedSong.Level}</span>
+                                            <span className={`popover-category ${getCategory(selectedSong.PY_BR)}`}>
+                                                {getCategory(selectedSong.PY_BR) === 'physical' ? '피지컬' :
+                                                    getCategory(selectedSong.PY_BR) === 'brain' ? '뇌지컬' : '종합'}
+                                            </span>
+                                            {(() => {
+                                                const song = songs.find(s => parseInt(s.id) === selectedSong.song_no);
+                                                let fcConstant: number | undefined;
 
-                                            if (song) {
-                                                if (selectedSong.isExpert) {
-                                                    fcConstant = song.ex_fc ? Number(song.ex_fc) - 0.4 : undefined;
-                                                } else if (difficulty === 'master') {
-                                                    fcConstant = song.mas_fc ? Number(song.mas_fc) - 0.4 : undefined;
-                                                } else if (difficulty === 'append') {
-                                                    fcConstant = song.apd_fc ? Number(song.apd_fc) - 0.4 : undefined;
+                                                if (song) {
+                                                    if (selectedSong.isExpert) {
+                                                        fcConstant = song.ex_fc ? Number(song.ex_fc) : undefined;
+                                                    } else if (difficulty === 'master') {
+                                                        fcConstant = song.mas_fc ? Number(song.mas_fc) : undefined;
+                                                    } else if (difficulty === 'append') {
+                                                        fcConstant = song.apd_fc ? Number(song.apd_fc) : undefined;
+                                                    }
                                                 }
-                                            }
-                                            return fcConstant !== undefined && !isNaN(fcConstant) ? (
-                                                <span className="popover-info">FC {fcConstant.toFixed(1)}</span>
-                                            ) : null;
-                                        })()}
-                                    </div>
-                                    <div className="popover-row">
-                                        <span className="popover-info">
-                                            {/^\d+$/.test(String(selectedSong.bpm)) ? `${selectedSong.bpm} BPM` : selectedSong.bpm}
-                                        </span>
-                                        <span className="popover-info">{selectedSong.song_time}</span>
-                                        {(() => {
-                                            const song = songs.find(s => parseInt(s.id) === selectedSong.song_no);
-                                            let apConstant: number | undefined;
+                                                return fcConstant !== undefined && !isNaN(fcConstant) ? (
+                                                    <span className="popover-info">FC {fcConstant.toFixed(1)}</span>
+                                                ) : null;
+                                            })()}
+                                        </div>
+                                        <div className="popover-row">
+                                            <span className="popover-info">
+                                                {/^\d+$/.test(String(selectedSong.bpm)) ? `${selectedSong.bpm} BPM` : selectedSong.bpm}
+                                            </span>
+                                            <span className="popover-info">{selectedSong.song_time}</span>
+                                            {(() => {
+                                                const song = songs.find(s => parseInt(s.id) === selectedSong.song_no);
+                                                let apConstant: number | undefined;
 
-                                            if (song) {
-                                                if (selectedSong.isExpert) {
-                                                    // Expert songs don't have AP constant in this context
-                                                    apConstant = undefined;
-                                                } else if (difficulty === 'master') {
-                                                    apConstant = song.mas_ap ? Number(song.mas_ap) - 0.4 : undefined;
-                                                } else if (difficulty === 'append') {
-                                                    apConstant = song.apd_ap ? Number(song.apd_ap) - 0.4 : undefined;
+                                                if (song) {
+                                                    if (selectedSong.isExpert) {
+                                                        apConstant = song.ex_ap ? Number(song.ex_ap) : undefined;
+                                                    } else if (difficulty === 'master') {
+                                                        apConstant = song.mas_ap ? Number(song.mas_ap) : undefined;
+                                                    } else if (difficulty === 'append') {
+                                                        apConstant = song.apd_ap ? Number(song.apd_ap) : undefined;
+                                                    }
                                                 }
-                                            }
-                                            return apConstant !== undefined && !isNaN(apConstant) ? (
-                                                <span className="popover-info">AP {apConstant.toFixed(1)}</span>
-                                            ) : null;
-                                        })()}
+                                                return apConstant !== undefined && !isNaN(apConstant) ? (
+                                                    <span className="popover-info">AP {apConstant.toFixed(1)}</span>
+                                                ) : null;
+                                            })()}
+                                        </div>
                                     </div>
                                 </div>
+                                <a
+                                    href={`https://asset.rilaksekai.com/charts/${String(selectedSong.song_no).padStart(3, '0')}/${difficulty}.html`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="popover-chart-btn"
+                                >
+                                    채보
+                                </a>
                             </div>
-                            <a
-                                href={`https://asset.rilaksekai.com/charts/${String(selectedSong.song_no).padStart(3, '0')}/${difficulty}.html`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="popover-chart-btn"
-                            >
-                                채보
-                            </a>
-                        </div>
-                        <div className="popover-body">
-                            {selectedSong.Elements && selectedSong.Elements !== '-' && (
-                                <div className="popover-section">
-                                    <div className="elements-container">
-                                        {selectedSong.Elements.split(/[_,]/).map((el, idx) => (
-                                            <span key={idx} className="element-tag">{el.trim()}</span>
-                                        ))}
+                            <div className="popover-body">
+                                {selectedSong.Elements && selectedSong.Elements !== '-' && (
+                                    <div className="popover-section">
+                                        <div className="elements-container">
+                                            {selectedSong.Elements.split(/[_,]/).map((el, idx) => (
+                                                <span key={idx} className="element-tag">{el.trim()}</span>
+                                            ))}
+                                        </div>
                                     </div>
+                                )}
+                                {selectedSong.ApMemo && (
+                                    <div className="popover-section">
+                                        <p className="memo-text">{selectedSong.ApMemo}</p>
+                                    </div>
+                                )}
+                                {selectedSong.Memo && (
+                                    <div className="popover-section">
+                                        <p className="memo-text">{selectedSong.Memo}</p>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="popover-section status-control">
+                                <div className="status-buttons">
+                                    <button
+                                        className={`status-btn ${!userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty)) ? 'active' : ''}`}
+                                        onClick={() => handleStatusUpdate(null)}
+                                    >
+                                        -
+                                    </button>
+                                    <button
+                                        className={`status-btn clear ${userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty))?.playResult === 'clear' ? 'active' : ''}`}
+                                        onClick={() => handleStatusUpdate('clear')}
+                                    >
+                                        C
+                                    </button>
+                                    <button
+                                        className={`status-btn fc ${userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty))?.playResult === 'full_combo' ? 'active' : ''}`}
+                                        onClick={() => handleStatusUpdate('full_combo')}
+                                    >
+                                        FC
+                                    </button>
+                                    <button
+                                        className={`status-btn ap ${userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty))?.playResult === 'full_perfect' ? 'active' : ''}`}
+                                        onClick={() => handleStatusUpdate('full_perfect')}
+                                    >
+                                        AP
+                                    </button>
                                 </div>
-                            )}
-                            {selectedSong.Memo && (
-                                <div className="popover-section">
-                                    <p className="memo-text">{selectedSong.Memo}</p>
-                                </div>
-                            )}
-                        </div>
-                        <div className="popover-section status-control">
-                            <div className="status-buttons">
-                                <button
-                                    className={`status-btn ${!userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty)) ? 'active' : ''}`}
-                                    onClick={() => handleStatusUpdate(null)}
-                                >
-                                    -
-                                </button>
-                                <button
-                                    className={`status-btn clear ${userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty))?.playResult === 'clear' ? 'active' : ''}`}
-                                    onClick={() => handleStatusUpdate('clear')}
-                                >
-                                    C
-                                </button>
-                                <button
-                                    className={`status-btn fc ${userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty))?.playResult === 'full_combo' ? 'active' : ''}`}
-                                    onClick={() => handleStatusUpdate('full_combo')}
-                                >
-                                    FC
-                                </button>
-                                <button
-                                    className={`status-btn ap ${userResults.find(r => r.musicId === String(selectedSong.song_no).padStart(3, '0') && r.musicDifficulty === (selectedSong.isExpert ? 'expert' : difficulty))?.playResult === 'full_perfect' ? 'active' : ''}`}
-                                    onClick={() => handleStatusUpdate('full_perfect')}
-                                >
-                                    AP
-                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

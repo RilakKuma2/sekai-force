@@ -468,7 +468,7 @@
     width: 60px;
     height: 60px;
     border-radius: 6px;
-    overflow: hidden;
+    /* overflow: hidden; Removed to allow arrows to stick out */
     cursor: pointer;
     transition: transform 0.2s;
     background-color: #333;
@@ -489,6 +489,11 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 6px;
+    /* Moved from container to img */
+    position: relative;
+    z-index: 2;
+    /* Ensure image is above background rectangle */
 }
 
 /* Negative Judgment Badge */
@@ -889,7 +894,7 @@
     display: flex;
     align-items: center;
     color: #e5e7eb;
-    font-size: 1.1rem;
+    font-size: 1.0rem;
     /* Increased font size */
     font-weight: bold;
     cursor: pointer;
@@ -1007,4 +1012,149 @@
 .status-btn:first-child.active {
     background-color: #6b7280;
     /* Gray for None */
+}
+
+/* Source Toggle Switch */
+.source-toggle-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 8px;
+    /* Add spacing from buttons */
+    margin-top: 0;
+    /* Reset margin */
+    width: auto;
+    /* Auto width */
+}
+
+.toggle-switch {
+    position: relative;
+    width: 160px;
+    /* Reduced from 180px */
+    height: 34px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-label {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #374151;
+    transition: .4s;
+    border-radius: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    border: 1px solid #6b7280;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-slider {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 76px;
+    /* Adjusted for 160px width: (160 - 8) / 2 = 76 */
+    left: 4px;
+    bottom: 3px;
+    background-color: #3b82f6;
+    transition: .4s;
+    border-radius: 26px;
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-switch input:checked+.toggle-label .toggle-slider {
+    transform: translateX(76px);
+    /* 160 - 76 - 4 - 4 = 76 */
+    background-color: #10b981;
+    /* Green for KR/Gallery */
+}
+
+.toggle-option {
+    z-index: 2;
+    font-size: 0.8rem;
+    /* Decreased from 0.85rem */
+    font-weight: bold;
+    color: #9ca3af;
+    transition: color 0.4s;
+    user-select: none;
+    width: 50%;
+    text-align: center;
+}
+
+.toggle-switch input:not(:checked)+.toggle-label .toggle-option.jp {
+    color: white;
+}
+
+.toggle-switch input:checked+.toggle-label .toggle-option.gallery {
+    color: white;
+}
+
+/* Modifier Arrows */
+.modifier-arrow {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    z-index: 5;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+}
+
+.modifier-arrow.up {
+    top: -12px;
+    /* Moved further out */
+    border-bottom: 12px solid #ef4444;
+    /* Red Triangle pointing up */
+}
+
+.modifier-arrow.down {
+    bottom: -12px;
+    /* Moved further out */
+    border-top: 12px solid #3b82f6;
+    /* Blue Triangle pointing down */
+}
+
+/* Modifier Background Rectangle */
+.modifier-bg {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 20px;
+    border-radius: 5px;
+    z-index: 1;
+}
+
+.song-card img {
+    position: relative;
+    z-index: 2;
+    /* Ensure image is above background rectangle */
+}
+
+.modifier-bg.up {
+    top: -3px;
+    /* Sticking out from top */
+    background-color: #e34444;
+    /* Red */
+}
+
+.modifier-bg.down {
+    bottom: -3px;
+    /* Sticking out from bottom */
+    background-color: #3b82f6;
+    /* Blue */
 }
