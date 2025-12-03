@@ -135,10 +135,12 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
 
                 // Force Left Panel Styles
                 const leftPanel = clone.querySelector('.left-panel-wrapper') as HTMLElement;
-                if (leftPanel) {
-                    leftPanel.style.width = '360px';
-                    leftPanel.style.minWidth = '360px';
-                    leftPanel.style.maxWidth = '360px';
+                const originalLeftPanel = original.querySelector('.left-panel-wrapper') as HTMLElement;
+                if (leftPanel && originalLeftPanel) {
+                    const originalWidth = originalLeftPanel.offsetWidth;
+                    leftPanel.style.width = `${originalWidth}px`;
+                    leftPanel.style.minWidth = `${originalWidth}px`;
+                    leftPanel.style.maxWidth = `${originalWidth}px`;
                     leftPanel.style.flexShrink = '0';
                     leftPanel.style.borderRight = '1px solid #333';
                     leftPanel.style.borderBottom = 'none';

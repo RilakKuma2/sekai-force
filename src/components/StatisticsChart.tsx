@@ -119,7 +119,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
 
         const option: echarts.EChartsOption = {
             backgroundColor: 'transparent',
-            grid: { top: 10, bottom: 10, left: 20, right: 50, containLabel: false },
+            grid: { top: 10, bottom: 10, left: 20, right: 30, containLabel: false },
             xAxis: {
                 type: 'value',
                 show: false,
