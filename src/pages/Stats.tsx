@@ -383,43 +383,45 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
             <div className="stats-header">
                 <button onClick={() => navigate(-1)} className="back-button">&lt; 뒤로가기</button>
                 <div className="header-controls">
-                    <div className="difficulty-toggles">
-                        <div className="diff-col">
-                            <button
-                                className={`diff-btn master ${difficulty === 'master' && !apMode ? 'active' : ''}`}
-                                onClick={() => { setDifficulty('master'); setApMode(false); }}
-                            >
-                                MAS
-                            </button>
-                            <button
-                                className={`diff-btn master-ap ${difficulty === 'master' && apMode ? 'active' : ''}`}
-                                onClick={() => { setDifficulty('master'); setApMode(true); }}
-                            >
-                                AP
-                            </button>
-                        </div>
-                        <div className="diff-col">
-                            <button
-                                className={`diff-btn expert ${difficulty === 'expert' ? 'active' : ''}`}
-                                onClick={() => { setDifficulty('expert'); setApMode(false); }}
-                            >
-                                EXP
-                            </button>
-                            <div className="diff-placeholder"></div>
-                        </div>
-                        <div className="diff-col">
-                            <button
-                                className={`diff-btn append ${difficulty === 'append' && !apMode ? 'active' : ''}`}
-                                onClick={() => { setDifficulty('append'); setApMode(false); }}
-                            >
-                                APD
-                            </button>
-                            <button
-                                className={`diff-btn append-ap ${difficulty === 'append' && apMode ? 'active' : ''}`}
-                                onClick={() => { setDifficulty('append'); setApMode(true); }}
-                            >
-                                AP
-                            </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                        <div className="difficulty-toggles">
+                            <div className="diff-col">
+                                <button
+                                    className={`diff-btn master ${difficulty === 'master' && !apMode ? 'active' : ''}`}
+                                    onClick={() => { setDifficulty('master'); setApMode(false); }}
+                                >
+                                    MAS
+                                </button>
+                                <button
+                                    className={`diff-btn master-ap ${difficulty === 'master' && apMode ? 'active' : ''}`}
+                                    onClick={() => { setDifficulty('master'); setApMode(true); }}
+                                >
+                                    AP
+                                </button>
+                            </div>
+                            <div className="diff-col">
+                                <button
+                                    className={`diff-btn expert ${difficulty === 'expert' ? 'active' : ''}`}
+                                    onClick={() => { setDifficulty('expert'); setApMode(false); }}
+                                >
+                                    EXP
+                                </button>
+                                <div className="diff-placeholder"></div>
+                            </div>
+                            <div className="diff-col">
+                                <button
+                                    className={`diff-btn append ${difficulty === 'append' && !apMode ? 'active' : ''}`}
+                                    onClick={() => { setDifficulty('append'); setApMode(false); }}
+                                >
+                                    APD
+                                </button>
+                                <button
+                                    className={`diff-btn append-ap ${difficulty === 'append' && apMode ? 'active' : ''}`}
+                                    onClick={() => { setDifficulty('append'); setApMode(true); }}
+                                >
+                                    AP
+                                </button>
+                            </div>
                         </div>
                         {difficulty === 'master' && !apMode && (
                             <div className="source-toggle-container">
