@@ -129,12 +129,18 @@
 .ap-header-badge {
     background: linear-gradient(to bottom, #F06292, #64B5F6);
     color: #fff;
-    padding: 4px 8px;
+    padding: 4px 0;
+    /* Reduced horizontal padding */
     border-radius: 4px;
     font-weight: 900;
-    font-size: 0.9rem;
+    font-size: 1.0rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
+    display: block;
+    /* Make it block to fill width */
+    width: 100%;
+    /* Fill the container */
+    text-align: center;
 }
 
 .back-button {
@@ -198,6 +204,8 @@
     background-color: #4b5563;
     border-right: 1px solid #6b7280;
     font-size: 1rem;
+    padding: 15px 4px;
+    /* Increased horizontal padding for better spacing */
 }
 
 .category-header {
