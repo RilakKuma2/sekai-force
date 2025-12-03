@@ -6,6 +6,7 @@ import Best39 from '../components/Best39';
 import Summary from '../components/Summary';
 import StatisticsChart from '../components/StatisticsChart';
 import FloatingButton from '../components/FloatingButton';
+import AssetImageSelector from '../components/AssetImageSelector';
 import './ScoreInput.css'; // Reusing modal styles
 
 interface DashboardProps {
@@ -24,8 +25,10 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
     const [twitterId, setTwitterId] = useState('');
     const [registrationDate, setRegistrationDate] = useState('2020-10-03T15:39:39');
     const [playerName, setPlayerName] = useState('셐붕이');
+    const [profileImage, setProfileImage] = useState<string | null>('https://asset.rilaksekai.com/face/21/008_normal.webp');
     const [language, setLanguage] = useState<'ko' | 'jp'>('ko');
     const [showProfileModal, setShowProfileModal] = useState(false);
+    const [showAssetSelector, setShowAssetSelector] = useState(false);
     const dashboardRef = useRef<HTMLDivElement>(null);
 
     // Load profile from local storage
@@ -39,6 +42,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                 setTwitterId(parsed.twitterId || '');
                 setRegistrationDate(parsed.registrationDate || '2020-10-03T15:39:39');
                 setPlayerName(parsed.playerName || '셐붕이');
+                setProfileImage(parsed.profileImage || 'https://asset.rilaksekai.com/face/21/008_normal.webp');
                 setLanguage(parsed.language || 'ko');
             } catch (e) {
                 console.error("Failed to load profile", e);
@@ -46,11 +50,13 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
         }
     }, []);
 
-    const handleSaveProfile = () => {
-        const profile = { sekaiRank, playerId, twitterId, registrationDate, playerName, language };
+    // Auto-save profile whenever relevant state changes
+    useEffect(() => {
+        const profile = { sekaiRank, playerId, twitterId, registrationDate, playerName, language, profileImage };
         localStorage.setItem('userProfile', JSON.stringify(profile));
-        setShowProfileModal(false);
-    };
+    }, [sekaiRank, playerId, twitterId, registrationDate, playerName, language, profileImage]);
+
+    // Removed manual handleSaveProfile as it's now auto-saved
 
     const handleResetProfile = () => {
         if (window.confirm('프로필을 초기화하시겠습니까?')) {
@@ -59,12 +65,23 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
             setTwitterId('');
             setRegistrationDate('2020-10-03T15:39:39');
             setPlayerName('셐붕이');
+            setProfileImage('https://asset.rilaksekai.com/face/21/008_normal.webp');
             setLanguage('ko');
             localStorage.removeItem('userProfile');
             setShowProfileModal(false);
         }
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfileImage(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleCapture = async () => {
         if (dashboardRef.current) {
@@ -72,6 +89,9 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                 // Clone the dashboard element
                 const original = dashboardRef.current;
                 const clone = original.cloneNode(true) as HTMLElement;
+
+                // Add capture-mode class to the clone
+                clone.classList.add('capture-mode');
 
                 // Copy Canvas Content (Critical for ECharts)
                 const originalCanvases = original.querySelectorAll('canvas');
@@ -241,6 +261,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                             twitterId={twitterId}
                             registrationDate={registrationDate}
                             playerName={playerName}
+                            profileImage={profileImage}
                         />
                     </div>
 
@@ -273,16 +294,85 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                                         <button
                                             className={`preview-btn ${language === 'ko' ? 'confirm' : 'cancel'}`}
                                             onClick={() => setLanguage('ko')}
-                                            style={{ flex: 1 }}
+                                            style={{ flex: 1, fontSize: '0.8rem', padding: '6px 0' }}
                                         >
                                             한국어
                                         </button>
                                         <button
                                             className={`preview-btn ${language === 'jp' ? 'confirm' : 'cancel'}`}
                                             onClick={() => setLanguage('jp')}
-                                            style={{ flex: 1 }}
+                                            style={{ flex: 1, fontSize: '0.8rem', padding: '6px 0' }}
                                         >
                                             日本語
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>프로필 이미지</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div style={{
+                                            width: '50px',
+                                            height: '50px',
+                                            borderRadius: '50%',
+                                            backgroundColor: '#333',
+                                            backgroundImage: profileImage ? `url(${profileImage})` : 'none',
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            border: '1px solid #444',
+                                            flexShrink: 0 // Prevent oval shape
+                                        }}></div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
+                                            <label
+                                                htmlFor="profile-image-upload"
+                                                className="preview-btn"
+                                                style={{
+                                                    width: 'auto',
+                                                    height: '32px',
+                                                    backgroundColor: '#333',
+                                                    color: '#ccc',
+                                                    whiteSpace: 'nowrap',
+                                                    padding: '0 12px',
+                                                    textAlign: 'center',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.8rem',
+                                                    border: '1px solid #555',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    boxSizing: 'border-box',
+                                                    lineHeight: '2.5'
+                                                }}
+                                            >
+                                                파일 선택
+                                            </label>
+                                            <input
+                                                id="profile-image-upload"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                                style={{ display: 'none' }}
+                                            />
+                                        </div>
+                                        <button
+                                            className="preview-btn"
+                                            style={{
+                                                width: 'auto',
+                                                height: '32px',
+                                                backgroundColor: '#4b5563',
+                                                color: 'white',
+                                                whiteSpace: 'nowrap',
+                                                padding: '0 12px',
+                                                fontSize: '0.8rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxSizing: 'border-box',
+                                                border: 'none',
+                                                lineHeight: '1'
+                                            }}
+                                            onClick={() => setShowAssetSelector(true)}
+                                        >
+                                            카드 일러 선택
                                         </button>
                                     </div>
                                 </div>
@@ -350,13 +440,23 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                             <div className="preview-actions">
                                 <button className="preview-btn cancel" onClick={handleResetProfile} style={{ backgroundColor: '#d32f2f' }}>초기화</button>
                                 <div style={{ flex: 1 }}></div>
-                                <button className="preview-btn cancel" onClick={() => setShowProfileModal(false)}>취소</button>
-                                <button className="preview-btn confirm" onClick={handleSaveProfile}>저장</button>
+                                <button className="preview-btn confirm" onClick={() => setShowProfileModal(false)}>닫기</button>
                             </div>
                         </div>
                     </div>
                 )
             }
+
+            {/* Asset Image Selector Modal */}
+            {showAssetSelector && (
+                <AssetImageSelector
+                    onSelect={(url) => {
+                        setProfileImage(url);
+                        setShowAssetSelector(false);
+                    }}
+                    onClose={() => setShowAssetSelector(false)}
+                />
+            )}
         </div >
     );
 };

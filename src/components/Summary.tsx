@@ -13,9 +13,10 @@ interface SummaryProps {
     twitterId: string;
     registrationDate: string;
     playerName: string;
+    profileImage?: string | null;
 }
 
-const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank, playerId, twitterId, registrationDate, playerName }) => {
+const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank, playerId, twitterId, registrationDate, playerName, profileImage }) => {
     const [showInfo, setShowInfo] = useState(false);
 
     // Calculate summary data
@@ -65,7 +66,10 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank
             {/* Header Info */}
             <div className="summary-section">
                 <div className="list-item" style={{ minHeight: '60px' }}>
-                    <div className="list-item-avatar-placeholder"></div>
+                    <div
+                        className="list-item-avatar-placeholder"
+                        style={profileImage ? { backgroundImage: `url(${profileImage})` } : {}}
+                    ></div>
                     <div className="user-info-header">
                         <div className="list-item-title">{playerName}</div>
                         <div className="user-rank-container">

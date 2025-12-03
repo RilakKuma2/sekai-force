@@ -96,6 +96,12 @@
     background-size: cover;
 }
 
+/* Capture Mode Adjustments */
+.capture-mode .summary-section>div[style*="height: 600px"] {
+    transform: scale(0.95);
+    transform-origin: center;
+}
+
 /* Difficulty Breakdown Styles */
 .header-row {
     padding-right: 16px;
