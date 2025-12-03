@@ -104,6 +104,17 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                             destCanvas.width = sourceCanvas.width;
                             destCanvas.height = sourceCanvas.height;
                             context.drawImage(sourceCanvas, 0, 0);
+
+                            // Force canvas to fill the container (which is forced to 400px)
+                            // This scales up the mobile-rendered chart to fit the PC layout
+                            destCanvas.style.width = '100%';
+                            destCanvas.style.height = '100%';
+
+                            // Also force the parent element (ECharts container) to 100%
+                            if (destCanvas.parentElement) {
+                                destCanvas.parentElement.style.width = '100%';
+                                destCanvas.parentElement.style.height = '100%';
+                            }
                         }
                     }
                 });
@@ -135,12 +146,13 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
 
                 // Force Left Panel Styles
                 const leftPanel = clone.querySelector('.left-panel-wrapper') as HTMLElement;
-                const originalLeftPanel = original.querySelector('.left-panel-wrapper') as HTMLElement;
-                if (leftPanel && originalLeftPanel) {
-                    const originalWidth = originalLeftPanel.offsetWidth;
-                    leftPanel.style.width = `${originalWidth}px`;
-                    leftPanel.style.minWidth = `${originalWidth}px`;
-                    leftPanel.style.maxWidth = `${originalWidth}px`;
+                if (leftPanel) {
+                    // Force PC width (400px) regardless of current device width
+                    // This ensures "PC Layout Capture" works on mobile
+                    const pcPanelWidth = '400px';
+                    leftPanel.style.width = pcPanelWidth;
+                    leftPanel.style.minWidth = pcPanelWidth;
+                    leftPanel.style.maxWidth = pcPanelWidth;
                     leftPanel.style.flexShrink = '0';
                     leftPanel.style.borderRight = '1px solid #333';
                     leftPanel.style.borderBottom = 'none';
