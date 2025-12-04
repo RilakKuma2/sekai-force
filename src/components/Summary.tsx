@@ -15,9 +15,11 @@ interface SummaryProps {
     registrationDate: string;
     playerName: string;
     profileImage?: string | null;
+    lastModified?: string | null;
+    displayDateType?: 'registration' | 'lastModified';
 }
 
-const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTotalR, sekaiRank, playerId, twitterId, registrationDate, playerName, profileImage }) => {
+const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTotalR, sekaiRank, playerId, twitterId, registrationDate, playerName, profileImage, lastModified, displayDateType = 'registration' }) => {
     const [activeTooltip, setActiveTooltip] = useState<'none' | 'general' | 'append'>('none');
 
     // Calculate summary data
@@ -88,6 +90,11 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTot
         };
     }, [activeTooltip]);
 
+    const displayDateLabel = displayDateType === 'lastModified' ? 'Last updated' : 'Registration at';
+    const displayDateValue = displayDateType === 'lastModified'
+        ? (lastModified ? lastModified.replace('T', ' ').replace(/-/g, '/').split('.')[0] : '-')
+        : registrationDate.replace('T', ' ').replace(/-/g, '/');
+
     return (
         <div className="summary-container">
             {/* Header Info */}
@@ -118,8 +125,8 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTot
                 </div>
                 <div className="divider"></div>
                 <div className="list-item">
-                    <div className="list-item-content">Registration at</div>
-                    <div className="list-item-action">{registrationDate.replace('T', ' ').replace(/-/g, '/')}</div>
+                    <div className="list-item-content">{displayDateLabel}</div>
+                    <div className="list-item-action">{displayDateValue}</div>
                 </div>
                 <div className="divider"></div>
                 <div className="list-item">

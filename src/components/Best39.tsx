@@ -124,7 +124,7 @@ const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTot
         }
 
         const levelBadgeStyle: React.CSSProperties = {
-            color: isAppend ? '#000000' : '#222222'
+            color: isAppend ? '#222222' : '#222222'
         };
 
         if (isAppend) {

@@ -18,9 +18,10 @@ interface DashboardProps {
     appendTotalR: number;
     loading: boolean;
     error: string | null;
+    lastModified?: string | null;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userResults, totalR, appendTotalR, loading, error }) => {
+const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userResults, totalR, appendTotalR, loading, error, lastModified }) => {
     // Profile State
     const [sekaiRank, setSekaiRank] = useState('399');
     const [playerId, setPlayerId] = useState('6393939393939393');
@@ -29,8 +30,10 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
     const [playerName, setPlayerName] = useState('셐붕이');
     const [profileImage, setProfileImage] = useState<string | null>('https://asset.rilaksekai.com/face/21/008_normal.webp');
     const [language, setLanguage] = useState<'ko' | 'jp'>('ko');
+    const [displayDateType, setDisplayDateType] = useState<'registration' | 'lastModified'>('registration');
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [showAssetSelector, setShowAssetSelector] = useState(false);
+    const [isProfileLoaded, setIsProfileLoaded] = useState(false);
     const dashboardRef = useRef<HTMLDivElement>(null);
 
     // Load profile from local storage
@@ -46,17 +49,20 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                 setPlayerName(parsed.playerName || '셐붕이');
                 setProfileImage(parsed.profileImage || 'https://asset.rilaksekai.com/face/21/008_normal.webp');
                 setLanguage(parsed.language || 'ko');
+                setDisplayDateType(parsed.displayDateType || 'registration');
             } catch (e) {
                 console.error("Failed to load profile", e);
             }
         }
+        setIsProfileLoaded(true);
     }, []);
 
     // Auto-save profile whenever relevant state changes
     useEffect(() => {
-        const profile = { sekaiRank, playerId, twitterId, registrationDate, playerName, language, profileImage };
+        if (!isProfileLoaded) return;
+        const profile = { sekaiRank, playerId, twitterId, registrationDate, playerName, language, profileImage, displayDateType };
         localStorage.setItem('userProfile', JSON.stringify(profile));
-    }, [sekaiRank, playerId, twitterId, registrationDate, playerName, language, profileImage]);
+    }, [sekaiRank, playerId, twitterId, registrationDate, playerName, language, profileImage, displayDateType, isProfileLoaded]);
 
     // Removed manual handleSaveProfile as it's now auto-saved
 
@@ -69,6 +75,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
             setPlayerName('셐붕이');
             setProfileImage('https://asset.rilaksekai.com/face/21/008_normal.webp');
             setLanguage('ko');
+            setDisplayDateType('registration');
             localStorage.removeItem('userProfile');
             setShowProfileModal(false);
         }
@@ -196,6 +203,8 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                             registrationDate={registrationDate}
                             playerName={playerName}
                             profileImage={profileImage}
+                            lastModified={lastModified}
+                            displayDateType={displayDateType}
                         />
                     </div>
 
@@ -264,6 +273,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                                         </button>
                                     </div>
                                 </div>
+
                                 <div className="form-group">
                                     <label>프로필 이미지</label>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -360,8 +370,29 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Registration at</label>
-                                    <div className="date-time-group" style={{ display: 'flex', gap: '10px' }}>
+                                    <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
+                                        <button
+                                            className={`preview-btn ${displayDateType === 'registration' ? 'confirm' : 'cancel'}`}
+                                            onClick={() => setDisplayDateType('registration')}
+                                            style={{ flex: 1, fontSize: '0.8rem', padding: '6px 0' }}
+                                        >
+                                            Registration at
+                                        </button>
+                                        <button
+                                            className={`preview-btn ${displayDateType === 'lastModified' ? 'confirm' : 'cancel'}`}
+                                            onClick={() => setDisplayDateType('lastModified')}
+                                            style={{ flex: 1, fontSize: '0.8rem', padding: '6px 0' }}
+                                        >
+                                            Last updated
+                                        </button>
+                                    </div>
+                                    <div className="date-time-group" style={{
+                                        display: 'flex',
+                                        gap: '10px',
+                                        opacity: displayDateType === 'lastModified' ? 0.5 : 1,
+                                        pointerEvents: displayDateType === 'lastModified' ? 'none' : 'auto',
+                                        transition: 'opacity 0.2s'
+                                    }}>
                                         <input
                                             type="date"
                                             value={registrationDate.split('T')[0]}
@@ -448,6 +479,8 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                                     registrationDate={registrationDate}
                                     playerName={playerName}
                                     profileImage={profileImage}
+                                    lastModified={lastModified}
+                                    displayDateType={displayDateType}
                                 />
                             </div>
 

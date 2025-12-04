@@ -14,6 +14,7 @@ function App() {
   const [bestAppend, setBestAppend] = useState<MusicDifficultyStatus[]>([]);
   const [totalR, setTotalR] = useState<number>(0);
   const [appendTotalR, setAppendTotalR] = useState<number>(0);
+  const [lastModified, setLastModified] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +46,11 @@ function App() {
           setUserResults([]);
         }
 
+        const savedLastModified = localStorage.getItem('sekai_last_modified');
+        if (savedLastModified) {
+          setLastModified(savedLastModified);
+        }
+
       } catch (err) {
         console.error("Failed to load data", err);
         setError("Failed to load data. Please check the console or API connection.");
@@ -72,6 +78,9 @@ function App() {
 
   const handleUpdateResults = (newResults: UserMusicResult[]) => {
     setUserResults(newResults);
+    const now = new Date().toISOString();
+    setLastModified(now);
+    localStorage.setItem('sekai_last_modified', now);
   };
 
   return (
@@ -87,6 +96,7 @@ function App() {
             appendTotalR={appendTotalR}
             loading={loading}
             error={error}
+            lastModified={lastModified}
           />
         } />
         <Route path="/input" element={
