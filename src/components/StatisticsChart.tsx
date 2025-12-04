@@ -14,6 +14,9 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
     const chartRef = useRef<HTMLDivElement>(null);
     const mobileStandardRef = useRef<HTMLDivElement>(null);
     const mobileAppendRef = useRef<HTMLDivElement>(null);
+    const chartInstance = useRef<echarts.ECharts | null>(null);
+    const mobileChart1Instance = useRef<echarts.ECharts | null>(null);
+    const mobileChart2Instance = useRef<echarts.ECharts | null>(null);
     const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
 
     useEffect(() => {
@@ -25,25 +28,33 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
     }, []);
 
     useEffect(() => {
-        // Cleanup previous instances
-        const dispose = (ref: React.RefObject<HTMLDivElement | null>) => {
-            if (ref.current) {
-                const instance = echarts.getInstanceByDom(ref.current);
-                if (instance) instance.dispose();
+        // Helper to safely dispose a chart instance
+        const safeDispose = (instanceRef: React.MutableRefObject<echarts.ECharts | null>) => {
+            if (instanceRef.current) {
+                instanceRef.current.dispose();
+                instanceRef.current = null;
             }
         };
 
+        // Dispose of any existing charts from the *other* mode before initializing the current mode's charts.
+        // This handles the transition when isMobile changes.
         if (isMobile) {
-            dispose(chartRef);
+            safeDispose(chartInstance);
         } else {
-            dispose(mobileStandardRef);
-            dispose(mobileAppendRef);
+            safeDispose(mobileChart1Instance);
+            safeDispose(mobileChart2Instance);
         }
 
         if (!isMobile) {
             // DESKTOP: Single Bar Chart (Existing Logic)
             if (!chartRef.current) return;
+
+            // Ensure no existing ECharts instance is on this DOM element before initializing
+            const existingInstance = echarts.getInstanceByDom(chartRef.current);
+            if (existingInstance) existingInstance.dispose();
+
             const chart = echarts.init(chartRef.current);
+            chartInstance.current = chart; // Store the instance
 
             // ... (Existing Desktop Data Processing & Option) ...
             // 1. Determine all available levels and Append levels
@@ -124,7 +135,10 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
             chart.setOption(option);
             const handleResize = () => chart.resize();
             window.addEventListener('resize', handleResize);
-            return () => { window.removeEventListener('resize', handleResize); chart.dispose(); };
+            return () => {
+                window.removeEventListener('resize', handleResize);
+                safeDispose(chartInstance); // Dispose the stored instance
+            };
 
         } else {
             // MOBILE: Two Line Charts
@@ -190,7 +204,12 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
             };
 
             const renderMobileChart = (ref: React.RefObject<HTMLDivElement | null>, isAppend: boolean) => {
-                if (!ref.current) return;
+                if (!ref.current) return null;
+
+                // Ensure no existing ECharts instance is on this DOM element before initializing
+                const existingInstance = echarts.getInstanceByDom(ref.current);
+                if (existingInstance) existingInstance.dispose();
+
                 const chart = echarts.init(ref.current);
                 const data = processMobileData(isAppend);
 
@@ -224,6 +243,9 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
             const chart1 = renderMobileChart(mobileStandardRef, false);
             const chart2 = renderMobileChart(mobileAppendRef, true);
 
+            mobileChart1Instance.current = chart1; // Store the instance
+            mobileChart2Instance.current = chart2; // Store the instance
+
             const handleResize = () => {
                 chart1?.resize();
                 chart2?.resize();
@@ -231,8 +253,8 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
             window.addEventListener('resize', handleResize);
             return () => {
                 window.removeEventListener('resize', handleResize);
-                chart1?.dispose();
-                chart2?.dispose();
+                safeDispose(mobileChart1Instance); // Dispose the stored instance
+                safeDispose(mobileChart2Instance); // Dispose the stored instance
             };
         }
     }, [best39, userResults, songs, isMobile]);
@@ -245,20 +267,34 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
                 <span className="legend-item"><span className="dot f"></span> <span className="legend-text fc">Full Combo</span></span>
                 <span className="legend-item"><span className="dot p"></span> <span className="legend-text ap">All Perfect</span></span>
             </div>
-            {isMobile ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div>
-                        <div style={{ color: '#aaa', fontSize: '12px', marginLeft: '16px', marginBottom: '4px' }}>Standard</div>
-                        <div ref={mobileStandardRef} style={{ width: '100%', height: '200px' }} />
-                    </div>
-                    <div>
-                        <div style={{ color: '#aaa', fontSize: '12px', marginLeft: '16px', marginBottom: '4px' }}>Append</div>
-                        <div ref={mobileAppendRef} style={{ width: '100%', height: '200px' }} />
-                    </div>
+
+            {/* Desktop Chart Container */}
+            <div
+                ref={chartRef}
+                style={{
+                    width: '100%',
+                    height: '600px',
+                    display: isMobile ? 'none' : 'block'
+                }}
+            />
+
+            {/* Mobile Chart Container */}
+            <div
+                style={{
+                    display: isMobile ? 'flex' : 'none',
+                    flexDirection: 'column',
+                    gap: '20px'
+                }}
+            >
+                <div>
+                    <div style={{ color: '#aaa', fontSize: '12px', marginLeft: '16px', marginBottom: '4px' }}>Standard</div>
+                    <div ref={mobileStandardRef} style={{ width: '100%', height: '200px' }} />
                 </div>
-            ) : (
-                <div ref={chartRef} style={{ width: '100%', height: '600px' }} />
-            )}
+                <div>
+                    <div style={{ color: '#aaa', fontSize: '12px', marginLeft: '16px', marginBottom: '4px' }}>Append</div>
+                    <div ref={mobileAppendRef} style={{ width: '100%', height: '200px' }} />
+                </div>
+            </div>
         </div>
     );
 };
