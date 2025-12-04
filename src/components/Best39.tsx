@@ -241,7 +241,7 @@ const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTot
                 {/* Append Best 13 Section (Grid of 3) */}
                 <div className="section-append-mobile">
                     <div className="divider"></div>
-                    {Array.from({ length: 5 }).map((_, rowIndex) => ( // 5 rows for 13 items
+                    {Array.from({ length: 5 }).map((_, rowIndex) => ( // 5 rows for 15 items
                         <React.Fragment key={rowIndex}>
                             {rowIndex > 0 && <div className="divider"></div>}
                             <div className="d-flex">
@@ -251,7 +251,7 @@ const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTot
                                     return (
                                         <React.Fragment key={colIndex}>
                                             {colIndex > 0 && <div className="vertical-divider"></div>}
-                                            {index < 13 ? renderCell(item, index, true) : <div className="best39-cell" style={{ backgroundColor: '#2a2a2a' }}></div>}
+                                            {index < 15 ? renderCell(item, index, true) : <div className="best39-cell" style={{ backgroundColor: '#2a2a2a' }}></div>}
                                         </React.Fragment>
                                     );
                                 })}
@@ -311,7 +311,7 @@ const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTot
             {variant === 'append' && (
                 <div className="section-append-grid" style={{ borderTop: '1px solid #333', width: '100%' }}>
                     <div className="divider"></div>
-                    {Array.from({ length: 5 }).map((_, rowIndex) => ( // 5 rows for 13 items
+                    {Array.from({ length: 5 }).map((_, rowIndex) => ( // 5 rows for 15 items
                         <React.Fragment key={rowIndex}>
                             {rowIndex > 0 && <div className="divider"></div>}
                             <div className="d-flex">
@@ -321,7 +321,7 @@ const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTot
                                     return (
                                         <React.Fragment key={colIndex}>
                                             {colIndex > 0 && <div className="vertical-divider"></div>}
-                                            {index < 13 ? renderCell(item, index, true) : <div className="best39-cell" style={{ backgroundColor: '#2a2a2a' }}></div>}
+                                            {index < 15 ? renderCell(item, index, true) : <div className="best39-cell" style={{ backgroundColor: '#2a2a2a' }}></div>}
                                         </React.Fragment>
                                     );
                                 })}

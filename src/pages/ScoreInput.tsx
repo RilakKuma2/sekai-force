@@ -1127,7 +1127,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
                             {previewBestAppend.length > 0 && (
                                 <div className="preview-best39" style={{ marginTop: '20px' }}>
-                                    <h3>Best Append 미리보기 (Top 13)</h3>
+                                    <h3>Best Append 미리보기 (Top 15)</h3>
                                     <div className="preview-list">
                                         {previewBestAppend.map((item, idx) => (
                                             <div key={idx} className="preview-item">

@@ -124,7 +124,7 @@ export const processUserBest = (songs: Song[], userResults: UserMusicResult[]): 
 
     // Sort by R descending
     const best39 = others.filter(s => s.r > 0).sort((a, b) => b.r - a.r).slice(0, 39);
-    const bestAppend = appends.filter(s => s.r > 0).sort((a, b) => b.r - a.r).slice(0, 13);
+    const bestAppend = appends.filter(s => s.r > 0).sort((a, b) => b.r - a.r).slice(0, 15);
 
     return { best39, bestAppend };
 };
@@ -137,5 +137,5 @@ export const calculateTotalR = (best39: MusicDifficultyStatus[]): number => {
 
 export const calculateAppendR = (bestAppend: MusicDifficultyStatus[]): number => {
     const sumAppend = bestAppend.reduce((sum, status) => sum + Math.round(status.r), 0);
-    return sumAppend * 3;
+    return Math.floor(sumAppend * 2.6);
 };

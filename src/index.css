@@ -1,7 +1,7 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 
 :root {
-  font-family: "Pretendard", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Avenir, Lato, "Pretendard", system-ui, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 

@@ -223,7 +223,7 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTot
                         {activeTooltip === 'append' && (
                             <div className="info-tooltip">
                                 <p><strong>Append R</strong></p>
-                                <p>Sum of the Music R in Best 13 Append * 3.</p>
+                                <p>Sum of the Music R in Best 15 Append * 2.6.</p>
                                 <p>Calculated separately from the main Best 39.</p>
                             </div>
                         )}
