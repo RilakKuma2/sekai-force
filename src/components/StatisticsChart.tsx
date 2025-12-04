@@ -8,20 +8,22 @@ interface StatisticsChartProps {
     best39: MusicDifficultyStatus[];
     userResults: UserMusicResult[];
     songs: Song[];
+    forcePcLayout?: boolean;
 }
 
-const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, songs }) => {
+const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, songs, forcePcLayout = false }) => {
     const chartRef = useRef<HTMLDivElement>(null);
     const mobileStandardRef = useRef<HTMLDivElement>(null);
     const mobileAppendRef = useRef<HTMLDivElement>(null);
     const chartInstance = useRef<echarts.ECharts | null>(null);
     const mobileChart1Instance = useRef<echarts.ECharts | null>(null);
     const mobileChart2Instance = useRef<echarts.ECharts | null>(null);
-    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+    const [isMobileState, setIsMobileState] = React.useState(window.innerWidth <= 768);
+    const isMobile = forcePcLayout ? false : isMobileState;
 
     useEffect(() => {
         const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
+            setIsMobileState(window.innerWidth <= 768);
         };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);

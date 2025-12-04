@@ -9,6 +9,7 @@ interface Best39Props {
     language: 'ko' | 'jp';
     totalR: number;
     appendTotalR: number;
+    forcePcLayout?: boolean;
 }
 
 const getDifficultyColor = (difficulty: string) => {
@@ -36,12 +37,13 @@ const formatLevel = (playLevel: number, baseLevel: number) => {
     }
 };
 
-const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTotalR }) => {
+const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTotalR, forcePcLayout = false }) => {
     const rows = 13;
-    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 450);
+    const [isMobileState, setIsMobileState] = React.useState(window.innerWidth <= 450);
+    const isMobile = forcePcLayout ? false : isMobileState;
 
     React.useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth <= 450);
+        const handleResize = () => setIsMobileState(window.innerWidth <= 450);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);

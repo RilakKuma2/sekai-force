@@ -85,170 +85,87 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
         }
     };
 
+    const [isCapturing, setIsCapturing] = useState(false);
+    const captureRef = useRef<HTMLDivElement>(null);
+
     const handleCapture = async () => {
-        if (dashboardRef.current) {
-            try {
-                // Clone the dashboard element
-                const original = dashboardRef.current;
-                const clone = original.cloneNode(true) as HTMLElement;
+        setIsCapturing(true);
 
-                // Add capture-mode class to the clone
-                clone.classList.add('capture-mode');
+        // Wait for render and ECharts initialization
+        setTimeout(async () => {
+            if (captureRef.current) {
+                try {
+                    const element = captureRef.current;
 
-                // Copy Canvas Content (Critical for ECharts)
-                const originalCanvases = original.querySelectorAll('canvas');
-                const cloneCanvases = clone.querySelectorAll('canvas');
-                originalCanvases.forEach((sourceCanvas, index) => {
-                    const destCanvas = cloneCanvases[index];
-                    if (destCanvas) {
-                        const context = destCanvas.getContext('2d');
-                        if (context) {
-                            destCanvas.width = sourceCanvas.width;
-                            destCanvas.height = sourceCanvas.height;
-                            context.drawImage(sourceCanvas, 0, 0);
+                    // Handle Images: Convert to Base64 to bypass CORS issues in html2canvas
+                    const images = element.querySelectorAll('img');
+                    const imagePromises = Array.from(images).map(async (img) => {
+                        if (img.src.includes('asset.rilaksekai.com')) {
+                            return new Promise<void>((resolve) => {
+                                const tempImg = new Image();
+                                tempImg.crossOrigin = 'Anonymous';
+                                // Add timestamp to bypass cache and force CORS request
+                                tempImg.src = img.src + '?t=' + new Date().getTime();
 
-                            // Force canvas to fill the container (which is forced to 400px)
-                            // This scales up the mobile-rendered chart to fit the PC layout
-                            destCanvas.style.width = '100%';
-                            destCanvas.style.height = '100%';
-
-                            // Also force the parent element (ECharts container) to 100%
-                            if (destCanvas.parentElement) {
-                                destCanvas.parentElement.style.width = '100%';
-                                destCanvas.parentElement.style.height = '100%';
-                            }
-                        }
-                    }
-                });
-
-                // Force Desktop Styles on Clone
-                clone.style.position = 'fixed';
-                clone.style.top = '0';
-                clone.style.left = '0';
-                clone.style.zIndex = '-9999';
-
-                clone.style.width = 'fit-content';
-                clone.style.minWidth = 'auto';
-                clone.style.maxWidth = 'none';
-                clone.style.height = 'auto';
-                clone.style.minHeight = '800px';
-
-                clone.style.display = 'flex';
-                clone.style.flexDirection = 'row';
-                clone.style.alignItems = 'flex-start';
-                clone.style.justifyContent = 'flex-start';
-                clone.style.gap = '0';
-
-                clone.style.backgroundColor = '#1e1e1e';
-                clone.style.border = '1px solid #333';
-                clone.style.borderRadius = '8px';
-                clone.style.padding = '0';
-                clone.style.margin = '0';
-                clone.style.transform = 'none';
-
-                // Force Left Panel Styles
-                const leftPanel = clone.querySelector('.left-panel-wrapper') as HTMLElement;
-                if (leftPanel) {
-                    // Force PC width (400px) regardless of current device width
-                    // This ensures "PC Layout Capture" works on mobile
-                    const pcPanelWidth = '400px';
-                    leftPanel.style.width = pcPanelWidth;
-                    leftPanel.style.minWidth = pcPanelWidth;
-                    leftPanel.style.maxWidth = pcPanelWidth;
-                    leftPanel.style.flexShrink = '0';
-                    leftPanel.style.borderRight = '1px solid #333';
-                    leftPanel.style.borderBottom = 'none';
-                    leftPanel.style.display = 'flex';
-                    leftPanel.style.flexDirection = 'column';
-                    leftPanel.style.margin = '0';
-                    leftPanel.style.padding = '0';
-                    leftPanel.style.overflow = 'hidden'; // Prevent chart overflow
-                }
-
-                // Force Best39 Section Styles
-                const best39Section = clone.querySelector('.best39-section') as HTMLElement;
-                if (best39Section) {
-                    best39Section.style.flexGrow = '1';
-                    best39Section.style.width = 'auto';
-                    best39Section.style.maxWidth = 'none';
-                    best39Section.style.margin = '0';
-                    best39Section.style.padding = '0';
-                }
-
-                // Append to body to render (hidden)
-                document.body.appendChild(clone);
-
-                // Handle Images: Convert to Base64 to bypass CORS issues in html2canvas
-                const images = clone.querySelectorAll('img');
-                const imagePromises = Array.from(images).map(async (img) => {
-                    if (img.src.includes('asset.rilaksekai.com')) {
-                        return new Promise<void>((resolve) => {
-                            const tempImg = new Image();
-                            tempImg.crossOrigin = 'Anonymous';
-                            // Add timestamp to bypass cache and force CORS request
-                            tempImg.src = img.src + '?t=' + new Date().getTime();
-
-                            tempImg.onload = () => {
-                                try {
-                                    const canvas = document.createElement('canvas');
-                                    canvas.width = tempImg.width;
-                                    canvas.height = tempImg.height;
-                                    const ctx = canvas.getContext('2d');
-                                    if (ctx) {
-                                        ctx.drawImage(tempImg, 0, 0);
-                                        img.src = canvas.toDataURL('image/jpeg');
+                                tempImg.onload = () => {
+                                    try {
+                                        const canvas = document.createElement('canvas');
+                                        canvas.width = tempImg.width;
+                                        canvas.height = tempImg.height;
+                                        const ctx = canvas.getContext('2d');
+                                        if (ctx) {
+                                            ctx.drawImage(tempImg, 0, 0);
+                                            img.src = canvas.toDataURL('image/jpeg');
+                                        }
+                                    } catch (e) {
+                                        console.warn('Failed to convert image to base64 via canvas:', img.src, e);
                                     }
-                                } catch (e) {
-                                    console.warn('Failed to convert image to base64 via canvas:', img.src, e);
-                                }
-                                resolve();
-                            };
+                                    resolve();
+                                };
 
-                            tempImg.onerror = () => {
-                                console.warn('Failed to load image for base64 conversion:', img.src);
-                                resolve();
-                            };
-                        });
-                    }
-                    return Promise.resolve();
-                });
+                                tempImg.onerror = () => {
+                                    console.warn('Failed to load image for base64 conversion:', img.src);
+                                    resolve();
+                                };
+                            });
+                        }
+                        return Promise.resolve();
+                    });
 
-                // Wait for all image conversions
-                await Promise.all(imagePromises);
+                    // Wait for all image conversions
+                    await Promise.all(imagePromises);
 
-                // Wait for the new base64 images to render
-                await new Promise(resolve => setTimeout(resolve, 500));
+                    // Wait for the new base64 images to render
+                    await new Promise(resolve => setTimeout(resolve, 500));
 
-                const canvas = await html2canvas(clone, {
-                    backgroundColor: '#1e1e1e',
-                    scale: 2,
-                    useCORS: true, // Still keep this true just in case
-                    allowTaint: true,
-                    logging: false,
-                    scrollX: 0,
-                    scrollY: 0,
-                    x: 0,
-                    y: 0
-                });
+                    const canvas = await html2canvas(element, {
+                        backgroundColor: '#1e1e1e',
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false,
+                        scrollX: 0,
+                        scrollY: 0,
+                        x: 0,
+                        y: 0,
+                        width: 930, // Adjusted to fit content (400px left + ~530px right)
+                        windowWidth: 930
+                    });
 
-                // Remove clone
-                document.body.removeChild(clone);
-
-                const link = document.createElement('a');
-                link.download = `sekai-force-dashboard-${new Date().getTime()}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            } catch (error) {
-                console.error('Capture failed:', error);
-                alert('이미지 저장 중 오류가 발생했습니다. (Error: ' + (error instanceof Error ? error.message : String(error)) + ')');
-
-                // Ensure clone is removed if it exists
-                const existingClone = document.body.lastElementChild;
-                if (existingClone && (existingClone as HTMLElement).style.zIndex === '-9999') {
-                    document.body.removeChild(existingClone);
+                    const link = document.createElement('a');
+                    link.download = `sekai-force-dashboard-${new Date().getTime()}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                } catch (error) {
+                    console.error('Capture failed:', error);
+                    alert('이미지 저장 중 오류가 발생했습니다. (Error: ' + (error instanceof Error ? error.message : String(error)) + ')');
+                } finally {
+                    setIsCapturing(false);
                 }
+            } else {
+                setIsCapturing(false);
             }
-        }
+        }, 1000); // Give it 1s to render ECharts and layout
     };
 
     if (loading) {
@@ -477,6 +394,67 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                     }}
                     onClose={() => setShowAssetSelector(false)}
                 />
+            )}
+
+            {/* Off-screen Capture Container */}
+            {isCapturing && (
+                <div
+                    ref={captureRef}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        zIndex: -9999,
+                        width: '930px', // Adjusted to fit content
+                        minWidth: '930px',
+                        backgroundColor: '#1e1e1e',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        padding: 0,
+                        margin: 0
+                    }}
+                >
+                    <div className="dashboard-layout" style={{ width: '100%', maxWidth: 'none', margin: 0, display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
+                        <div className="left-panel-wrapper" style={{ width: '400px', minWidth: '400px', flexShrink: 0, borderRight: '1px solid #333', display: 'flex', flexDirection: 'column' }}>
+                            <div className="profile-section">
+                                <Summary
+                                    best39={best39}
+                                    userResults={userResults}
+                                    songs={songs}
+                                    totalR={totalR}
+                                    appendTotalR={appendTotalR}
+                                    sekaiRank={sekaiRank}
+                                    playerId={playerId}
+                                    twitterId={twitterId}
+                                    registrationDate={registrationDate}
+                                    playerName={playerName}
+                                    profileImage={profileImage}
+                                />
+                            </div>
+
+                            <div className="chart-section">
+                                <StatisticsChart
+                                    best39={best39}
+                                    userResults={userResults}
+                                    songs={songs}
+                                    forcePcLayout={true}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="best39-section" style={{ flexGrow: 1, width: 'auto', maxWidth: 'none' }}>
+                            <Best39
+                                best39={best39}
+                                bestAppend={bestAppend}
+                                language={language}
+                                totalR={totalR}
+                                appendTotalR={appendTotalR}
+                                forcePcLayout={true}
+                            />
+                        </div>
+                    </div>
+                </div>
             )}
         </div >
     );
