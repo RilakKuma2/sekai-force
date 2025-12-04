@@ -229,14 +229,37 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
 
                 // AP Mode Logic (Overrides source logic if active and constant exists)
                 if (isApMode && apConstant !== undefined && !isNaN(apConstant)) {
-                    level = Math.floor(apConstant);
-                    const decimalPart = Math.round((apConstant % 1) * 10) / 10;
+                    // level = Math.floor(apConstant); // Don't overwrite level with AP constant floor
 
-                    if (decimalPart <= 0.1) judgment = '최하위';
-                    else if (decimalPart <= 0.3) judgment = '하위';
-                    else if (decimalPart <= 0.5) judgment = '적정';
-                    else if (decimalPart <= 0.7) judgment = '상위';
-                    else if (decimalPart >= 0.8) judgment = '최상위';
+                    // Calculate difference between AP constant and Level
+                    // Round to 1 decimal place to avoid floating point errors
+                    const diff = Math.round((apConstant - level) * 10) / 10;
+
+                    if (level >= 34) {
+                        // Level >= 34 Rules
+                        // -0.4 ~ -0.3: Bottom
+                        // -0.2 ~ -0.1: Lower
+                        // 0 ~ 0.1: Mid
+                        // 0.2 ~ 0.3: Upper
+                        // 0.4 ~ 0.5: Top
+                        if (diff <= -0.3) judgment = '최하위';
+                        else if (diff <= -0.1) judgment = '하위';
+                        else if (diff <= 0.1) judgment = '적정';
+                        else if (diff <= 0.3) judgment = '상위';
+                        else judgment = '최상위'; // >= 0.4
+                    } else {
+                        // Level < 34 Rules
+                        // -0.6 ~ -0.5: Bottom
+                        // -0.4 ~ -0.2: Lower
+                        // -0.1 ~ 0.1: Mid
+                        // 0.2 ~ 0.3: Upper
+                        // 0.4 ~ 0.7: Top
+                        if (diff <= -0.5) judgment = '최하위';
+                        else if (diff <= -0.2) judgment = '하위';
+                        else if (diff <= 0.1) judgment = '적정';
+                        else if (diff <= 0.3) judgment = '상위';
+                        else judgment = '최상위'; // >= 0.4
+                    }
 
                     // Reset modifier in AP mode as it uses calculated tiers
                     modifier = null;
@@ -292,7 +315,9 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
             '최하위': -2,
             '最下位': -2,
             '2': 2, '1': 1, '0': 0, '-1': -1, '-2': -2, // Numeric strings
-            '+2': 2, '+1': 1 // Signed numeric strings
+            '+2': 2, '+1': 1, // Signed numeric strings
+            '3': 3, '+3': 3, '-3': -3,
+            '4': 4, '+4': 4, '-4': -4
         };
 
         parsedData.forEach(song => {
