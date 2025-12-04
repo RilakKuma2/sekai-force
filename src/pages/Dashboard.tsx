@@ -148,8 +148,8 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                         scrollY: 0,
                         x: 0,
                         y: 0,
-                        width: 930, // Adjusted to fit content (400px left + ~530px right)
-                        windowWidth: 930
+                        width: 800, // Adjusted to fit content (400px left + ~390px right)
+                        windowWidth: 800
                     });
 
                     const link = document.createElement('a');
@@ -199,8 +199,25 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                         />
                     </div>
 
+                    {/* Append Best 13 (Moved to Left Panel) */}
+                    <div className="append-section-left">
+                        <Best39
+                            best39={best39}
+                            bestAppend={bestAppend}
+                            language={language}
+                            totalR={totalR}
+                            appendTotalR={appendTotalR}
+                            variant="append"
+                        />
+                    </div>
+
                     <div className="chart-section">
-                        <StatisticsChart best39={best39} userResults={userResults} songs={songs} />
+                        <StatisticsChart
+                            best39={best39}
+                            userResults={userResults}
+                            songs={songs}
+                            chartType="line"
+                        />
                     </div>
                 </div >
 
@@ -211,6 +228,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                         language={language}
                         totalR={totalR}
                         appendTotalR={appendTotalR}
+                        variant="main"
                     />
                 </div>
 
@@ -405,8 +423,8 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                         top: 0,
                         left: 0,
                         zIndex: -9999,
-                        width: '930px', // Adjusted to fit content
-                        minWidth: '930px',
+                        width: '800px', // Adjusted to fit content
+                        minWidth: '800px',
                         backgroundColor: '#1e1e1e',
                         display: 'flex',
                         flexDirection: 'column',
@@ -416,8 +434,8 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                     }}
                 >
                     <div className="dashboard-layout" style={{ width: '100%', maxWidth: 'none', margin: 0, display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
-                        <div className="left-panel-wrapper" style={{ width: '400px', minWidth: '400px', flexShrink: 0, borderRight: '1px solid #333', display: 'flex', flexDirection: 'column' }}>
-                            <div className="profile-section">
+                        <div className="left-panel-wrapper" style={{ width: '400px', minWidth: '400px', flexShrink: 0, borderRight: '1px solid #333', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+                            <div className="profile-section" style={{ width: '100%', position: 'relative', display: 'block', order: 1 }}>
                                 <Summary
                                     best39={best39}
                                     userResults={userResults}
@@ -430,15 +448,30 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                                     registrationDate={registrationDate}
                                     playerName={playerName}
                                     profileImage={profileImage}
+                                    forcePcLayout={true}
                                 />
                             </div>
 
-                            <div className="chart-section">
+                            {/* Append Best 13 (Moved to Left Panel) */}
+                            <div className="append-section-left" style={{ order: 2 }}>
+                                <Best39
+                                    best39={best39}
+                                    bestAppend={bestAppend}
+                                    language={language}
+                                    totalR={totalR}
+                                    appendTotalR={appendTotalR}
+                                    forcePcLayout={true}
+                                    variant="append"
+                                />
+                            </div>
+
+                            <div className="chart-section" style={{ order: 3 }}>
                                 <StatisticsChart
                                     best39={best39}
                                     userResults={userResults}
                                     songs={songs}
                                     forcePcLayout={true}
+                                    chartType="line"
                                 />
                             </div>
                         </div>
@@ -451,6 +484,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                                 totalR={totalR}
                                 appendTotalR={appendTotalR}
                                 forcePcLayout={true}
+                                variant="main"
                             />
                         </div>
                     </div>

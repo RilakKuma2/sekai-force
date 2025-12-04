@@ -9,9 +9,10 @@ interface StatisticsChartProps {
     userResults: UserMusicResult[];
     songs: Song[];
     forcePcLayout?: boolean;
+    chartType?: 'auto' | 'bar' | 'line';
 }
 
-const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, songs, forcePcLayout = false }) => {
+const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, songs, forcePcLayout = false, chartType = 'auto' }) => {
     const chartRef = useRef<HTMLDivElement>(null);
     const mobileStandardRef = useRef<HTMLDivElement>(null);
     const mobileAppendRef = useRef<HTMLDivElement>(null);
@@ -19,7 +20,11 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
     const mobileChart1Instance = useRef<echarts.ECharts | null>(null);
     const mobileChart2Instance = useRef<echarts.ECharts | null>(null);
     const [isMobileState, setIsMobileState] = React.useState(window.innerWidth <= 768);
+
+    // Determine effective mode
     const isMobile = forcePcLayout ? false : isMobileState;
+    const effectiveChartType = chartType === 'auto' ? (isMobile ? 'line' : 'bar') : chartType;
+    const showLineChart = effectiveChartType === 'line';
 
     useEffect(() => {
         const handleResize = () => {
@@ -39,15 +44,14 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
         };
 
         // Dispose of any existing charts from the *other* mode before initializing the current mode's charts.
-        // This handles the transition when isMobile changes.
-        if (isMobile) {
+        if (showLineChart) {
             safeDispose(chartInstance);
         } else {
             safeDispose(mobileChart1Instance);
             safeDispose(mobileChart2Instance);
         }
 
-        if (!isMobile) {
+        if (!showLineChart) {
             // DESKTOP: Single Bar Chart (Existing Logic)
             if (!chartRef.current) return;
 
@@ -143,7 +147,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
             };
 
         } else {
-            // MOBILE: Two Line Charts
+            // MOBILE / LINE CHART: Two Line Charts
             const processMobileData = (isAppend: boolean) => {
                 const levels = new Set<number>();
                 songs.forEach(song => {
@@ -259,7 +263,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
                 safeDispose(mobileChart2Instance); // Dispose the stored instance
             };
         }
-    }, [best39, userResults, songs, isMobile]);
+    }, [best39, userResults, songs, showLineChart]);
 
     return (
         <div className="summary-section">
@@ -276,14 +280,14 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
                 style={{
                     width: '100%',
                     height: '600px',
-                    display: isMobile ? 'none' : 'block'
+                    display: !showLineChart ? 'block' : 'none'
                 }}
             />
 
             {/* Mobile Chart Container */}
             <div
                 style={{
-                    display: isMobile ? 'flex' : 'none',
+                    display: showLineChart ? 'flex' : 'none',
                     flexDirection: 'column',
                     gap: '20px'
                 }}

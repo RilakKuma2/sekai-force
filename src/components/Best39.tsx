@@ -10,6 +10,7 @@ interface Best39Props {
     totalR: number;
     appendTotalR: number;
     forcePcLayout?: boolean;
+    variant?: 'combined' | 'main' | 'append';
 }
 
 const getDifficultyColor = (difficulty: string) => {
@@ -37,7 +38,7 @@ const formatLevel = (playLevel: number, baseLevel: number) => {
     }
 };
 
-const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTotalR, forcePcLayout = false }) => {
+const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTotalR, forcePcLayout = false, variant = 'combined' }) => {
     const rows = 13;
     const [isMobileState, setIsMobileState] = React.useState(window.innerWidth <= 450);
     const isMobile = forcePcLayout ? false : isMobileState;
@@ -128,7 +129,7 @@ const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTot
 
         if (isAppend) {
             levelBadgeStyle.backgroundImage = 'linear-gradient(to bottom right, #ab94fe, #fe7bde)';
-            levelBadgeStyle.border = '0.1px solid #fff';
+            levelBadgeStyle.border = '1px solid transparent';
         } else {
             levelBadgeStyle.backgroundColor = diffColor!;
             levelBadgeStyle.border = `1px solid ${diffColor}`;
@@ -181,6 +182,10 @@ const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTot
     };
 
     if (isMobile) {
+        // On mobile, the 'main' (or combined) instance renders the full layout (Main + Summary + Append).
+        // The 'append' instance (used for PC left panel) should be hidden to avoid duplication.
+        if (variant === 'append') return null;
+
         // Mobile Layout: Main (3 cols) -> Scores -> Append (3 cols)
         const mainRows = 13;
         // const appendRows = Math.ceil(bestAppend.length / 3); // Should be 5 rows for 13 items
@@ -259,43 +264,73 @@ const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language, appendTot
         );
     }
 
+    // Desktop Layout
     return (
-        <div className="best39-list" style={{ display: 'flex', flexDirection: 'row', alignItems: 'stretch' }}>
+        <div className="best39-list" style={{ display: 'flex', flexDirection: 'row', alignItems: 'stretch', borderTop: 'none' }}>
             {/* Main Best 39 Section */}
-            <div className="section-main">
-                <div className="divider"></div>
-                {Array.from({ length: rows }).map((_, rowIndex) => (
-                    <React.Fragment key={rowIndex}>
-                        {rowIndex > 0 && <div className="divider"></div>}
-                        <div className="d-flex">
-                            {Array.from({ length: 3 }).map((_, colIndex) => (
-                                <React.Fragment key={colIndex}>
-                                    {colIndex > 0 && <div className="vertical-divider"></div>}
-                                    {renderCell(best39[rowIndex * 3 + colIndex], rowIndex * 3 + colIndex, false)}
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    </React.Fragment>
-                ))}
-                <div className="divider"></div>
-            </div>
+            {(variant === 'combined' || variant === 'main') && (
+                <div className="section-main" style={{ borderTop: '1px solid #333' }}>
+                    <div className="divider"></div>
+                    {Array.from({ length: rows }).map((_, rowIndex) => (
+                        <React.Fragment key={rowIndex}>
+                            {rowIndex > 0 && <div className="divider"></div>}
+                            <div className="d-flex">
+                                {Array.from({ length: 3 }).map((_, colIndex) => (
+                                    <React.Fragment key={colIndex}>
+                                        {colIndex > 0 && <div className="vertical-divider"></div>}
+                                        {renderCell(best39[rowIndex * 3 + colIndex], rowIndex * 3 + colIndex, false)}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        </React.Fragment>
+                    ))}
+                    <div className="divider"></div>
+                </div>
+            )}
 
-            {/* Thick Divider */}
-            <div className="vertical-divider thick"></div>
+            {/* Thick Divider - Only if combined */}
+            {variant === 'combined' && <div className="vertical-divider thick"></div>}
 
             {/* Append Section */}
-            <div className="section-append">
-                <div className="divider"></div>
-                {Array.from({ length: rows }).map((_, rowIndex) => (
-                    <React.Fragment key={rowIndex}>
-                        {rowIndex > 0 && <div className="divider"></div>}
-                        <div className="d-flex">
-                            {renderCell(bestAppend[rowIndex], rowIndex, true)}
-                        </div>
-                    </React.Fragment>
-                ))}
-                <div className="divider"></div>
-            </div>
+            {(variant === 'combined') && (
+                <div className="section-append" style={{ borderTop: '1px solid #333' }}>
+                    <div className="divider"></div>
+                    {Array.from({ length: rows }).map((_, rowIndex) => (
+                        <React.Fragment key={rowIndex}>
+                            {rowIndex > 0 && <div className="divider"></div>}
+                            <div className="d-flex">
+                                {renderCell(bestAppend[rowIndex], rowIndex, true)}
+                            </div>
+                        </React.Fragment>
+                    ))}
+                    <div className="divider"></div>
+                </div>
+            )}
+
+            {/* Append Only Section (Grid Layout for Desktop Left Panel) */}
+            {variant === 'append' && (
+                <div className="section-append-grid" style={{ borderTop: '1px solid #333', width: '100%' }}>
+                    <div className="divider"></div>
+                    {Array.from({ length: 5 }).map((_, rowIndex) => ( // 5 rows for 13 items
+                        <React.Fragment key={rowIndex}>
+                            {rowIndex > 0 && <div className="divider"></div>}
+                            <div className="d-flex">
+                                {Array.from({ length: 3 }).map((_, colIndex) => {
+                                    const index = rowIndex * 3 + colIndex;
+                                    const item = bestAppend[index];
+                                    return (
+                                        <React.Fragment key={colIndex}>
+                                            {colIndex > 0 && <div className="vertical-divider"></div>}
+                                            {index < 13 ? renderCell(item, index, true) : <div className="best39-cell" style={{ backgroundColor: '#2a2a2a' }}></div>}
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </div>
+                        </React.Fragment>
+                    ))}
+                    <div className="divider"></div>
+                </div>
+            )}
         </div>
     );
 };
