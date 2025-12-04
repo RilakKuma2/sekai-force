@@ -94,10 +94,15 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTot
             {/* Header Info */}
             <div className="summary-section">
                 <div className="list-item" style={{ minHeight: '60px' }}>
-                    <div
-                        className="list-item-avatar-placeholder"
-                        style={profileImage ? { backgroundImage: `url(${profileImage})` } : {}}
-                    ></div>
+                    <div className="list-item-avatar-placeholder">
+                        {profileImage && (
+                            <img
+                                src={profileImage}
+                                alt="Profile"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                            />
+                        )}
+                    </div>
                     <div className="user-info-header">
                         <div className="list-item-title">{playerName}</div>
                         <div className="user-rank-container">

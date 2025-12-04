@@ -10,9 +10,10 @@ interface StatisticsChartProps {
     songs: Song[];
     forcePcLayout?: boolean;
     chartType?: 'auto' | 'bar' | 'line';
+    displayMode?: 'all' | 'standard' | 'append';
 }
 
-const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, songs, forcePcLayout = false, chartType = 'auto' }) => {
+const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, songs, forcePcLayout = false, chartType = 'auto', displayMode = 'all' }) => {
     const chartRef = useRef<HTMLDivElement>(null);
     const mobileStandardRef = useRef<HTMLDivElement>(null);
     const mobileAppendRef = useRef<HTMLDivElement>(null);
@@ -221,7 +222,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
 
                 const option: echarts.EChartsOption = {
                     backgroundColor: 'transparent',
-                    grid: { top: 20, bottom: 20, left: 30, right: 10, containLabel: false },
+                    grid: { top: 10, bottom: 20, left: 30, right: 10, containLabel: false },
                     xAxis: {
                         type: 'category',
                         data: data.categories,
@@ -267,7 +268,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
 
     return (
         <div className="summary-section">
-            <div className="chart-legend" style={{ fontSize: '10px' }}>
+            <div className="chart-legend" style={{ fontSize: '10px', paddingBottom: '2px', marginBottom: '-10px' }}>
                 <span className="legend-item"><span className="dot unlocked"></span> Unlocked</span>
                 <span className="legend-item"><span className="dot c"></span> Clear</span>
                 <span className="legend-item"><span className="dot f"></span> <span className="legend-text fc">Full Combo</span></span>
@@ -289,17 +290,28 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
                 style={{
                     display: showLineChart ? 'flex' : 'none',
                     flexDirection: 'column',
-                    gap: '20px'
+                    gap: '0px'
                 }}
             >
-                <div>
-                    <div style={{ color: '#aaa', fontSize: '12px', marginLeft: '16px', marginBottom: '4px' }}>Standard</div>
-                    <div ref={mobileStandardRef} style={{ width: '100%', height: '200px' }} />
-                </div>
-                <div>
-                    <div style={{ color: '#aaa', fontSize: '12px', marginLeft: '16px', marginBottom: '4px' }}>Append</div>
-                    <div ref={mobileAppendRef} style={{ width: '100%', height: '200px' }} />
-                </div>
+                {(displayMode === 'all' || displayMode === 'standard') && (
+                    <div>
+                        <div ref={mobileStandardRef} style={{ width: '100%', height: '120px' }} />
+                    </div>
+                )}
+                {(displayMode === 'all' || displayMode === 'append') && (
+                    <div>
+                        <div style={{
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            color: '#aaa',
+                            marginLeft: '30px',
+                            marginBottom: '-10px',
+                            position: 'relative',
+                            zIndex: 1
+                        }}>Append</div>
+                        <div ref={mobileAppendRef} style={{ width: '100%', height: '120px' }} />
+                    </div>
+                )}
             </div>
         </div>
     );

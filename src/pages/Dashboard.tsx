@@ -463,15 +463,21 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                                     forcePcLayout={true}
                                     variant="append"
                                 />
-                            </div>
-
-                            <div className="chart-section" style={{ order: 3 }}>
                                 <StatisticsChart
                                     best39={best39}
                                     userResults={userResults}
                                     songs={songs}
                                     forcePcLayout={true}
                                     chartType="line"
+                                    displayMode="standard"
+                                />
+                                <StatisticsChart
+                                    best39={best39}
+                                    userResults={userResults}
+                                    songs={songs}
+                                    forcePcLayout={true}
+                                    chartType="line"
+                                    displayMode="append"
                                 />
                             </div>
                         </div>
