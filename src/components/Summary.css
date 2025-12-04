@@ -330,3 +330,9 @@
     gap: 4px;
     margin-left: 6px;
 }
+
+@media (max-width: 450px) {
+    .summary-r-values {
+        display: none !important;
+    }
+}

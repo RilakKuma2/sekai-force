@@ -288,7 +288,13 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                 </div >
 
                 <div className="best39-section">
-                    <Best39 best39={best39} bestAppend={bestAppend} language={language} />
+                    <Best39
+                        best39={best39}
+                        bestAppend={bestAppend}
+                        language={language}
+                        totalR={totalR}
+                        appendTotalR={appendTotalR}
+                    />
                 </div>
 
             </div>

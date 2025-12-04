@@ -23,6 +23,11 @@
     height: auto;
 }
 
+.vertical-divider.thick {
+    width: 4px;
+    background-color: #888;
+}
+
 .best39-cell {
     width: 130px;
     padding: 0;
@@ -173,25 +178,52 @@
 
 /* Mobile responsiveness for Best39 */
 /* Layout adjustments to prevent overflow on smaller screens */
+/* Mobile responsiveness for Best39 */
+/* Layout adjustments to prevent overflow on smaller screens */
 @media (max-width: 450px) {
     .best39-list {
-        width: fit-content;
+        width: 100%;
         max-width: 100%;
         margin: 0 auto;
     }
 
+    .section-main,
+    .section-append {
+        /* Hide desktop sections on mobile if they are still rendered (though we conditionally render in React now) */
+        display: none;
+    }
+
+    .section-main-mobile,
+    .section-append-mobile {
+        width: 100%;
+    }
+
     .d-flex {
-        justify-content: center;
-        /* Center the grid if it hits max-width */
+        width: 100%;
     }
 
     .best39-cell {
-        width: 25% !important;
-        max-width: 130px;
-        /* Cap at original size */
+        width: 33.33% !important;
+        /* 1/3 width for all cells on mobile */
+        max-width: none;
         min-width: 0;
-        /* Allow shrinking */
     }
+
+    .mobile-score-summary {
+        background-color: #1e1e1e;
+        /* Match background */
+        border-top: 1px solid #333;
+        border-bottom: 1px solid #333;
+        margin: 10px 0;
+    }
+
+    .mobile-score-summary .r-values-container {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        justify-content: center;
+    }
+
 }
 
 /* Content scaling ONLY for very small screens (iPhone SE and smaller) */

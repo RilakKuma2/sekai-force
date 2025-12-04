@@ -105,6 +105,7 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTot
                         </div>
                     </div>
                 </div>
+
                 <div className="divider"></div>
                 <div className="list-item">
                     <div className="list-item-content">Player ID</div>
