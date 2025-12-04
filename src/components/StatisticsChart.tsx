@@ -11,9 +11,10 @@ interface StatisticsChartProps {
     forcePcLayout?: boolean;
     chartType?: 'auto' | 'bar' | 'line';
     displayMode?: 'all' | 'standard' | 'append';
+    hideLegend?: boolean;
 }
 
-const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, songs, forcePcLayout = false, chartType = 'auto', displayMode = 'all' }) => {
+const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, songs, forcePcLayout = false, chartType = 'auto', displayMode = 'all', hideLegend = false }) => {
     const chartRef = useRef<HTMLDivElement>(null);
     const mobileStandardRef = useRef<HTMLDivElement>(null);
     const mobileAppendRef = useRef<HTMLDivElement>(null);
@@ -268,12 +269,14 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
 
     return (
         <div className="summary-section">
-            <div className="chart-legend" style={{ fontSize: '10px', paddingBottom: '2px', marginBottom: '-10px' }}>
-                <span className="legend-item"><span className="dot unlocked"></span> Unlocked</span>
-                <span className="legend-item"><span className="dot c"></span> Clear</span>
-                <span className="legend-item"><span className="dot f"></span> <span className="legend-text fc">Full Combo</span></span>
-                <span className="legend-item"><span className="dot p"></span> <span className="legend-text ap">All Perfect</span></span>
-            </div>
+            {!hideLegend && (
+                <div className="chart-legend" style={{ fontSize: '10px', paddingBottom: '2px', marginBottom: '-10px' }}>
+                    <span className="legend-item"><span className="dot unlocked"></span> Unlocked</span>
+                    <span className="legend-item"><span className="dot c"></span> Clear</span>
+                    <span className="legend-item"><span className="dot f"></span> <span className="legend-text fc">Full Combo</span></span>
+                    <span className="legend-item"><span className="dot p"></span> <span className="legend-text ap">All Perfect</span></span>
+                </div>
+            )}
 
             {/* Desktop Chart Container */}
             <div

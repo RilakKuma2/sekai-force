@@ -15,10 +15,9 @@ interface SummaryProps {
     registrationDate: string;
     playerName: string;
     profileImage?: string | null;
-    forcePcLayout?: boolean;
 }
 
-const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTotalR, sekaiRank, playerId, twitterId, registrationDate, playerName, profileImage, forcePcLayout = false }) => {
+const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTotalR, sekaiRank, playerId, twitterId, registrationDate, playerName, profileImage }) => {
     const [activeTooltip, setActiveTooltip] = useState<'none' | 'general' | 'append'>('none');
 
     // Calculate summary data

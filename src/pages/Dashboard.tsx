@@ -448,7 +448,6 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                                     registrationDate={registrationDate}
                                     playerName={playerName}
                                     profileImage={profileImage}
-                                    forcePcLayout={true}
                                 />
                             </div>
 
@@ -478,6 +477,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                                     forcePcLayout={true}
                                     chartType="line"
                                     displayMode="append"
+                                    hideLegend={true}
                                 />
                             </div>
                         </div>
