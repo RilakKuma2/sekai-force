@@ -572,9 +572,19 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                             const gChunk = Math.ceil(general.length / rowCount);
                             const bChunk = Math.ceil(brain.length / rowCount);
 
-                            // If judgment is 0, show Level. Otherwise show signed judgment.
-                            const label = judgment === 0 ? String(level) : (judgment > 0 ? `+${judgment}` : `${judgment}`);
-                            const isLevelLabel = judgment === 0;
+                            // Check if this level group has a '0' judgment
+                            const hasZero = sortedJudgments.includes(0);
+
+                            // If judgment is 0, show Level. 
+                            // If 0 is missing and this is the first row, show Level (to ensure Level is displayed).
+                            // Otherwise show signed judgment.
+                            let label = judgment === 0 ? String(level) : (judgment > 0 ? `+${judgment}` : `${judgment}`);
+                            let isLevelLabel = judgment === 0;
+
+                            if (!hasZero && idx === 0) {
+                                label = String(level);
+                                isLevelLabel = true;
+                            }
 
                             // Determine if this is the last row of the current level group
                             const isLastJudgment = idx === sortedJudgments.length - 1;
