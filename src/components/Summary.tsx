@@ -8,6 +8,7 @@ interface SummaryProps {
     userResults: UserMusicResult[];
     songs: Song[];
     totalR: number;
+    appendTotalR: number;
     sekaiRank: string;
     playerId: string;
     twitterId: string;
@@ -16,11 +17,13 @@ interface SummaryProps {
     profileImage?: string | null;
 }
 
-const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank, playerId, twitterId, registrationDate, playerName, profileImage }) => {
-    const [showInfo, setShowInfo] = useState(false);
+const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTotalR, sekaiRank, playerId, twitterId, registrationDate, playerName, profileImage }) => {
+    const [activeTooltip, setActiveTooltip] = useState<'none' | 'general' | 'append'>('none');
 
     // Calculate summary data
     const difficulties = ['easy', 'normal', 'hard', 'expert', 'master', 'append'] as const;
+
+    // ... (rest of the calculation logic is unchanged, so we skip to the return) ...
 
     // Create a lookup map for user results to avoid duplicates and ensure O(1) access
     const resultMap = new Map<string, string>();
@@ -28,8 +31,6 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank
         resultMap.set(`${r.musicId}-${r.musicDifficulty}`, r.playResult);
     });
 
-    // Calculate summary data by iterating over SONGS, not results
-    // This ensures we only count valid songs and don't double count
     const summaryByDifficulty = {
         'P': { easy: 0, normal: 0, hard: 0, expert: 0, master: 0, append: 0 },
         'F': { easy: 0, normal: 0, hard: 0, expert: 0, master: 0, append: 0 },
@@ -38,9 +39,7 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank
 
     songs.forEach(song => {
         difficulties.forEach(diff => {
-            // Check if the song has this difficulty
             if (song.levels[diff] !== null) {
-                // Check if user has a result for this song & difficulty
                 const result = resultMap.get(`${song.id}-${diff}`);
                 if (result) {
                     if (result === 'full_perfect') summaryByDifficulty.P[diff]++;
@@ -51,7 +50,6 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank
         });
     });
 
-    // Calculate total songs per difficulty
     const totalSongsByDifficulty = { easy: 0, normal: 0, hard: 0, expert: 0, master: 0, append: 0 };
     songs.forEach(song => {
         difficulties.forEach(diff => {
@@ -60,6 +58,35 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank
             }
         });
     });
+
+    const toggleTooltip = (type: 'general' | 'append') => {
+        if (activeTooltip === type) {
+            setActiveTooltip('none');
+        } else {
+            setActiveTooltip(type);
+        }
+    };
+
+    // Close tooltip when clicking outside
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (activeTooltip === 'none') return;
+
+            const target = event.target as HTMLElement;
+            if (
+                !target.closest('.info-tooltip') &&
+                !target.closest('.info-icon') &&
+                !target.closest('.append-info-icon')
+            ) {
+                setActiveTooltip('none');
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [activeTooltip]);
 
     return (
         <div className="summary-container">
@@ -154,19 +181,37 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank
                 <div className="list-item">
                     <div className="list-item-content">Player R</div>
                     <div className="list-item-action">
-                        {totalR}
-                        <span
-                            className="info-icon"
-                            onClick={() => setShowInfo(!showInfo)}
-                        >i</span>
+                        <div className="r-values-container">
+                            <div>{totalR}</div>
+                            <div className="append-r-value">{appendTotalR}</div>
+                        </div>
+                        <div className="icons-container">
+                            <span
+                                className="info-icon"
+                                onClick={() => toggleTooltip('general')}
+                                style={{ margin: 0 }} // Override margin-left
+                            >i</span>
+                            <span
+                                className="append-info-icon"
+                                onClick={() => toggleTooltip('append')}
+                            >A</span>
+                        </div>
 
-                        {showInfo && (
+                        {activeTooltip === 'general' && (
                             <div className="info-tooltip">
                                 <p>Player R = Sum of the Music R in Best 39.</p>
                                 <p>Music R = Rank (P / F / C) * Level+.</p>
                                 <p>Example: Full Combo of Level 30.0 is: 7.5 * 30.0 = 225.</p>
                                 <p>Rank: P = 8.0, F = 7.5, C = 5.0.</p>
                                 <p>Level+: Estimated by P % and F %. The more players achieve All Perfect / Full Combo, the lower P / F Level+ adjusts. P / F / C Level+ are estimated separately.</p>
+                            </div>
+                        )}
+
+                        {activeTooltip === 'append' && (
+                            <div className="info-tooltip">
+                                <p><strong>Append R</strong></p>
+                                <p>Sum of the Music R in Best 13 Append * 3.</p>
+                                <p>Calculated separately from the main Best 39.</p>
                             </div>
                         )}
                     </div>
@@ -176,5 +221,6 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, sekaiRank
         </div>
     );
 };
+
 
 export default Summary;

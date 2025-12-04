@@ -4,6 +4,7 @@ import './Best39.css';
 
 interface Best39Props {
     best39: MusicDifficultyStatus[];
+    bestAppend: MusicDifficultyStatus[];
     language: 'ko' | 'jp';
 }
 
@@ -19,21 +20,10 @@ const getDifficultyColor = (difficulty: string) => {
     }
 };
 
-
-
-
-
 const formatLevel = (playLevel: number, baseLevel: number) => {
-    // Logic:
-    // If constant (playLevel) is >= baseLevel + 0.5 -> baseLevel + "+"
-    // If constant (playLevel) is <= baseLevel - 0.3 -> baseLevel + "-"
-    // Else -> baseLevel
-
-    // Ensure numbers
     const pLevel = Number(playLevel);
     const bLevel = Number(baseLevel);
 
-    // Use a small epsilon for float comparison if needed, but direct comparison usually works for these ranges
     if (pLevel >= bLevel + 0.5) {
         return <>{bLevel}<sup>+</sup></>;
     } else if (pLevel <= bLevel - 0.3) {
@@ -43,9 +33,10 @@ const formatLevel = (playLevel: number, baseLevel: number) => {
     }
 };
 
-const Best39: React.FC<Best39Props> = ({ best39, language }) => {
-    // Always render 39 slots (13 rows * 3 columns)
+const Best39: React.FC<Best39Props> = ({ best39, bestAppend, language }) => {
+    // Always render 13 rows
     const rows = 13;
+    const cols = 4; // 3 for Best39, 1 for Append
 
     return (
         <div className="best39-list">
@@ -54,9 +45,19 @@ const Best39: React.FC<Best39Props> = ({ best39, language }) => {
                 <React.Fragment key={rowIndex}>
                     {rowIndex > 0 && <div className="divider"></div>}
                     <div className="d-flex">
-                        {Array.from({ length: 3 }).map((_, colIndex) => {
-                            const index = rowIndex * 3 + colIndex;
-                            const item = best39[index];
+                        {Array.from({ length: cols }).map((_, colIndex) => {
+                            let item: MusicDifficultyStatus | undefined;
+                            let index = -1;
+
+                            if (colIndex < 3) {
+                                // Best 39 (Columns 0, 1, 2)
+                                index = rowIndex * 3 + colIndex;
+                                item = best39[index];
+                            } else {
+                                // Best Append (Column 3)
+                                index = rowIndex; // Append is just a vertical list of 13
+                                item = bestAppend[index];
+                            }
 
                             if (!item) {
                                 return (
@@ -82,19 +83,17 @@ const Best39: React.FC<Best39Props> = ({ best39, language }) => {
                                 rankStyle.color = '#00000099';
                                 rankStyle.backgroundColor = '#F06292';
                             } else { // C or others
-                                rankStyle.border = `1px solid ${diffColor || '#AB47BC'}`; // Fallback for append border in rank if needed, though usually rank has its own color
+                                rankStyle.border = `1px solid ${diffColor || '#AB47BC'}`;
                                 rankStyle.color = '#FFFFFF99';
-                                // background is transparent/null
                             }
 
-                            // Define level badge style
                             const levelBadgeStyle: React.CSSProperties = {
                                 color: isAppend ? '#000000' : '#222222'
                             };
 
                             if (isAppend) {
                                 levelBadgeStyle.backgroundImage = 'linear-gradient(to bottom right, #ab94fe, #fe7bde)';
-                                levelBadgeStyle.border = '0.1px solid #fff'; // White border for distinction
+                                levelBadgeStyle.border = '0.1px solid #fff';
                             } else {
                                 levelBadgeStyle.backgroundColor = diffColor!;
                                 levelBadgeStyle.border = `1px solid ${diffColor}`;

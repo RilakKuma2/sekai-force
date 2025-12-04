@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getChoseong } from 'es-hangul';
-import { type Difficulty, type UserMusicResult, calculateTotalR, processUserBest39, type MusicDifficultyStatus } from '../utils/calculator';
+import { type Difficulty, type UserMusicResult, calculateTotalR, calculateAppendR, processUserBest, type MusicDifficultyStatus } from '../utils/calculator';
 import { type Song } from '../utils/api';
 import './ScoreInput.css';
 
@@ -245,6 +245,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
     const [showPreviewModal, setShowPreviewModal] = useState(false);
     const [previewResults, setPreviewResults] = useState<UserMusicResult[]>([]);
     const [previewBest39, setPreviewBest39] = useState<MusicDifficultyStatus[]>([]);
+    const [previewBestAppend, setPreviewBestAppend] = useState<MusicDifficultyStatus[]>([]);
 
     const [easyLevel, setEasyLevel] = useState('');
     const [normalLevel, setNormalLevel] = useState('');
@@ -305,9 +306,10 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                 const decoded = decodeScoreMap(data);
                 if (decoded.length > 0) {
                     // Calculate Best 39 for preview
-                    const best39 = processUserBest39(songs, decoded);
+                    const { best39, bestAppend } = processUserBest(songs, decoded);
                     setPreviewResults(decoded);
                     setPreviewBest39(best39);
+                    setPreviewBestAppend(bestAppend);
                     setShowPreviewModal(true);
                 }
             } catch (e) {
@@ -575,7 +577,9 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     });
 
                     setPreviewResults(newResults);
-                    setPreviewBest39(processUserBest39(songs, newResults));
+                    const { best39, bestAppend } = processUserBest(songs, newResults);
+                    setPreviewBest39(best39);
+                    setPreviewBestAppend(bestAppend);
                     setShowPreviewModal(true);
                 } else {
                     alert('올바르지 않은 파일 형식입니다.');
@@ -1092,6 +1096,10 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                                     <span className="label">예상 Total R</span>
                                     <span className="value">{calculateTotalR(previewBest39)}</span>
                                 </div>
+                                <div className="stat-item">
+                                    <span className="label">예상 Append R</span>
+                                    <span className="value">{calculateAppendR(previewBestAppend)}</span>
+                                </div>
                             </div>
 
                             <div className="preview-best39">
@@ -1115,6 +1123,28 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                                     ))}
                                 </div>
                             </div>
+
+
+                            {previewBestAppend.length > 0 && (
+                                <div className="preview-best39" style={{ marginTop: '20px' }}>
+                                    <h3>Best Append 미리보기 (Top 13)</h3>
+                                    <div className="preview-list">
+                                        {previewBestAppend.map((item, idx) => (
+                                            <div key={idx} className="preview-item">
+                                                <span className="rank">#{idx + 1}</span>
+                                                <span className={`preview-diff ${item.musicDifficulty}`}>
+                                                    APD
+                                                </span>
+                                                <span className={`preview-clear-status ${item.rank}`}>
+                                                    {item.rank === 'P' ? 'AP' : item.rank === 'F' ? 'FC' : 'Clear'}
+                                                </span>
+                                                <span className="title">{item.title}</span>
+                                                <span className="score">{item.r.toFixed(1)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="preview-actions">
                                 <button className="preview-btn cancel" onClick={cancelLoad}>취소</button>

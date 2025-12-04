@@ -44,8 +44,9 @@ export const calculateR = (playLevel: number, rank: Rank): number => {
     }
 };
 
-export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[]): MusicDifficultyStatus[] => {
-    const statuses: MusicDifficultyStatus[] = [];
+export const processUserBest = (songs: Song[], userResults: UserMusicResult[]): { best39: MusicDifficultyStatus[], bestAppend: MusicDifficultyStatus[] } => {
+    const others: MusicDifficultyStatus[] = [];
+    const appends: MusicDifficultyStatus[] = [];
 
     // Create a map for quick song lookup
     const songMap = new Map<string, Song>();
@@ -96,15 +97,12 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
 
         if (playLevel === null || isNaN(playLevel)) return;
 
-        // Ensure originalLevel is treated as number for baseLevel, defaulting to floor of playLevel (before adjustment would be better, but originalLevel is from API)
+        // Ensure originalLevel is treated as number for baseLevel, defaulting to floor of playLevel
         const baseLevel = originalLevel !== null ? originalLevel : Math.floor(playLevel + (isExact ? 0.4 : 0));
 
         const r = calculateR(playLevel, rank);
 
-        // Debug logging
-        // console.log(`Song ${song.id} (${song.title_ko}): Diff=${result.musicDifficulty}, Orig=${originalLevel}, Exact=${isExact}, Play=${playLevel}, R=${r}`);
-
-        statuses.push({
+        const status: MusicDifficultyStatus = {
             musicId: result.musicId,
             musicDifficulty: result.musicDifficulty,
             playLevel: playLevel,
@@ -115,13 +113,29 @@ export const processUserBest39 = (songs: Song[], userResults: UserMusicResult[])
             title_ko: song.title_ko,
             title_jp: song.title_jp,
             isExact: isExact
-        });
+        };
+
+        if (result.musicDifficulty === 'append') {
+            appends.push(status);
+        } else {
+            others.push(status);
+        }
     });
 
-    // Sort by R descending and take top 39
-    return statuses.filter(s => s.r > 0).sort((a, b) => b.r - a.r).slice(0, 39);
+    // Sort by R descending
+    const best39 = others.filter(s => s.r > 0).sort((a, b) => b.r - a.r).slice(0, 39);
+    const bestAppend = appends.filter(s => s.r > 0).sort((a, b) => b.r - a.r).slice(0, 13);
+
+    return { best39, bestAppend };
 };
+
+
 
 export const calculateTotalR = (best39: MusicDifficultyStatus[]): number => {
     return best39.reduce((sum, status) => sum + Math.round(status.r), 0);
+};
+
+export const calculateAppendR = (bestAppend: MusicDifficultyStatus[]): number => {
+    const sumAppend = bestAppend.reduce((sum, status) => sum + Math.round(status.r), 0);
+    return sumAppend * 3;
 };

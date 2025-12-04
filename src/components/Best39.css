@@ -186,7 +186,7 @@
     }
 
     .best39-cell {
-        width: 33.33% !important;
+        width: 25% !important;
         max-width: 130px;
         /* Cap at original size */
         min-width: 0;

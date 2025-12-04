@@ -12,13 +12,15 @@ import './ScoreInput.css'; // Reusing modal styles
 interface DashboardProps {
     songs: Song[];
     best39: MusicDifficultyStatus[];
+    bestAppend: MusicDifficultyStatus[];
     userResults: UserMusicResult[];
     totalR: number;
+    appendTotalR: number;
     loading: boolean;
     error: string | null;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, totalR, loading, error }) => {
+const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userResults, totalR, appendTotalR, loading, error }) => {
     // Profile State
     const [sekaiRank, setSekaiRank] = useState('399');
     const [playerId, setPlayerId] = useState('6393939393939393');
@@ -270,6 +272,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                             userResults={userResults}
                             songs={songs}
                             totalR={totalR}
+                            appendTotalR={appendTotalR}
                             sekaiRank={sekaiRank}
                             playerId={playerId}
                             twitterId={twitterId}
@@ -285,7 +288,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, userResults, total
                 </div >
 
                 <div className="best39-section">
-                    <Best39 best39={best39} language={language} />
+                    <Best39 best39={best39} bestAppend={bestAppend} language={language} />
                 </div>
 
             </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { fetchSongs, type Song } from './utils/api';
-import { processUserBest39, calculateTotalR, type MusicDifficultyStatus, type UserMusicResult } from './utils/calculator';
+import { processUserBest, calculateTotalR, calculateAppendR, type MusicDifficultyStatus, type UserMusicResult } from './utils/calculator';
 import Dashboard from './pages/Dashboard';
 import ScoreInput from './pages/ScoreInput';
 import Stats from './pages/Stats';
@@ -11,7 +11,9 @@ function App() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [userResults, setUserResults] = useState<UserMusicResult[]>([]);
   const [best39, setBest39] = useState<MusicDifficultyStatus[]>([]);
+  const [bestAppend, setBestAppend] = useState<MusicDifficultyStatus[]>([]);
   const [totalR, setTotalR] = useState<number>(0);
+  const [appendTotalR, setAppendTotalR] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,9 +59,11 @@ function App() {
   // Recalculate Best39 whenever userResults or songs change
   useEffect(() => {
     if (songs.length > 0) {
-      const calculatedBest39 = processUserBest39(songs, userResults);
+      const { best39: calculatedBest39, bestAppend: calculatedBestAppend } = processUserBest(songs, userResults);
       setBest39(calculatedBest39);
+      setBestAppend(calculatedBestAppend);
       setTotalR(calculateTotalR(calculatedBest39));
+      setAppendTotalR(calculateAppendR(calculatedBestAppend));
 
       // Save to localStorage
       localStorage.setItem('sekai_user_results', JSON.stringify(userResults));
@@ -77,8 +81,10 @@ function App() {
           <Dashboard
             songs={songs}
             best39={best39}
+            bestAppend={bestAppend}
             userResults={userResults}
             totalR={totalR}
+            appendTotalR={appendTotalR}
             loading={loading}
             error={error}
           />
