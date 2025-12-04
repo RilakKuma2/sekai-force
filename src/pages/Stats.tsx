@@ -536,11 +536,17 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     {sortedLevels.map((level) => {
                         const judgments = groupedData[level];
                         const sortedJudgments = Object.keys(judgments)
-                            .map(Number)
-                            .sort((a, b) => b - a); // +2 to -2
+                            .map(Number);
+
+                        // Always include 0 (Average/Level) tier even if empty
+                        if (!sortedJudgments.includes(0)) {
+                            sortedJudgments.push(0);
+                        }
+
+                        sortedJudgments.sort((a, b) => b - a); // +2 to -2
 
                         return sortedJudgments.map((judgment, idx) => {
-                            const songs = judgments[judgment];
+                            const songs = judgments[judgment] || [];
                             const physical = songs.filter(s => getCategory(s.PY_BR) === 'physical').sort((a, b) => {
                                 if (a.modifier !== b.modifier) {
                                     const modVal = (m: string | null | undefined) => m === '+' ? 1 : (m === '-' ? -1 : 0);
@@ -572,19 +578,9 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                             const gChunk = Math.ceil(general.length / rowCount);
                             const bChunk = Math.ceil(brain.length / rowCount);
 
-                            // Check if this level group has a '0' judgment
-                            const hasZero = sortedJudgments.includes(0);
-
-                            // If judgment is 0, show Level. 
-                            // If 0 is missing and this is the first row, show Level (to ensure Level is displayed).
-                            // Otherwise show signed judgment.
-                            let label = judgment === 0 ? String(level) : (judgment > 0 ? `+${judgment}` : `${judgment}`);
-                            let isLevelLabel = judgment === 0;
-
-                            if (!hasZero && idx === 0) {
-                                label = String(level);
-                                isLevelLabel = true;
-                            }
+                            // If judgment is 0, show Level. Otherwise show signed judgment.
+                            const label = judgment === 0 ? String(level) : (judgment > 0 ? `+${judgment}` : `${judgment}`);
+                            const isLevelLabel = judgment === 0;
 
                             // Determine if this is the last row of the current level group
                             const isLastJudgment = idx === sortedJudgments.length - 1;
