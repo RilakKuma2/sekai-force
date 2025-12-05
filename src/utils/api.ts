@@ -13,6 +13,7 @@ export interface Song {
     id: string;
     title_ko: string;
     title_jp: string;
+    title_hi?: string;
     unit_code: string;
     release_date: string;
     bpm: number | string;

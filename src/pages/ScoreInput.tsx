@@ -742,14 +742,25 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         let result = songs;
         const term = searchTerm.toLowerCase().replace(/\s/g, '');
 
+        // Helper to normalize Katakana to Hiragana
+        const normalizeKana = (str: string) => {
+            return str.replace(/[\u30a1-\u30f6]/g, (match) => {
+                const chr = match.charCodeAt(0) - 0x60;
+                return String.fromCharCode(chr);
+            });
+        };
+
         // 1. Text Search
         if (term) {
+            const normalizedTerm = normalizeKana(term);
+
             result = result.filter(song => {
                 const titleKo = (song.title_ko || '').toLowerCase().replace(/\s/g, '');
-                const titleJp = (song.title_jp || '').toLowerCase().replace(/\s/g, '');
+                const titleJp = normalizeKana((song.title_jp || '').toLowerCase().replace(/\s/g, ''));
+                const titleHi = normalizeKana((song.title_hi || '').toLowerCase().replace(/\s/g, ''));
                 const composer = (song.composer || '').toLowerCase().replace(/\s/g, '');
 
-                if (titleKo.includes(term) || titleJp.includes(term) || composer.includes(term)) return true;
+                if (titleKo.includes(term) || titleJp.includes(normalizedTerm) || titleHi.includes(normalizedTerm) || composer.includes(term)) return true;
                 if (song.title_ko && /[ㄱ-ㅎ]/.test(term)) {
                     // getChoseong is imported from 'es-hangul'
                     const choseong = getChoseong(song.title_ko).replace(/\s/g, '');
