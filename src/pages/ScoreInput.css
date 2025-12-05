@@ -1363,7 +1363,11 @@
     box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
 }
 
-/* Mobile Layout Adjustments (Matching pjsk-chart-search) */
+/* Utility Classes */
+.mobile-only {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .score-input-container {
         padding: 1rem;
@@ -1528,7 +1532,7 @@
     }
 
     .difficulty-instruction.mobile-only {
-        display: block;
+        display: flex;
         font-size: 0.7rem;
         color: white;
         white-space: nowrap;

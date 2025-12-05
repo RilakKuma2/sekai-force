@@ -1023,28 +1023,30 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                 />
 
                 {/* Mobile Instruction & Sort Toggle */}
-                <div className="difficulty-instruction mobile-only" style={{ marginTop: '8px', marginBottom: '4px', justifyContent: 'center', alignItems: 'center', position: 'relative', height: '30px' }}>
-                    <span>{isAnyFilterActive ? "오름차순 정렬 시 인겜 순서와 동일" : "위의 난이도 버튼 눌러서 레벨 검색"}</span>
-                    <button
-                        className="bulk-input-trigger-btn mobile"
-                        onClick={toggleBulkModal}
-                        style={{ position: 'absolute', right: '60px' }}
-                    >
-                        일괄 입력
-                    </button>
-                    <button
-                        className="sort-toggle-btn mobile"
-                        onClick={() => {
-                            if (isAnyFilterActive) {
-                                setFilteredSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
-                            } else {
-                                setUnfilteredSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
-                            }
-                        }}
-                        style={{ position: 'absolute', right: '0px', background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', outline: 'none' }}
-                    >
-                        {(isAnyFilterActive ? filteredSortOrder : unfilteredSortOrder) === 'desc' ? '↓' : '↑'}
-                    </button>
+                <div className="difficulty-instruction mobile-only" style={{ marginTop: '8px', marginBottom: '4px', justifyContent: 'flex-end', alignItems: 'center', position: 'relative', height: '30px', padding: '0 5px', flexWrap: 'nowrap', gap: '10px' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'white' }}>{isAnyFilterActive ? "오름차순 정렬 시 인겜 순서와 동일" : "위쪽 난이도 버튼 눌러서 레벨 검색"}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <button
+                            className="bulk-input-trigger-btn mobile"
+                            onClick={toggleBulkModal}
+                            style={{ position: 'relative', right: 'auto', left: 'auto' }}
+                        >
+                            일괄 입력
+                        </button>
+                        <button
+                            className="sort-toggle-btn mobile"
+                            onClick={() => {
+                                if (isAnyFilterActive) {
+                                    setFilteredSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+                                } else {
+                                    setUnfilteredSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+                                }
+                            }}
+                            style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', outline: 'none', padding: '0 5px' }}
+                        >
+                            {(isAnyFilterActive ? filteredSortOrder : unfilteredSortOrder) === 'desc' ? '∨' : '∧'}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Difficulty Header Row */}
@@ -1070,6 +1072,10 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                             <DifficultyFilter diff="master" label="MASTER" value={masterLevel} onChange={(val) => updateFilter('master', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
                             <DifficultyFilter diff="append" label="APPEND" value={appendLevel} onChange={(val) => updateFilter('append', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
 
+                            <span className="desktop-only" style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'white', marginRight: '8px' }}>
+                                {isAnyFilterActive ? "오름차순 정렬 시 인겜 순서와 동일" : "좌측 난이도 버튼 눌러서 레벨 검색"}
+                            </span>
+
                             {/* Sort Toggle Button (Desktop) */}
                             <button
                                 className="sort-toggle-btn desktop-only"
@@ -1093,11 +1099,10 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                                     outline: 'none'
                                 }}
                             >
-                                {(isAnyFilterActive ? filteredSortOrder : unfilteredSortOrder) === 'desc' ? '↓' : '↑'}
+                                {(isAnyFilterActive ? filteredSortOrder : unfilteredSortOrder) === 'desc' ? '∨' : '∧'}
                             </button>
                         </div>
                         <div className="difficulty-instruction desktop-only desktop-instruction-container">
-                            <span>{isAnyFilterActive ? "오름차순 정렬 시 인겜 순서와 동일" : "좌측 난이도 버튼 눌러서 레벨 검색"}</span>
                             <button
                                 className="bulk-input-trigger-btn desktop"
                                 onClick={toggleBulkModal}
