@@ -1130,8 +1130,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
             {/* Preview Modal */}
             {
                 showPreviewModal && (
-                    <div className="modal-overlay">
-                        <div className="preview-modal">
+                    <div className="modal-overlay" onClick={() => setShowPreviewModal(false)}>
+                        <div className="preview-modal" onClick={(e) => e.stopPropagation()}>
                             <h2>불러올 데이터 미리보기</h2>
                             <p>데이터를 불러옵니다.</p>
 
@@ -1206,8 +1206,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
             {/* Share Modal */}
             {
                 showShareModal && (
-                    <div className="modal-overlay">
-                        <div className="share-modal">
+                    <div className="modal-overlay" onClick={() => setShowShareModal(false)}>
+                        <div className="share-modal" onClick={(e) => e.stopPropagation()}>
                             <h2>데이터 공유 URL</h2>
                             <p>아래 URL을 복사하여 다른 기기나 브라우저에서 내 기록을 불러올 수 있습니다.</p>
                             <div className="url-container">

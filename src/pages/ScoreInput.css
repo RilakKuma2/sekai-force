@@ -1034,7 +1034,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: transparent;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1052,11 +1052,10 @@
 .bulk-modal,
 .preview-modal,
 .share-modal {
-    background-color: #222;
+    background-color: rgba(92, 92, 125, 0.95);
     padding: 24px;
     border-radius: 16px;
     width: 90%;
-    border: 1px solid #444;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
     display: flex;
     flex-direction: column;
@@ -1105,7 +1104,7 @@
 
 .preview-modal p,
 .share-modal p {
-    color: #aaa;
+    color: #fff;
     text-align: center;
     font-size: 0.95rem;
     margin: 0;
@@ -1122,14 +1121,14 @@
 
 .stat-item {
     flex: 1;
-    background-color: #2a2a2a;
+    background-color: rgba(0, 0, 0, 0.2);
     padding: 15px;
     border-radius: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    border: 1px solid #333;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-item .label {
@@ -1164,13 +1163,13 @@
 .preview-list {
     flex: 1;
     overflow-y: auto;
-    background-color: #1a1a1a;
+    background-color: rgba(0, 0, 0, 0.2);
     border-radius: 12px;
     padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    border: 1px solid #333;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .preview-item {
@@ -1178,7 +1177,7 @@
     align-items: center;
     gap: 10px;
     padding: 8px 12px;
-    background-color: #2a2a2a;
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     color: white;
     transition: background-color 0.2s;
@@ -1283,10 +1282,10 @@
 .url-container {
     display: flex;
     gap: 10px;
-    background-color: #1a1a1a;
+    background-color: rgba(0, 0, 0, 0.2);
     padding: 8px;
     border-radius: 10px;
-    border: 1px solid #333;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     margin-top: 10px;
 }
 
@@ -1302,8 +1301,8 @@
 }
 
 .url-container button {
-    background-color: #444;
-    color: white;
+    background-color: #eaebf3;
+    color: #434367;
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
@@ -1342,8 +1341,8 @@
 }
 
 .preview-btn.cancel {
-    background-color: #333;
-    color: #ccc;
+    background-color: #eaebf3;
+    color: #434367;
 }
 
 .preview-btn.cancel:hover {
@@ -1353,9 +1352,9 @@
 
 .preview-btn.confirm,
 .confirm-btn {
-    background: linear-gradient(135deg, #2196F3, #1976D2);
-    color: white;
-    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+    background-color: #eaebf3;
+    color: #434367;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .preview-btn.confirm:hover,
