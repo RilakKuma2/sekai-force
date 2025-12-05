@@ -808,6 +808,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                             {(() => {
                                                 const song = songs.find(s => parseInt(s.id) === selectedSong.song_no);
                                                 let apConstant: number | undefined;
+                                                let isUnreleased = false;
 
                                                 if (song) {
                                                     if (selectedSong.isExpert) {
@@ -817,16 +818,30 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                     } else if (difficulty === 'append') {
                                                         apConstant = song.apd_ap ? Number(song.apd_ap) : undefined;
                                                     }
+
+                                                    if (song.release_date) {
+                                                        const now = new Date();
+                                                        now.setHours(0, 0, 0, 0);
+                                                        const releaseDate = new Date(song.release_date);
+                                                        isUnreleased = releaseDate > now;
+                                                    }
                                                 }
-                                                return apConstant !== undefined && !isNaN(apConstant) ? (
-                                                    <span className="popover-info">AP {apConstant.toFixed(1)}</span>
-                                                ) : null;
+                                                return (
+                                                    <>
+                                                        {apConstant !== undefined && !isNaN(apConstant) && (
+                                                            <span className="popover-info">AP {apConstant.toFixed(1)}</span>
+                                                        )}
+                                                        {isUnreleased && (
+                                                            <span className="popover-info" style={{ color: '#ff6b6b', fontWeight: 'bold' }}>수록 예정</span>
+                                                        )}
+                                                    </>
+                                                );
                                             })()}
                                         </div>
                                     </div>
                                 </div>
                                 <a
-                                    href={`https://asset.rilaksekai.com/charts/${String(selectedSong.song_no).padStart(3, '0')}/${difficulty}.html`}
+                                    href={`https://asset.rilaksekai.com/charts/${String(selectedSong.song_no).padStart(3, '0')}/${selectedSong.isExpert ? 'expert' : difficulty}.html`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="popover-chart-btn"

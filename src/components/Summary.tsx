@@ -33,13 +33,23 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTot
         resultMap.set(`${r.musicId}-${r.musicDifficulty}`, r.playResult);
     });
 
+    // Filter out future songs
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const availableSongs = songs.filter(song => {
+        if (!song.release_date) return true;
+        const releaseDate = new Date(song.release_date);
+        return releaseDate <= now;
+    });
+
     const summaryByDifficulty = {
         'P': { easy: 0, normal: 0, hard: 0, expert: 0, master: 0, append: 0 },
         'F': { easy: 0, normal: 0, hard: 0, expert: 0, master: 0, append: 0 },
         'C': { easy: 0, normal: 0, hard: 0, expert: 0, master: 0, append: 0 },
     };
 
-    songs.forEach(song => {
+    availableSongs.forEach(song => {
         difficulties.forEach(diff => {
             if (song.levels[diff] !== null) {
                 const result = resultMap.get(`${song.id}-${diff}`);
@@ -53,7 +63,7 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTot
     });
 
     const totalSongsByDifficulty = { easy: 0, normal: 0, hard: 0, expert: 0, master: 0, append: 0 };
-    songs.forEach(song => {
+    availableSongs.forEach(song => {
         difficulties.forEach(diff => {
             if (song.levels[diff] !== null) {
                 totalSongsByDifficulty[diff]++;

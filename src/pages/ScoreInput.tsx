@@ -12,6 +12,17 @@ interface ScoreInputProps {
     onUpdateResults: (results: UserMusicResult[]) => void;
 }
 
+const UNIT_NAME_MAP: Record<string, string> = {
+    "VS": "버싱",
+    "L/n": "레오니",
+    "MMJ": "모모점",
+    "VBS": "비배스",
+    "WxS": "원더쇼",
+    "N25": "니고",
+    "Oth": "기타",
+    "Unk": "버싱"
+};
+
 // Extracted Components
 
 interface DifficultyFilterProps {
@@ -80,13 +91,20 @@ interface SongRowProps {
     updateResultsBulk: (updates: { musicId: string, difficulty: Difficulty, result: 'clear' | 'full_combo' | 'full_perfect' | null }[]) => void;
     activeFilters: Difficulty[];
     songResults: Record<string, string>; // difficulty -> result
+    activeInfo: string | null;
+    setActiveInfo: (id: string | null) => void;
 }
 
-const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, updateResultsBulk, activeFilters, songResults }: SongRowProps) => {
+const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, updateResultsBulk, activeFilters, songResults, activeInfo, setActiveInfo }: SongRowProps) => {
     // Determine unit border class
     const unitClass = `unit-border-${song.unit_code.replace('/', '-')}`;
     const isFilteredMode = activeFilters.length > 0;
     const [showBulkDropdown, setShowBulkDropdown] = useState(false);
+
+    const handleCoverClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setActiveInfo(activeInfo === song.id ? null : song.id);
+    };
 
     const handleBulkUpdate = (result: 'clear' | 'full_combo' | 'full_perfect' | null) => {
         const difficulties: Difficulty[] = ['easy', 'normal', 'hard', 'expert', 'master', 'append'];
@@ -106,7 +124,7 @@ const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, upd
 
     return (
         <div className={`song-item ${activeEdit?.songId === song.id ? 'active-popover-parent' : ''}`} style={{ zIndex: (activeEdit?.songId === song.id || showBulkDropdown) ? 1001 : 'auto' }}>
-            <div className="song-cover-wrapper">
+            <div className="song-cover-wrapper" onClick={handleCoverClick}>
                 <img
                     src={`https://asset.rilaksekai.com/cover/${song.id}.webp`}
                     alt={song.title_ko || song.title_jp}
@@ -114,6 +132,25 @@ const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, upd
                     className={`song-cover ${unitClass}`}
                     onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80'; }}
                 />
+                {activeInfo === song.id && (
+                    <div className="song-info-popover">
+                        <div className="popover-column">
+                            <span>{song.classification || '-'}</span>
+                            <span>{UNIT_NAME_MAP[song.unit_code] || song.unit_code}</span>
+                        </div>
+                        <div className="popover-column">
+                            <span>{song.mv_type || '-'}</span>
+                            <span>{song.composer || '-'}</span>
+                        </div>
+                        <div className="popover-column">
+                            <span>{song.length || '-'}</span>
+                            <span style={{ textAlign: 'right' }}>
+                                {song.release_date || '-'}
+                                {song.apd && <div>(APD) {song.apd}</div>}
+                            </span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="song-details">
@@ -240,6 +277,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
     const [searchTerm, setSearchTerm] = useState('');
     const [localResults, setLocalResults] = useState<UserMusicResult[]>([]);
     const [activeEdit, setActiveEdit] = useState<{ songId: string, diff: Difficulty } | null>(null);
+    const [activeInfo, setActiveInfo] = useState<string | null>(null);
 
     // Preview Modal State
     const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -327,13 +365,19 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     setActiveEdit(null);
                 }
             }
+            if (activeInfo) {
+                const target = event.target as HTMLElement;
+                if (!target.closest('.song-info-popover') && !target.closest('.song-cover-wrapper')) {
+                    setActiveInfo(null);
+                }
+            }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [activeEdit]);
+    }, [activeEdit, activeInfo]);
 
     // Close filter dropdown on outside click
     useEffect(() => {
@@ -937,6 +981,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
     return (
         <div className="score-input-container">
+            <div className="score-input-bg-layer" />
+            <div className="score-input-overlay-layer" />
             {/* Sticky Header */}
             <div className="score-input-header">
                 <div className="header-top-row">
@@ -959,7 +1005,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     </div>
 
                     <div className="header-actions">
-                        <button onClick={handleShareUrl} className="export-button" style={{ marginRight: '10px' }}>URL로 데이터 공유</button>
+                        <button onClick={handleShareUrl} className="share-button" style={{ marginRight: '10px' }}>URL로 데이터 공유</button>
                         <button onClick={handleExport} className="export-button">내보내기</button>
                         <label className="import-button">
                             불러오기
@@ -995,7 +1041,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                                 setUnfilteredSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
                             }
                         }}
-                        style={{ position: 'absolute', right: '0px', background: 'none', border: 'none', color: '#aaa', fontSize: '1.2rem', outline: 'none' }}
+                        style={{ position: 'absolute', right: '0px', background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', outline: 'none' }}
                     >
                         {(isAnyFilterActive ? filteredSortOrder : unfilteredSortOrder) === 'desc' ? '↓' : '↑'}
                     </button>
@@ -1038,7 +1084,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                                 style={{
                                     background: 'none',
                                     border: 'none',
-                                    color: '#aaa',
+                                    color: 'white',
                                     fontSize: '1.2rem',
                                     cursor: 'pointer',
                                     padding: '0 8px',
@@ -1075,6 +1121,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                         updateResultsBulk={updateResultsBulk}
                         activeFilters={activeFilters}
                         songResults={resultsMap[song.id] || {}}
+                        activeInfo={activeInfo}
+                        setActiveInfo={setActiveInfo}
                     />
                 ))}
             </div>

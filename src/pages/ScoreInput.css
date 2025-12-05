@@ -1,6 +1,7 @@
 :root {
     --bg-color: #717292;
     --card-bg-color: #333;
+    --popover-bg-color: rgba(74, 74, 74, 0.85);
     --text-color: rgba(255, 255, 255, 1);
     --border-color: #444;
     --text-color-light-gray: #ccc;
@@ -41,7 +42,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    background-color: rgba(65, 65, 71, 0.8);
+    background-color: rgba(92, 92, 125, 0.8);
     border-radius: 12px;
     padding: 10px;
     border-bottom: 1px solid var(--border-color);
@@ -306,8 +307,8 @@
 
 /* Score Input Header Styles */
 .score-input-container {
-    color: #fff;
-    background-color: #121212;
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    color: var(--text-color);
     min-height: 100vh;
     width: 100%;
     /* Ensure full width */
@@ -317,23 +318,65 @@
     /* Center the container */
     position: relative;
     /* Ensure sticky works within */
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    /* box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); */
     /* Optional: add shadow to separate from body bg */
+    z-index: 1;
+}
+
+/* Background implementation using pseudo-elements on container or body? 
+   Since this is a specific page, let's apply it to the container's background 
+   but we want it fixed. 
+   Actually, the user wants it "same as pjsk-chart-search".
+   In pjsk-chart-search, it's on body::before/after.
+   We can simulate this by adding a fixed background element inside this container.
+*/
+
+.score-input-bg-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    background-image: url('/bg.webp');
+    background-size: cover;
+    background-position: center;
+    z-index: -2;
+}
+
+.score-input-overlay-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    background-image:
+        linear-gradient(to bottom, rgba(129, 126, 170, 0.8), rgba(92, 92, 125, 0.3) 50%, rgba(92, 92, 125, 0.8)),
+        radial-gradient(circle at center, #afb5d5 0%, #adaac3 1.25px, transparent 1.25px),
+        radial-gradient(circle at center, #afb5d5 0%, #adaac3 1.25px, transparent 1.25px);
+    background-size: 100% 100%, 4px 4px, 4px 4px;
+    background-position: 0 0, 0 0, 2px 2px;
+    z-index: -1;
+    opacity: 0.8;
 }
 
 .score-input-header {
     position: sticky;
     top: 0;
     z-index: 1000;
-    background-color: #121212;
-    padding: 10px 20px;
+
+    background-color: rgba(92, 92, 125, 0.95);
+    border-radius: 0 0 12px 12px;
+    margin: 0;
+
+    padding: 10px 20px 5px 20px;
     /* Reduced padding */
-    border-bottom: 1px solid #333;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     gap: 10px;
     /* Reduced gap */
+    margin-bottom: 15px;
 }
 
 .header-top-row {
@@ -356,45 +399,49 @@
 
 .back-button,
 .export-button,
-.import-button {
-    padding: 6px 12px;
-    /* Smaller buttons */
-    border-radius: 6px;
-    font-weight: 600;
+.import-button,
+.share-button {
+    padding: 6px 16px;
+    border-radius: 20px !important;
+    font-weight: bold;
     cursor: pointer;
     border: none;
-    font-size: 0.7rem;
-    transition: background-color 0.2s;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    white-space: nowrap;
 }
 
-.back-button {
-    background-color: #333;
-    color: #eee;
+.back-button,
+.export-button,
+.import-button {
+    background-color: #eaebf3 !important;
+    color: #434367 !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.back-button:hover {
-    background-color: #444;
+.back-button:hover,
+.export-button:hover,
+.import-button:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
 }
 
-.export-button {
-    background-color: #2196F3;
-    color: white;
+.share-button {
+    background-color: #e1bee7;
+    /* Light purple for difference */
+    color: #4a148c;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.export-button:hover {
-    background-color: #1976D2;
+.share-button:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
 }
 
 .import-button {
-    background-color: #FF9800;
-    color: white;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-}
-
-.import-button:hover {
-    background-color: #F57C00;
 }
 
 .search-input {
@@ -402,10 +449,11 @@
     padding: 10px;
     /* Smaller padding */
     border-radius: 8px;
-    border: 1px solid #444;
-    background-color: #1e1e1e;
-    color: white;
+    border: 1px solid var(--border-color);
+    background-color: #ffffff;
+    color: #6a6a6a;
     font-size: 0.95rem;
+    font-weight: bold;
     box-sizing: border-box;
 }
 
@@ -460,7 +508,7 @@
 
 .difficulty-instruction {
     font-size: 0.8rem;
-    color: #aaa;
+    color: white;
     margin-left: auto;
     /* Push to the right */
     white-space: nowrap;
@@ -549,7 +597,7 @@
     align-items: center;
     gap: 6px;
     font-size: 0.85rem;
-    color: #ccc;
+    color: white;
 }
 
 .legend-circle {
@@ -586,34 +634,34 @@
     left: 50%;
     transform: translateX(-50%);
     /* Center relative to parent circle */
-    background-color: #333;
-    border: 1px solid #555;
+    border: 1px solid #ffffff;
+    background-color: rgba(92, 92, 125, 0.95);
     border-radius: 8px;
     padding: 8px;
     display: flex;
     gap: 5px;
     z-index: 100;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     white-space: nowrap;
 }
 
 .score-popover::before {
     content: '';
     position: absolute;
+    border: 1px solid #ffffff;
     top: -6px;
     left: 50%;
     transform: translateX(-50%);
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-bottom: 6px solid #555;
+    border-bottom: 6px solid rgba(92, 92, 125, 0.95);
 }
 
 .score-popover button {
     padding: 6px 10px;
     border-radius: 4px;
-    border: 1px solid #555;
-    background-color: #444;
-    color: #ccc;
+    border: none;
+    background-color: #eaebf3;
+    color: #434367;
     cursor: pointer;
     font-size: 12px;
     font-weight: bold;
@@ -753,15 +801,16 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    border: 1px solid #555;
-    background-color: #333;
-    color: #ccc;
+    border: none;
+    background-color: #eaebf3;
+    color: #434367;
     font-weight: bold;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
     transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .mobile-only {
@@ -773,9 +822,8 @@
 }
 
 .reset-filter-btn:hover {
-    background-color: #444;
-    color: white;
-    border-color: #777;
+    filter: brightness(0.95);
+    transform: scale(1.1);
 }
 
 /* Ensure labels container is relative for absolute positioning of button */
@@ -935,15 +983,15 @@
 }
 
 /* Bulk Panel (Non-blocking) */
+/* Bulk Panel (Non-blocking) */
 .bulk-panel {
-    background-color: rgba(34, 34, 34, 0.95);
+    background-color: rgba(92, 92, 125, 0.95);
     /* Slight transparency */
     backdrop-filter: blur(10px);
     padding: 20px;
     border-radius: 12px;
     width: 320px;
     /* Fixed width */
-    border: 1px solid #555;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
@@ -967,7 +1015,7 @@
 .bulk-close-btn {
     background: none;
     border: none;
-    color: #aaa;
+    color: #eaebf3;
     font-size: 1.2rem;
     cursor: pointer;
     padding: 0;
@@ -1325,11 +1373,12 @@
     }
 
     .score-input-header {
-        padding: 10px 0px;
+        padding: 10px 1rem 5px 1rem;
         gap: 10px;
-        margin-left: -0.5rem;
-        margin-right: 2rem;
-        width: calc(100% + 1rem);
+        margin-left: -1rem;
+        margin-right: -1rem;
+        width: calc(100% + 2rem);
+        margin-top: -1rem;
     }
 
     .header-top-row {
@@ -1433,7 +1482,7 @@
     }
 
     .difficulty-header-labels {
-        gap: 2px;
+        gap: 8px;
         flex-wrap: wrap;
         overflow-x: visible;
         justify-content: center;
@@ -1443,9 +1492,9 @@
     }
 
     .header-circle {
-        width: 40px;
-        height: 40px;
-        font-size: 0.6rem;
+        width: 34px;
+        height: 34px;
+        font-size: 0.55rem;
         border-width: 2.5px;
         flex-shrink: 0;
     }
@@ -1459,7 +1508,7 @@
     .header-circle.expert,
     .header-circle.master,
     .header-circle.append {
-        font-size: 0.43rem;
+        font-size: 0.38rem;
     }
 
     .difficulty-right-section {
@@ -1482,7 +1531,7 @@
     .difficulty-instruction.mobile-only {
         display: block;
         font-size: 0.7rem;
-        color: #aaa;
+        color: white;
         white-space: nowrap;
         text-align: left;
         margin-left: 0;
@@ -1496,6 +1545,15 @@
     .bulk-input-btn {
         font-size: 0.8rem;
         padding: 4px 8px;
+    }
+
+    /* Reduce action button sizes on mobile to prevent wrapping/misalignment */
+    .back-button,
+    .export-button,
+    .import-button,
+    .share-button {
+        padding: 4px 8px !important;
+        font-size: 0.75rem;
     }
 
     /* Inline buttons on mobile - Removed to use global styles (side-by-side) */
@@ -1633,17 +1691,7 @@
     }
 }
 
-.bulk-panel {
-    background-color: #222;
-    padding: 20px;
-    border-radius: 16px;
-    width: 340px;
-    border: 1px solid #444;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
+
 
 .bulk-header {
     display: flex;
@@ -1706,8 +1754,8 @@
     height: 40px;
     border-radius: 50%;
     border: 3px solid transparent;
-    background-color: #333;
-    color: #888;
+    background-color: #eaebf3;
+    color: #434367;
     font-weight: 800;
     font-size: 0.6rem;
     cursor: pointer;
@@ -1762,7 +1810,7 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background-color: #2a2a2a;
+    background-color: transparent;
     padding: 10px;
     border-radius: 10px;
 }
@@ -1770,13 +1818,14 @@
 .bulk-level-range select {
     padding: 8px;
     border-radius: 6px;
-    background-color: #333;
-    color: white;
-    border: 1px solid #555;
+    background-color: #eaebf3;
+    color: #434367;
+    border: none;
     font-size: 1rem;
     width: 80px;
     text-align: center;
     outline: none;
+    font-weight: bold;
 }
 
 .bulk-result-buttons {
@@ -1788,13 +1837,14 @@
 .bulk-result-btn {
     padding: 10px 16px;
     border-radius: 8px;
-    border: 1px solid #444;
-    background-color: #333;
-    color: #aaa;
+    border: none;
+    background-color: #eaebf3;
+    color: #434367;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s;
     flex: 1;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .bulk-result-btn.active.none {
@@ -1863,13 +1913,13 @@
 
 /* Per-Song Bulk Input Styles */
 .song-bulk-btn {
-    background-color: #444;
-    /* Brighter background */
-    color: #ccc;
-    border: 1px solid #555;
-    padding: 4px 5px;
-    border-radius: 4px;
+    background-color: #eaebf3;
+    color: #434367;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 8px;
     font-size: 0.75rem;
+    font-weight: bold;
     cursor: pointer;
     transition: all 0.2s;
     margin-left: 8px;
@@ -1961,6 +2011,17 @@
 
 }
 
+@media (max-width: 350px) {
+
+    .back-button,
+    .export-button,
+    .import-button,
+    .share-button {
+        padding: 4px 6px !important;
+        font-size: 0.7rem !important;
+    }
+}
+
 .desktop-instruction-container {
     display: flex;
     align-items: center;
@@ -1968,17 +2029,18 @@
 }
 
 .bulk-input-trigger-btn {
-    background: linear-gradient(135deg, #2196F3, #1976D2);
+    background: #eaebf3;
     border: none;
-    border-radius: 4px;
-    color: white !important;
+    border-radius: 20px;
+    color: #434367 !important;
     font-size: 0.8rem;
     cursor: pointer;
-    padding: 4px 10px !important;
+    padding: 6px 16px !important;
     outline: none;
-    box-shadow: 0 2px 5px rgba(33, 150, 243, 0.3);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     transition: all 0.2s;
     white-space: nowrap;
+    font-weight: bold;
 }
 
 .bulk-input-trigger-btn:hover {
@@ -1991,4 +2053,63 @@
     font-size: 0.8rem !important;
     padding: 4px 8px !important;
     margin-right: 5px
+}
+
+/* Song Info Popover (Ported from pjsk-chart-search) */
+.song-info-popover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-width: 180px;
+
+    padding: 0.5rem 0.75rem;
+    background-color: rgba(74, 74, 74, 0.85);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+
+    color: white;
+    animation: fadeIn 0.15s ease-in-out;
+    z-index: 10;
+    pointer-events: none;
+    text-align: left;
+}
+
+.popover-column {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.popover-column span {
+    white-space: nowrap;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 768px) {
+    .song-info-popover {
+        left: 0;
+        min-width: 150px;
+    }
 }

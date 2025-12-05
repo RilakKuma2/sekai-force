@@ -30,7 +30,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
     const [playerName, setPlayerName] = useState('셐붕이');
     const [profileImage, setProfileImage] = useState<string | null>('https://asset.rilaksekai.com/face/21/008_normal.webp');
     const [language, setLanguage] = useState<'ko' | 'jp'>('ko');
-    const [displayDateType, setDisplayDateType] = useState<'registration' | 'lastModified'>('registration');
+    const [displayDateType, setDisplayDateType] = useState<'registration' | 'lastModified'>('lastModified');
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [showAssetSelector, setShowAssetSelector] = useState(false);
     const [isProfileLoaded, setIsProfileLoaded] = useState(false);
@@ -49,7 +49,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                 setPlayerName(parsed.playerName || '셐붕이');
                 setProfileImage(parsed.profileImage || 'https://asset.rilaksekai.com/face/21/008_normal.webp');
                 setLanguage(parsed.language || 'ko');
-                setDisplayDateType(parsed.displayDateType || 'registration');
+                setDisplayDateType(parsed.displayDateType || 'lastModified');
             } catch (e) {
                 console.error("Failed to load profile", e);
             }
@@ -75,7 +75,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
             setPlayerName('셐붕이');
             setProfileImage('https://asset.rilaksekai.com/face/21/008_normal.webp');
             setLanguage('ko');
-            setDisplayDateType('registration');
+            setDisplayDateType('lastModified');
             localStorage.removeItem('userProfile');
             setShowProfileModal(false);
         }
