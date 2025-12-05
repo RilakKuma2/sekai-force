@@ -405,6 +405,8 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
 
     return (
         <div className="stats-container">
+            <div className="stats-bg-layer" />
+            <div className="stats-overlay-layer" />
             <div className="stats-header">
                 <button onClick={() => navigate(-1)} className="back-button">&lt; 뒤로가기</button>
                 <div className="header-controls">
