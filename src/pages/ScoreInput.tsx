@@ -268,7 +268,7 @@ const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, upd
                     })}
                 </div>
             </div>
-        </div >
+        </div>
     );
 });
 
@@ -305,6 +305,11 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
     // Share Modal State
     const [showShareModal, setShowShareModal] = useState(false);
     const [shareUrl, setShareUrl] = useState('');
+    const [showMobileSearch, setShowMobileSearch] = useState(false);
+
+    const toggleMobileSearch = () => {
+        setShowMobileSearch(prev => !prev);
+    };
 
     // Sync local state with global state on mount/update
     useEffect(() => {
@@ -999,8 +1004,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
             <div className="score-input-header">
                 <div className="header-top-row">
                     <button onClick={() => navigate('/')} className="back-button">&lt; 뒤로가기</button>
-
-                    {/* Legend Moved Here */}
+                    {/*
                     <div className="score-legend">
                         <div className="legend-item">
                             <div className="legend-circle clear">C</div>
@@ -1014,7 +1018,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                             <div className="legend-circle ap">P</div>
                             <span>AP</span>
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="header-actions">
                         <button onClick={handleShareUrl} className="share-button" style={{ marginRight: '10px' }}>URL로 데이터 공유</button>
@@ -1025,17 +1029,27 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                         </label>
                     </div>
                 </div>
-
                 <input
                     type="text"
                     placeholder="곡명/작곡가 검색 (한/일, 음독, 초성)"
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    className="search-input"
+                    className="search-input desktop-only"
                 />
 
                 {/* Mobile Instruction & Sort Toggle */}
                 <div className="difficulty-instruction mobile-only" style={{ marginTop: '8px', marginBottom: '4px', justifyContent: 'flex-end', alignItems: 'center', position: 'relative', height: '30px', padding: '0 5px', flexWrap: 'nowrap', gap: '10px' }}>
+                    <button
+                        className="search-toggle-btn mobile-only"
+                        onClick={toggleMobileSearch}
+                        title="검색"
+                        style={{ marginRight: 'auto', padding: '5px' }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
                     <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'white' }}>{isAnyFilterActive ? "오름차순 정렬 시 인겜 순서와 동일" : "위쪽 난이도 버튼 눌러서 레벨 검색"}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                         <button
@@ -1077,6 +1091,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                                     &lt;
                                 </button>
                             )}
+
+
                             <DifficultyFilter diff="easy" label="EASY" value={easyLevel} onChange={(val) => updateFilter('easy', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
                             <DifficultyFilter diff="normal" label="NORMAL" value={normalLevel} onChange={(val) => updateFilter('normal', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
                             <DifficultyFilter diff="hard" label="HARD" value={hardLevel} onChange={(val) => updateFilter('hard', val)} activeFilter={activeFilter} setActiveFilter={setActiveFilter} songs={songs} />
@@ -1124,25 +1140,41 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                         </div>
                     </div>
                 </div>
+
+                {/* Mobile Search Input Row */}
+                {showMobileSearch && (
+                    <div className="mobile-search-row mobile-only">
+                        <input
+                            type="text"
+                            placeholder="곡명/작곡가 검색"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            className="search-input mobile-search"
+                            autoFocus
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Song List */}
-            <div className="song-list">
-                {filteredSongs.map(song => (
-                    <SongRow
-                        key={song.id}
-                        song={song}
-                        activeEdit={activeEdit}
-                        setActiveEdit={setActiveEdit}
-                        updateResult={updateResult}
-                        updateResultsBulk={updateResultsBulk}
-                        activeFilters={activeFilters}
-                        songResults={resultsMap[song.id] || {}}
-                        activeInfo={activeInfo}
-                        setActiveInfo={setActiveInfo}
-                    />
-                ))}
-            </div>
+            < div className="song-list" >
+                {
+                    filteredSongs.map(song => (
+                        <SongRow
+                            key={song.id}
+                            song={song}
+                            activeEdit={activeEdit}
+                            setActiveEdit={setActiveEdit}
+                            updateResult={updateResult}
+                            updateResultsBulk={updateResultsBulk}
+                            activeFilters={activeFilters}
+                            songResults={resultsMap[song.id] || {}}
+                            activeInfo={activeInfo}
+                            setActiveInfo={setActiveInfo}
+                        />
+                    ))
+                }
+            </div >
 
             {/* Preview Modal */}
             {

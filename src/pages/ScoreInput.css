@@ -1586,6 +1586,56 @@
     }
 }
 
+/* Mobile Search Row */
+.mobile-search-row {
+    padding: 0 10px;
+    margin-top: 8px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.search-input.mobile-search {
+    font-size: 0.9rem;
+    padding: 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.search-input.mobile-search::placeholder {
+    color: #aaa;
+}
+
+.search-toggle-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 5px;
+    color: white;
+    transition: transform 0.2s;
+}
+
+.search-toggle-btn:active {
+    transform: scale(0.9);
+}
+
 /* Best 39 Section Layout */
 .dashboard-layout {
     display: flex;
