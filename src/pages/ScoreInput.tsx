@@ -758,9 +758,10 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                 const titleKo = (song.title_ko || '').toLowerCase().replace(/\s/g, '');
                 const titleJp = normalizeKana((song.title_jp || '').toLowerCase().replace(/\s/g, ''));
                 const titleHi = normalizeKana((song.title_hi || '').toLowerCase().replace(/\s/g, ''));
+                const titleHangul = (song.title_hangul || '').toLowerCase().replace(/\s/g, '');
                 const composer = (song.composer || '').toLowerCase().replace(/\s/g, '');
 
-                if (titleKo.includes(term) || titleJp.includes(normalizedTerm) || titleHi.includes(normalizedTerm) || composer.includes(term)) return true;
+                if (titleKo.includes(term) || titleJp.includes(normalizedTerm) || titleHi.includes(normalizedTerm) || titleHangul.includes(term) || composer.includes(term)) return true;
                 if (song.title_ko && /[ㄱ-ㅎ]/.test(term)) {
                     // getChoseong is imported from 'es-hangul'
                     const choseong = getChoseong(song.title_ko).replace(/\s/g, '');
@@ -1027,7 +1028,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
                 <input
                     type="text"
-                    placeholder="곡 검색 (제목, 작곡가, 초성)"
+                    placeholder="곡명/작곡가 검색 (한/일, 음독, 초성)"
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     className="search-input"
