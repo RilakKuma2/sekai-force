@@ -8,7 +8,8 @@ import Stats from './pages/Stats';
 import './App.css';
 
 function App() {
-  const [songs, setSongs] = useState<Song[]>([]);
+  const [allSongs, setAllSongs] = useState<Song[]>([]); // Store raw songs
+  const [songs, setSongs] = useState<Song[]>([]); // Store filtered songs
   const [userResults, setUserResults] = useState<UserMusicResult[]>([]);
   const [best39, setBest39] = useState<MusicDifficultyStatus[]>([]);
   const [bestAppend, setBestAppend] = useState<MusicDifficultyStatus[]>([]);
@@ -18,6 +19,11 @@ function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // New state for showing unreleased songs
+  const [showUnreleased, setShowUnreleased] = useState<boolean>(() => {
+    return localStorage.getItem('sekai_show_unreleased') === 'true';
+  });
+
   // Load data on mount
   useEffect(() => {
     const loadData = async () => {
@@ -25,7 +31,7 @@ function App() {
         setLoading(true);
         setError(null);
         const songsData = await fetchSongs();
-        setSongs(songsData);
+        setAllSongs(songsData);
 
         // Load from localStorage
         const savedResults = localStorage.getItem('sekai_user_results');
@@ -62,6 +68,32 @@ function App() {
     loadData();
   }, []);
 
+  // Filter songs whenever allSongs or showUnreleased changes
+  useEffect(() => {
+    if (showUnreleased) {
+      setSongs(allSongs);
+    } else {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
+
+      const filteredSongs = allSongs.filter(song => {
+        if (!song.release_date) return true;
+        // Normalize separators to hyphens for consistent comparison
+        const songDate = song.release_date.replace(/\//g, '-');
+        return songDate <= todayStr;
+      });
+      setSongs(filteredSongs);
+    }
+  }, [allSongs, showUnreleased]);
+
+  const handleToggleUnreleased = (value: boolean) => {
+    setShowUnreleased(value);
+    localStorage.setItem('sekai_show_unreleased', String(value));
+  };
+
   // Recalculate Best39 whenever userResults or songs change
   useEffect(() => {
     if (songs.length > 0) {
@@ -97,6 +129,8 @@ function App() {
             loading={loading}
             error={error}
             lastModified={lastModified}
+            showUnreleased={showUnreleased}
+            onToggleUnreleased={handleToggleUnreleased}
           />
         } />
         <Route path="/input" element={

@@ -2116,3 +2116,74 @@
         min-width: 150px;
     }
 }
+
+/* Custom Checkbox Styles for Profile Modal */
+.checkbox-group {
+    flex-direction: row !important;
+    /* Override form-group column */
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    margin-top: 8px;
+    /* Slight separation */
+}
+
+.checkbox-group input[type="checkbox"] {
+    display: none;
+}
+
+.checkbox-custom {
+    width: 22px;
+    height: 22px;
+    background-color: #333;
+    border: 2px solid #555;
+    border-radius: 6px;
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+/* Checked State */
+.checkbox-group input[type="checkbox"]:checked+.checkbox-custom {
+    background-color: #33ccff;
+    /* Sekai Miku Blue-ish */
+    border-color: #33ccff;
+    box-shadow: 0 0 10px rgba(51, 204, 255, 0.4);
+}
+
+/* Checkmark Icon */
+.checkbox-custom::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 12px;
+    border: solid white;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg) scale(0);
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.checkbox-group input[type="checkbox"]:checked+.checkbox-custom::after {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+}
+
+/* Hover Effect */
+.checkbox-group:hover .checkbox-custom {
+    border-color: #777;
+}
+
+.checkbox-group:hover input[type="checkbox"]:checked+.checkbox-custom {
+    border-color: #33ccff;
+    /* Maintain border when checked */
+}
+
+.checkbox-label {
+    color: #eee;
+    font-size: 0.95rem;
+    font-weight: 600;
+}

@@ -1,0 +1,310 @@
+.dashboard-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.dashboard-modal {
+    background-color: #252525;
+    width: 90%;
+    max-width: 420px;
+    border-radius: 16px;
+    border: 1px solid #3d3d3d;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    color: #e0e0e0;
+}
+
+.dashboard-modal h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: white;
+    font-weight: 700;
+    text-align: center;
+}
+
+.dashboard-profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.dashboard-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dashboard-form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #aaaaaa;
+    margin-left: 4px;
+}
+
+.dashboard-input {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: white;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.dashboard-input:focus {
+    border-color: #33ccff;
+    background-color: #1f1f1f;
+    box-shadow: 0 0 0 2px rgba(51, 204, 255, 0.1);
+}
+
+.dashboard-input::placeholder {
+    color: #555;
+}
+
+.dashboard-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    gap: 12px;
+}
+
+.dashboard-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.dashboard-btn.cancel {
+    background-color: #333;
+    color: #ccc;
+}
+
+.dashboard-btn.cancel:hover {
+    background-color: #444;
+    color: white;
+}
+
+.dashboard-btn.confirm {
+    background: linear-gradient(135deg, #33ccff 0%, #0099cc 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 153, 204, 0.3);
+}
+
+.dashboard-btn.confirm:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 153, 204, 0.4);
+}
+
+.dashboard-btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.dashboard-btn-toggle {
+    padding: 8px;
+    border-radius: 8px;
+    background-color: #333;
+    color: #888;
+    border: 1px solid #444;
+    cursor: pointer;
+    flex: 1;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.dashboard-btn-toggle.active {
+    background-color: rgba(51, 204, 255, 0.15);
+    color: #33ccff;
+    border-color: #33ccff;
+    font-weight: bold;
+}
+
+/* Image Upload Area */
+.dashboard-image-upload {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #1a1a1a;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid #333;
+}
+
+.dashboard-avatar-preview {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #333;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid #444;
+    flex-shrink: 0;
+}
+
+.dashboard-upload-btn {
+    padding: 6px 12px;
+    background-color: #333;
+    color: #ccc;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: 1px solid #444;
+    transition: all 0.2s;
+    text-align: center;
+    flex: 1;
+}
+
+.dashboard-upload-btn:hover {
+    background-color: #444;
+    color: white;
+}
+
+/* Date Inputs */
+.dashboard-date-group {
+    display: flex;
+    gap: 8px;
+}
+
+/* Checkbox (Ported from ScoreInput.css but scoped to dashboard) */
+.dashboard-checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 8px 12px;
+    background-color: #1a1a1a;
+    border-radius: 10px;
+    border: 1px solid #333;
+    transition: border-color 0.2s;
+}
+
+.dashboard-checkbox-group:hover {
+    border-color: #555;
+}
+
+.dashboard-checkbox-group input {
+    display: none;
+}
+
+.dashboard-checkbox-custom {
+    width: 20px;
+    height: 20px;
+    background-color: #2d2d2d;
+    border: 2px solid #555;
+    border-radius: 6px;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.dashboard-checkbox-group input:checked+.dashboard-checkbox-custom {
+    background-color: #33ccff;
+    border-color: #33ccff;
+    box-shadow: 0 0 8px rgba(51, 204, 255, 0.4);
+}
+
+.dashboard-checkbox-custom::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg) scale(0);
+    opacity: 0;
+    transition: all 0.2s;
+}
+
+.dashboard-checkbox-group input:checked+.dashboard-checkbox-custom::after {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+}
+
+.dashboard-checkbox-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #e0e0e0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-modal {
+        width: 95%;
+        padding: 20px;
+    }
+}
+
+/* GitHub Link in Modal */
+.dashboard-modal {
+    position: relative;
+    /* Ensure absolute positioning works inside */
+}
+
+.dashboard-github-link {
+    position: absolute;
+    top: 24px;
+    /* Align with the H2 typically */
+    right: 24px;
+    /* Same padding as modal context */
+    color: #888;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dashboard-github-link:hover {
+    color: white;
+}
+
+.github-icon {
+    width: 24px;
+    height: 24px;
+}
