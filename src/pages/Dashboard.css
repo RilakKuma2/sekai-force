@@ -278,6 +278,8 @@
     .dashboard-modal {
         width: 95%;
         padding: 20px;
+        max-height: 85vh;
+        overflow-y: auto;
     }
 }
 
