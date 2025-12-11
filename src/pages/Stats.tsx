@@ -204,9 +204,14 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     if (songFromApi?.mas_ap) apConstant = Number(songFromApi.mas_ap);
                 } else if (d === 'expert') {
                     level = levels.expert || 0;
-                    // Force JP source for Expert
-                    let rawJudgment = item.ex_jst || item.ex_kst || '-';
-                    judgment = rawJudgment.split(' ')[0];
+                    if (source === 'jp') {
+                        let rawJudgment = item.ex_jst || item.ex_kst || '-';
+                        judgment = rawJudgment.split(' ')[0];
+                    } else {
+                        const { tier, mod } = parseGalleryTier(item.ex_kst);
+                        judgment = tier;
+                        modifier = mod;
+                    }
 
                     elements = item.ex_el || '';
                     memo = item.ex_mm || '';
