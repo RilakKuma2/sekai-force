@@ -1,0 +1,30 @@
+{
+    "short_name": "셐포스",
+    "name": "Sekai Force",
+    "icons": [
+        {
+            "src": "/touch-icons/apple-touch-icon-iphone-60x60.png",
+            "type": "image/png",
+            "sizes": "60x60"
+        },
+        {
+            "src": "/touch-icons/apple-touch-icon-ipad-76x76.png",
+            "type": "image/png",
+            "sizes": "76x76"
+        },
+        {
+            "src": "/touch-icons/apple-touch-icon-iphone-retina-120x120.png",
+            "type": "image/png",
+            "sizes": "120x120"
+        },
+        {
+            "src": "/touch-icons/apple-touch-icon-ipad-retina-152x152.png",
+            "type": "image/png",
+            "sizes": "152x152"
+        }
+    ],
+    "start_url": "/",
+    "display": "standalone",
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff"
+}
