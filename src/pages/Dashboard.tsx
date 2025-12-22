@@ -31,7 +31,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
     const [twitterId, setTwitterId] = useState('');
     const [registrationDate, setRegistrationDate] = useState('2020-10-03T15:39:39');
     const [playerName, setPlayerName] = useState('셐붕이');
-    const [profileImage, setProfileImage] = useState<string | null>('https://asset.rilaksekai.com/face/21/008_normal.webp');
+    const [profileImage, setProfileImage] = useState<string | null>('https://asset.rilaksekai.com/face/res021_no008_normal.webp');
     const [language, setLanguage] = useState<'ko' | 'jp'>('ko');
     const [displayDateType, setDisplayDateType] = useState<'registration' | 'lastModified'>('lastModified');
     const [showProfileModal, setShowProfileModal] = useState(false);
@@ -50,7 +50,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                 setTwitterId(parsed.twitterId || '');
                 setRegistrationDate(parsed.registrationDate || '2020-10-03T15:39:39');
                 setPlayerName(parsed.playerName || '셐붕이');
-                setProfileImage(parsed.profileImage || 'https://asset.rilaksekai.com/face/21/008_normal.webp');
+                setProfileImage(parsed.profileImage || 'https://asset.rilaksekai.com/face/res021_no008_normal.webp');
                 setLanguage(parsed.language || 'ko');
                 setDisplayDateType(parsed.displayDateType || 'lastModified');
             } catch (e) {
@@ -76,7 +76,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
             setTwitterId('');
             setRegistrationDate('2020-10-03T15:39:39');
             setPlayerName('셐붕이');
-            setProfileImage('https://asset.rilaksekai.com/face/21/008_normal.webp');
+            setProfileImage('https://asset.rilaksekai.com/face/res021_no008_normal.webp');
             setLanguage('ko');
             setDisplayDateType('lastModified');
             localStorage.removeItem('userProfile');

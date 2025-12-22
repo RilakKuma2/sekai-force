@@ -52,8 +52,8 @@ const AssetImageSelector: React.FC<AssetImageSelectorProps> = ({ onSelect, onClo
                 // Pre-populate 001-046
                 for (let i = 1; i < 47; i++) {
                     const cardId = i.toString().padStart(3, '0');
-                    foundImages.push(`https://asset.rilaksekai.com/face/${selectedCharId}/${cardId}_normal.webp`);
-                    foundImages.push(`https://asset.rilaksekai.com/face/${selectedCharId}/${cardId}_after_training.webp`);
+                    foundImages.push(`https://asset.rilaksekai.com/face/res0${selectedCharId}_no${cardId}_normal.webp`);
+                    foundImages.push(`https://asset.rilaksekai.com/face/res_0${selectedCharId}_no${cardId}_after_training.webp`);
                 }
             }
 
@@ -78,8 +78,8 @@ const AssetImageSelector: React.FC<AssetImageSelectorProps> = ({ onSelect, onClo
                     currentBatchIds.push(currentId);
 
                     const cardId = currentId.toString().padStart(3, '0');
-                    const normalUrl = `https://asset.rilaksekai.com/face/${selectedCharId}/${cardId}_normal.webp`;
-                    const afterUrl = `https://asset.rilaksekai.com/face/${selectedCharId}/${cardId}_after_training.webp`;
+                    const normalUrl = `https://asset.rilaksekai.com/face/res0${selectedCharId}_no${cardId}_normal.webp`;
+                    const afterUrl = `https://asset.rilaksekai.com/face/res0${selectedCharId}_no${cardId}_after_training.webp`;
 
                     batchPromises.push(async () => {
                         const normalExists = await checkImageExists(normalUrl);
@@ -209,7 +209,7 @@ const AssetImageSelector: React.FC<AssetImageSelectorProps> = ({ onSelect, onClo
                             {charIds.map(id => (
                                 <div key={id} className="char-item" onClick={() => handleCharClick(id)}>
                                     <img
-                                        src={`https://asset.rilaksekai.com/face/${id}/001_normal.webp`}
+                                        src={`https://asset.rilaksekai.com/face/res0${id}_no001_normal.webp`}
                                         alt={`Char ${id}`}
                                         loading="lazy"
                                     />
