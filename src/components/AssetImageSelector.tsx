@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { fetchCards, type Card } from '../utils/api';
 import './AssetImageSelector.css';
 
 interface AssetImageSelectorProps {
@@ -6,155 +7,84 @@ interface AssetImageSelectorProps {
     onClose: () => void;
 }
 
+const ID_TO_NAME: Record<string, string> = {
+    "01": "이치카", "02": "사키", "03": "호나미", "04": "시호",
+    "05": "미노리", "06": "하루카", "07": "아이리", "08": "시즈쿠",
+    "09": "코하네", "10": "안", "11": "아키토", "12": "토우야",
+    "13": "츠카사", "14": "에무", "15": "네네", "16": "루이",
+    "17": "카나데", "18": "마후유", "19": "에나", "20": "미즈키",
+    "21": "미쿠", "22": "린", "23": "렌", "24": "루카",
+    "25": "메이코", "26": "카이토"
+};
+
 const AssetImageSelector: React.FC<AssetImageSelectorProps> = ({ onSelect, onClose }) => {
     const [selectedCharId, setSelectedCharId] = useState<string | null>(null);
+    const [allCards, setAllCards] = useState<Card[]>([]);
     const [images, setImages] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
-    const [progress, setProgress] = useState('');
-
-    const CACHE_KEY_PREFIX = 'asset_selector_cache_';
 
     // Character IDs 01 to 26
     const charIds = Array.from({ length: 26 }, (_, i) => (i + 1).toString().padStart(2, '0'));
 
     useEffect(() => {
-        let isActive = true;
-
-        const loadImages = async () => {
-            if (!selectedCharId) {
-                setImages([]);
-                return;
-            }
-
-            setLoading(true); // Keep loading true initially just to reset state, but we won't block UI
-            // Actually, we can just use loading for the "Checking..." text at the bottom if we want,
-            // or remove it entirely. Let's keep it false mostly or use it for the small indicator.
-
-            // Load cache
-            const cacheKey = CACHE_KEY_PREFIX + selectedCharId;
-            const cachedData = localStorage.getItem(cacheKey);
-            let foundImages: string[] = [];
-            let startIndex = 47;
-
-            if (cachedData) {
-                try {
-                    const parsed = JSON.parse(cachedData);
-                    if (parsed.images && Array.isArray(parsed.images)) {
-                        foundImages = parsed.images;
-                    }
-                    if (parsed.lastChecked && typeof parsed.lastChecked === 'number') {
-                        startIndex = parsed.lastChecked + 1;
-                    }
-                } catch (e) {
-                    console.error("Failed to parse asset cache", e);
-                }
-            } else {
-                // Pre-populate 001-046
-                for (let i = 1; i < 47; i++) {
-                    const cardId = i.toString().padStart(3, '0');
-                    foundImages.push(`https://asset.rilaksekai.com/face/res0${selectedCharId}_no${cardId}_normal.webp`);
-                    foundImages.push(`https://asset.rilaksekai.com/face/res_0${selectedCharId}_no${cardId}_after_training.webp`);
-                }
-            }
-
-            if (!isActive) return;
-            setImages(foundImages); // Render immediately
-            setLoading(true); // Show indicator
-
-            // Background Check Loop
-            let lastChecked = startIndex - 1;
-            const BATCH_SIZE = 5;
-            let shouldStop = false;
-
-            for (let i = startIndex; i <= 150; i += BATCH_SIZE) {
-                if (!isActive || shouldStop) break;
-
-                const batchPromises = [];
-                const currentBatchIds: number[] = [];
-
-                for (let j = 0; j < BATCH_SIZE; j++) {
-                    const currentId = i + j;
-                    if (currentId > 150) break;
-                    currentBatchIds.push(currentId);
-
-                    const cardId = currentId.toString().padStart(3, '0');
-                    const normalUrl = `https://asset.rilaksekai.com/face/res0${selectedCharId}_no${cardId}_normal.webp`;
-                    const afterUrl = `https://asset.rilaksekai.com/face/res0${selectedCharId}_no${cardId}_after_training.webp`;
-
-                    batchPromises.push(async () => {
-                        const normalExists = await checkImageExists(normalUrl);
-                        let afterExists = false;
-                        if (normalExists) {
-                            afterExists = await checkImageExists(afterUrl);
-                        }
-                        return { id: currentId, normalUrl, afterUrl, normalExists, afterExists };
-                    });
-                }
-
-                setProgress(`Checking ${currentBatchIds[0]}...`);
-
-                const results = await Promise.all(batchPromises.map(p => p()));
-                if (!isActive) break;
-
-                const newImages: string[] = [];
-
-                for (const res of results) {
-                    if (res.id >= 30 && !res.normalExists) {
-                        shouldStop = true;
-                        break;
-                    }
-
-                    if (res.normalExists) {
-                        newImages.push(res.normalUrl);
-                        if (res.afterExists) {
-                            newImages.push(res.afterUrl);
-                        }
-                    }
-                    lastChecked = res.id;
-                }
-
-                if (newImages.length > 0) {
-                    setImages(prev => {
-                        const existing = new Set(prev);
-                        const uniqueToAdd = newImages.filter(url => !existing.has(url));
-                        return [...prev, ...uniqueToAdd];
-                    });
-                    foundImages.push(...newImages); // Keep local copy for cache
-                }
-            }
-
-            if (isActive) {
-                // Deduplicate before saving to cache
-                const uniqueFoundImages = Array.from(new Set(foundImages));
-                localStorage.setItem(cacheKey, JSON.stringify({
-                    lastChecked: lastChecked,
-                    images: uniqueFoundImages
-                }));
-                setLoading(false);
-            }
+        const loadCards = async () => {
+            setLoading(true);
+            const cards = await fetchCards();
+            setAllCards(cards);
+            setLoading(false);
         };
+        loadCards();
+    }, []);
 
-        loadImages();
-
-        return () => { isActive = false; };
-    }, [selectedCharId]);
-
-    // Removed separate fetchImages function
-
-    const checkImageExists = async (url: string): Promise<boolean> => {
-        const urlWithTimestamp = `${url}?t=${Date.now()}`;
-        try {
-            const response = await fetch(urlWithTimestamp, { method: 'HEAD' });
-            return response.ok;
-        } catch (e) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => resolve(true);
-                img.onerror = () => resolve(false);
-                img.src = urlWithTimestamp;
-            });
+    useEffect(() => {
+        if (!selectedCharId) {
+            setImages([]);
+            return;
         }
-    };
+
+        const charName = ID_TO_NAME[selectedCharId];
+        if (!charName) return;
+
+        // Filter cards for the selected character
+        // Note: VS characters might require checking unit specific logic if needed, 
+        // but typically name is sufficient if API normalizes it. 
+        // Based on sample, "character": "이치카".
+        const charCards = allCards.filter(card => card.character === charName);
+
+        const newImages: string[] = [];
+
+        // Sort cards by ID or release date if possible, but default order is often fine.
+        // Let's sort by card_image_id to be safe.
+        charCards.sort((a, b) => a.card_image_id.localeCompare(b.card_image_id));
+
+        charCards.forEach(card => {
+            // URL Format: https://asset.rilaksekai.com/face/res{charId}_no{cardImageId}_{type}.webp
+            // charId in asset URL is 2 digits for characters 1-9? No, typically it matches the ID directly.
+            // BUT, the current code used `res0${selectedCharId}` which implies 3 digits if selectedCharId is 2 digits?
+            // Wait, previous code: `res0${selectedCharId}`. 
+            // If selectedCharId is "01", result is "res001".
+            // If selectedCharId is "26", result is "res026".
+            // So it seems it expects a 3-digit number.
+
+            // Let's verify: 
+            // selectedCharId is "01" to "26".
+            // constructing res0${id} -> res001. 
+            // So the format is `res{3-digit-char-id}`.
+            const resId = `0${selectedCharId}`;
+
+            const normalUrl = `https://asset.rilaksekai.com/face/res${resId}_no${card.card_image_id}_normal.webp`;
+            newImages.push(normalUrl);
+
+            // Add after training if rarity >= 3
+            if (card.rarity >= 3) {
+                const afterUrl = `https://asset.rilaksekai.com/face/res${resId}_no${card.card_image_id}_after_training.webp`;
+                newImages.push(afterUrl);
+            }
+        });
+
+        setImages(newImages);
+
+    }, [selectedCharId, allCards]);
 
     const handleCharClick = (charId: string) => {
         setSelectedCharId(charId);
@@ -177,13 +107,18 @@ const AssetImageSelector: React.FC<AssetImageSelectorProps> = ({ onSelect, onClo
                     <button className="close-btn" onClick={onClose}>&times;</button>
                 </div>
                 <div className="asset-selector-content">
-                    {loading && (
-                        <div className="loading-indicator-small" style={{ position: 'absolute', bottom: '10px', right: '10px', fontSize: '12px', color: '#aaa', backgroundColor: 'rgba(0,0,0,0.7)', padding: '4px 8px', borderRadius: '4px', zIndex: 10 }}>
-                            {progress}
+                    {loading && !allCards.length && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%', left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            color: '#fff'
+                        }}>
+                            데이터 로딩 중...
                         </div>
                     )}
 
-                    {selectedCharId ? (
+                    {!loading && selectedCharId ? (
                         <div className="card-grid">
                             {images.map((url, index) => (
                                 <div key={index} className="card-item" onClick={() => onSelect(url)}>
@@ -198,9 +133,9 @@ const AssetImageSelector: React.FC<AssetImageSelectorProps> = ({ onSelect, onClo
                                     />
                                 </div>
                             ))}
-                            {images.length === 0 && !loading && (
-                                <div style={{ color: '#aaa', gridColumn: '1/-1', textAlign: 'center' }}>
-                                    이미지가 없습니다.
+                            {images.length === 0 && (
+                                <div style={{ color: '#aaa', gridColumn: '1/-1', textAlign: 'center', marginTop: '20px' }}>
+                                    이미지를 찾을 수 없습니다.
                                 </div>
                             )}
                         </div>

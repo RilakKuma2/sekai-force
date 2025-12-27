@@ -9,6 +9,23 @@ export interface SongLevel {
     append: number | null;
 }
 
+export interface Card {
+    id: number;
+    title: string;
+    card_image_id: string;
+    character: string;
+    unit: string;
+    support_unit: string | null;
+    type: string;
+    attribute: string;
+    rarity: number;
+    power: number;
+    available_from: string;
+    event: string | null;
+    skill_effect: string;
+    title_kr: string;
+}
+
 export interface Song {
     id: string;
     title_ko: string;
@@ -47,6 +64,21 @@ export const fetchSongs = async (): Promise<Song[]> => {
         }
     } catch (error) {
         console.error("Failed to fetch songs:", error);
+        return [];
+    }
+};
+
+export const fetchCards = async (): Promise<Card[]> => {
+    try {
+        const response = await axios.get<Card[]>('https://api.rilaksekai.com/api/cards');
+        if (Array.isArray(response.data)) {
+            return response.data;
+        } else {
+            console.error("API response is not an array:", response.data);
+            return [];
+        }
+    } catch (error) {
+        console.error("Failed to fetch cards:", error);
         return [];
     }
 };
