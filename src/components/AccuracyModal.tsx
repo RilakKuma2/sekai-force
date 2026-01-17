@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import type { Song } from '../utils/api';
+import { type Difficulty } from '../utils/calculator';
 import { getChoseong } from 'es-hangul';
 import '../pages/ScoreInput.css'; // Reuse existing CSS
 
@@ -16,12 +17,13 @@ interface AccuracyModalProps {
     songs: Song[];
     // For 'edit' mode or pre-selection
     targetSong?: Song | null;
-    targetDiff?: string;
+    targetDiff?: Difficulty;
     initialValues?: AccuracyInput | null;
     existingValues?: AccuracyInput | null;
-    getExistingData?: (songId: string, diff: string) => AccuracyInput | null;
+    getExistingData?: (songId: string, diff: Difficulty) => AccuracyInput | null;
 
-    onSave?: (data: AccuracyInput, info?: { songId: string, diff: string }) => void;
+    onSave?: (data: AccuracyInput, info?: { songId: string, diff: Difficulty }) => void;
+    onDelete?: (info?: { songId: string, diff: Difficulty }) => void;
     onClose: () => void;
 
     // Position for edit mode (optional, if using absolute positioning)
@@ -44,12 +46,13 @@ const AccuracyModal: React.FC<AccuracyModalProps> = ({
     existingValues,
     getExistingData,
     onSave,
+    onDelete,
     onClose,
     position
 }) => {
     // Calculator Mode State
     const [selectedSongId, setSelectedSongId] = useState<string>(targetSong?.id || '');
-    const [selectedDiff, setSelectedDiff] = useState<string>(targetDiff || 'master'); // Default to Master
+    const [selectedDiff, setSelectedDiff] = useState<Difficulty>(targetDiff || 'master'); // Default to Master
     const [searchTerm, setSearchTerm] = useState('');
     const [showSongList, setShowSongList] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
@@ -149,7 +152,24 @@ const AccuracyModal: React.FC<AccuracyModalProps> = ({
                 }
             }
         }
-        // onClose removed to allow parent to decide when to close (e.g. after confirmation)
+    };
+    // onClose removed to allow parent to decide when to close (e.g. after confirmation)
+
+    const handleDelete = () => {
+        if (!onDelete) return;
+        if (window.confirm('정확도 데이터를 삭제하시겠습니까?')) {
+            if (mode === 'calculator') {
+                if (selectedSongId && selectedDiff) {
+                    onDelete({ songId: selectedSongId, diff: selectedDiff });
+                }
+            } else {
+                if (targetSong && targetDiff) {
+                    onDelete({ songId: targetSong.id, diff: targetDiff });
+                } else {
+                    onDelete();
+                }
+            }
+        }
     };
 
     // Filter Logic for Calculator Mode
@@ -325,7 +345,7 @@ const AccuracyModal: React.FC<AccuracyModalProps> = ({
                                                 key={diff}
                                                 className={`header-circle ${diff}`}
                                                 onClick={() => {
-                                                    setSelectedDiff(diff);
+                                                    setSelectedDiff(diff as Difficulty);
                                                     setShowDiffDropdown(false);
                                                 }}
                                                 style={{ cursor: 'pointer', width: '36px', height: '36px', fontSize: '0.5rem' }}
@@ -423,7 +443,7 @@ const AccuracyModal: React.FC<AccuracyModalProps> = ({
                 </div>
 
                 <div className="accuracy-modal-footer">
-                    <button className="accuracy-clear-btn" onClick={() => setInputs({ perfect: 0, great: 0, good: 0, bad: 0, miss: 0 })}>초기화</button>
+                    <button className="accuracy-clear-btn" onClick={handleDelete}>초기화</button>
                     <button className="accuracy-cancel-btn" onClick={onClose}>취소</button>
                     {(mode === 'edit' || (mode === 'calculator' && selectedSongId)) && onSave && (
                         <button className="accuracy-save-btn" onClick={handleSave}>저장</button>

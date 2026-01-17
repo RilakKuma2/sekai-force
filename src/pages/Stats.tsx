@@ -142,7 +142,27 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         }
     };
 
-    const [lastSaved, setLastSaved] = useState(0); // Trigger for re-rendering accuracy displays
+    const handleDeleteAccuracy = (info?: { songId: string, diff: Difficulty }) => {
+        const id = info?.songId || activeAccuracyInput?.songId;
+        const diff = info?.diff || activeAccuracyInput?.diff;
+        if (!id || !diff) return;
+
+        const key = `${id}_${diff}`;
+        try {
+            const saved = localStorage.getItem('sekai_accuracy_data');
+            const accuracyData = saved ? JSON.parse(saved) : {};
+            delete accuracyData[key];
+            localStorage.setItem('sekai_accuracy_data', JSON.stringify(accuracyData));
+
+            setShowAccuracyModal(false);
+            setLastSaved(Date.now());
+        } catch (e) {
+            console.error('Failed to delete accuracy data', e);
+            alert('삭제 중 오류가 발생했습니다.');
+        }
+    };
+
+    const [, setLastSaved] = useState(0); // Trigger for re-rendering accuracy displays
 
     const handleTierSourceChange = (checked: boolean) => {
         const newSource = checked ? 'gallery' : 'jp';
@@ -1058,6 +1078,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                             existingValues={getExistingAccuracy(activeAccuracyInput.songId, activeAccuracyInput.diff) || undefined}
                             onClose={() => setShowAccuracyModal(false)}
                             onSave={handleAccuracySave}
+                            onDelete={handleDeleteAccuracy}
                         />
                     );
                 })()

@@ -207,7 +207,7 @@ const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, upd
                     </div>
                 </div>
 
-                <div className="difficulty-circles">
+                <div className={`difficulty-circles ${showAccuracy ? 'with-accuracy' : ''}`}>
                     {(['easy', 'normal', 'hard', 'expert', 'master', 'append'] as Difficulty[]).map(diff => {
                         const level = song.levels[diff];
 
@@ -357,6 +357,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         message: string;
         pendingData: AccuracyInput | null;
     }>({ isOpen: false, message: '', pendingData: null });
+    const [previewAccuracyData, setPreviewAccuracyData] = useState<AccuracyData | null>(null);
 
 
 
@@ -434,15 +435,20 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         setConfirmModalState({ isOpen: false, message: '', pendingData: null });
     };
 
-    const clearAccuracy = () => {
-        if (!accuracyModal) return;
-        const key = `${accuracyModal.songId}_${accuracyModal.diff}`;
+    const handleDeleteAccuracy = (info?: { songId: string, diff: Difficulty }) => {
+        const id = info?.songId || accuracyModal?.songId;
+        const diff = info?.diff || accuracyModal?.diff;
+        if (!id || !diff) return;
+
+        const key = `${id}_${diff}`;
         const newData = { ...accuracyData };
         delete newData[key];
         setAccuracyData(newData);
         localStorage.setItem('sekai_accuracy_data', JSON.stringify(newData));
         setAccuracyModal(null);
     };
+
+
 
     const getAccuracyDisplay = (songId: string, diff: Difficulty, status?: string | null): string => {
         // Priority 1: AP always 100%
@@ -475,8 +481,13 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
     const confirmLoad = () => {
         if (window.confirm("현재 데이터가 덮어씌워집니다. 계속하시겠습니까?")) {
             setLocalResults(previewResults);
+            if (previewAccuracyData) {
+                setAccuracyData(previewAccuracyData);
+                localStorage.setItem('sekai_accuracy_data', JSON.stringify(previewAccuracyData));
+            }
             handleUpdateResults(previewResults);
             setShowPreviewModal(false);
+            setPreviewAccuracyData(null);
             // Clear URL
             const url = new URL(window.location.href);
             url.searchParams.delete('data');
@@ -486,6 +497,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
     const cancelLoad = () => {
         setShowPreviewModal(false);
+        setPreviewAccuracyData(null);
         // Clear URL
         const url = new URL(window.location.href);
         url.searchParams.delete('data');
@@ -723,7 +735,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
         });
 
         // 4. Clean up for final JSON
-        const finalExport = exportList.map(({ id, title_jp, easy, normal, hard, expert, master, append }) => ({
+        const finalExportScores = exportList.map(({ id, title_jp, easy, normal, hard, expert, master, append }) => ({
             id,
             title_jp,
             easy,
@@ -733,6 +745,13 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
             master,
             append
         }));
+
+        const finalExport = {
+            version: 2,
+            exportedAt: new Date().toISOString(),
+            scores: finalExportScores,
+            accuracy: accuracyData
+        };
 
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(finalExport, null, 2)); // Pretty print
         const downloadAnchorNode = document.createElement('a');
@@ -778,7 +797,43 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                         });
                     });
 
+
                     setPreviewResults(newResults);
+                    setPreviewAccuracyData(null); // Legacy format has no accuracy data
+                    const { best39, bestAppend } = processUserBest(songs, newResults);
+                    setPreviewBest39(best39);
+                    setPreviewBestAppend(bestAppend);
+                    setShowPreviewModal(true);
+                } else if (typeof importedData === 'object' && importedData !== null && importedData.scores && Array.isArray(importedData.scores)) {
+                    // New V2 Format
+                    const newResults: UserMusicResult[] = [];
+                    const now = Date.now();
+
+                    importedData.scores.forEach((item: any) => {
+                        if (!item.id) return;
+
+                        const diffs: Difficulty[] = ['easy', 'normal', 'hard', 'expert', 'master', 'append'];
+                        diffs.forEach(diff => {
+                            if (item[diff]) {
+                                newResults.push({
+                                    musicId: String(item.id),
+                                    musicDifficulty: diff,
+                                    playResult: item[diff],
+                                    score: 1000,
+                                    createdAt: now,
+                                    updatedAt: now
+                                });
+                            }
+                        });
+                    });
+
+                    setPreviewResults(newResults);
+                    if (importedData.accuracy) {
+                        setPreviewAccuracyData(importedData.accuracy);
+                    } else {
+                        setPreviewAccuracyData(null);
+                    }
+
                     const { best39, bestAppend } = processUserBest(songs, newResults);
                     setPreviewBest39(best39);
                     setPreviewBestAppend(bestAppend);
@@ -1514,6 +1569,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     initialValues={existingAccuracyInput}
                     existingValues={existingAccuracyInput}
                     onSave={saveAccuracy}
+                    onDelete={handleDeleteAccuracy}
                     onClose={() => setAccuracyModal(null)}
                     position={modalPosition}
                 />
