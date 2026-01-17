@@ -491,7 +491,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
                     if (playResult) {
                         results.push({
-                            musicId: String(songId),
+                            musicId: String(songId).padStart(3, '0'),
                             musicDifficulty: diffs[idx],
                             playResult: playResult,
                             score: 1000,
@@ -509,7 +509,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
     // Old useEffect removed (replaced by preview logic)
 
     const handleShareUrl = () => {
-        const maxId = songs.length > 0 ? Math.max(...songs.map(s => Number(s.id))) : 0;
+        // Use localResults to get maxId, not songs (songs may be filtered by release date)
+        const maxId = localResults.length > 0 ? Math.max(...localResults.map(r => Number(r.musicId))) : 0;
         if (maxId === 0) return;
 
         const encoded = encodeScoreMap(localResults, maxId);
