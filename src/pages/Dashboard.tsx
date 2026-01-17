@@ -7,6 +7,8 @@ import Summary from '../components/Summary';
 import StatisticsChart from '../components/StatisticsChart';
 import FloatingButton from '../components/FloatingButton';
 import AssetImageSelector from '../components/AssetImageSelector';
+import AccuracyModal, { type AccuracyInput } from '../components/AccuracyModal';
+import ConfirmModal from '../components/ConfirmModal';
 import './ScoreInput.css'; // Reusing modal styles (partially)
 import './Dashboard.css'; // Dedicated modal and dashboard styles
 
@@ -35,8 +37,15 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
     const [language, setLanguage] = useState<'ko' | 'jp'>('ko');
     const [displayDateType, setDisplayDateType] = useState<'registration' | 'lastModified'>('lastModified');
     const [showProfileModal, setShowProfileModal] = useState(false);
+    const [showCalculator, setShowCalculator] = useState(false);
     const [showAssetSelector, setShowAssetSelector] = useState(false);
     const [isProfileLoaded, setIsProfileLoaded] = useState(false);
+    const [confirmModalState, setConfirmModalState] = useState<{
+        isOpen: boolean;
+        message: string;
+        showCancel?: boolean;
+        pendingData: { data: AccuracyInput; info: { songId: string; diff: string } } | null;
+    }>({ isOpen: false, message: '', pendingData: null });
     const dashboardRef = useRef<HTMLDivElement>(null);
 
     // Load profile from local storage
@@ -178,6 +187,70 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
         }, 1000); // Give it 1s to render ECharts and layout
     };
 
+    const getExistingAccuracy = (songId: string, diff: string): AccuracyInput | null => {
+        try {
+            const saved = localStorage.getItem('sekai_accuracy_data');
+            if (!saved) return null;
+            const accuracyData = JSON.parse(saved);
+            return accuracyData[`${songId}_${diff}`] || null;
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    };
+
+    // Helper to calculate score for comparison
+    const calculateScore = (input: AccuracyInput) => {
+        const total = input.perfect + input.great + input.good + input.bad + input.miss;
+        if (total === 0) return 0;
+        return ((input.perfect * 3 + input.great * 2 + input.good * 1) / (total * 3)) * 100;
+    };
+
+    const handleCalculatorSave = (data: AccuracyInput, info?: { songId: string, diff: string }) => {
+        if (!info) return;
+        const { songId, diff } = info;
+
+        // Check existing
+        const existing = getExistingAccuracy(songId, diff);
+        const newScore = calculateScore(data);
+        const existingScore = existing ? calculateScore(existing) : null;
+
+        if (existingScore !== null && newScore < existingScore) {
+            setConfirmModalState({
+                isOpen: true,
+                message: `새 기록(${newScore.toFixed(2)}%)이 기존 기록(${existingScore.toFixed(2)}%)보다 낮습니다.\n덮어씌우시겠습니까?`,
+                pendingData: { data, info }
+            });
+            return;
+        }
+
+        performCalculatorSave(data, info);
+    };
+
+    const performCalculatorSave = (data: AccuracyInput, info: { songId: string, diff: string }) => {
+        const { songId, diff } = info;
+        const key = `${songId}_${diff}`;
+
+        try {
+            const saved = localStorage.getItem('sekai_accuracy_data');
+            const accuracyData = saved ? JSON.parse(saved) : {};
+
+            const newData = { ...accuracyData, [key]: data };
+            localStorage.setItem('sekai_accuracy_data', JSON.stringify(newData));
+
+            setShowCalculator(false);
+            setConfirmModalState({
+                isOpen: true,
+                message: '저장되었습니다.',
+                showCancel: false,
+                pendingData: null
+            });
+        } catch (e) {
+            console.error('Failed to save accuracy data', e);
+            alert('저장 중 오류가 발생했습니다.');
+        }
+    };
+
     if (loading) {
         return <div className="loading">Loading...</div>;
     }
@@ -249,6 +322,7 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
             <FloatingButton
                 onEditProfile={() => setShowProfileModal(true)}
                 onCapture={handleCapture}
+                onCalculator={() => setShowCalculator(true)}
             />
 
             {/* Profile Edit Modal */}
@@ -438,6 +512,34 @@ const Dashboard: React.FC<DashboardProps> = ({ songs, best39, bestAppend, userRe
                     />
                 )
             }
+
+            {/* Calculator Mode Modal */}
+            {showCalculator && (
+                <AccuracyModal
+                    mode="calculator"
+                    songs={songs}
+                    onClose={() => setShowCalculator(false)}
+                    onSave={handleCalculatorSave}
+                    getExistingData={getExistingAccuracy}
+                />
+            )}
+
+            {confirmModalState.isOpen && (
+                <ConfirmModal
+                    isOpen={confirmModalState.isOpen}
+                    title={confirmModalState.pendingData ? "기록 덮어쓰기 확인" : "알림"}
+                    message={confirmModalState.message}
+                    showCancel={confirmModalState.showCancel ?? true}
+                    onConfirm={() => {
+                        if (confirmModalState.pendingData) {
+                            performCalculatorSave(confirmModalState.pendingData.data, confirmModalState.pendingData.info);
+                        } else {
+                            setConfirmModalState(prev => ({ ...prev, isOpen: false }));
+                        }
+                    }}
+                    onCancel={() => setConfirmModalState(prev => ({ ...prev, isOpen: false }))}
+                />
+            )}
 
             {/* Off-screen Capture Container */}
             {

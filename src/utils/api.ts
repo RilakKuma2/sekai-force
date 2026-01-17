@@ -51,6 +51,10 @@ export interface Song {
     mas_ap?: number;
     apd_ap?: number;
     ex_ap?: number;
+
+    ex_note?: number;
+    ma_note?: number;
+    ap_note?: number;
 }
 
 export const fetchSongs = async (): Promise<Song[]> => {

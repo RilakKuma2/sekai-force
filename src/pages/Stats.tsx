@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Song } from '../utils/api';
 import { type Difficulty, type UserMusicResult } from '../utils/calculator';
+import AccuracyModal, { type AccuracyInput } from '../components/AccuracyModal';
+import ConfirmModal from '../components/ConfirmModal';
 import './Stats.css';
+import './ScoreInput.css'; // For modal styles
 
 interface ApiSongStats {
     id: string;
@@ -65,6 +68,82 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
     });
     const [showSourceInfo, setShowSourceInfo] = useState(false);
 
+    // Accuracy Modal State
+    const [showAccuracyModal, setShowAccuracyModal] = useState(false);
+    const [activeAccuracyInput, setActiveAccuracyInput] = useState<{ songId: string, diff: Difficulty } | null>(null);
+    const [confirmModalState, setConfirmModalState] = useState<{
+        isOpen: boolean;
+        message: string;
+        showCancel?: boolean;
+        pendingData: { data: AccuracyInput; info: { songId: string; diff: string } } | null;
+    }>({ isOpen: false, message: '', pendingData: null });
+
+    const getExistingAccuracy = (songId: string, diff: string): AccuracyInput | null => {
+        try {
+            const saved = localStorage.getItem('sekai_accuracy_data');
+            if (!saved) return null;
+            const accuracyData = JSON.parse(saved);
+            return accuracyData[`${songId}_${diff}`] || null;
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    };
+
+    const calculateScore = (input: AccuracyInput) => {
+        const total = input.perfect + input.great + input.good + input.bad + input.miss;
+        if (total === 0) return 0;
+        return ((input.perfect * 3 + input.great * 2 + input.good * 1) / (total * 3)) * 100;
+    };
+
+    const handleAccuracySave = (data: AccuracyInput, info?: { songId: string, diff: string }) => {
+        if (!info) return;
+        const { songId, diff } = info;
+
+        const existing = getExistingAccuracy(songId, diff);
+        const newScore = calculateScore(data);
+        const existingScore = existing ? calculateScore(existing) : null;
+
+        if (existingScore !== null && newScore < existingScore) {
+            setConfirmModalState({
+                isOpen: true,
+                message: `새 기록(${newScore.toFixed(2)}%)이 기존 기록(${existingScore.toFixed(2)}%)보다 낮습니다.\n덮어씌우시겠습니까?`,
+                pendingData: { data, info }
+            });
+            return;
+        }
+
+        performSave(data, info);
+    };
+
+    const performSave = (data: AccuracyInput, info: { songId: string, diff: string }) => {
+        const { songId, diff } = info;
+        const key = `${songId}_${diff}`;
+
+        try {
+            const saved = localStorage.getItem('sekai_accuracy_data');
+            const accuracyData = saved ? JSON.parse(saved) : {};
+
+            const newData = { ...accuracyData, [key]: data };
+            localStorage.setItem('sekai_accuracy_data', JSON.stringify(newData));
+
+            setConfirmModalState({
+                isOpen: true,
+                message: '저장되었습니다.',
+                showCancel: false,
+                pendingData: null
+            });
+            setShowAccuracyModal(false);
+            // Re-render trigger
+            setLastSaved(Date.now());
+        } catch (e) {
+            console.error('Failed to save accuracy data', e);
+            alert('저장 중 오류가 발생했습니다.');
+        }
+    };
+
+    const [lastSaved, setLastSaved] = useState(0); // Trigger for re-rendering accuracy displays
+
     const handleTierSourceChange = (checked: boolean) => {
         const newSource = checked ? 'gallery' : 'jp';
         setTierSource(newSource);
@@ -75,8 +154,6 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         setDimCleared(checked);
         localStorage.setItem('dimCleared', JSON.stringify(checked));
     };
-
-
 
     useEffect(() => {
         const fetchData = async () => {
@@ -413,7 +490,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
             <div className="stats-bg-layer" />
             <div className="stats-overlay-layer" />
             <div className="stats-header">
-                <button onClick={() => navigate(-1)} className="back-button">&lt; 뒤로가기</button>
+                <button onClick={() => navigate('/')} className="back-button">&lt; 뒤로가기</button>
                 <div className="header-controls">
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                         <div className="difficulty-toggles">
@@ -524,7 +601,6 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
 
             <div className="tier-list-scroll-container">
                 <div className="tier-grid">
-                    {/* Header Row */}
                     {/* Header Row */}
                     <div className="grid-header level-tier-header">
                         {apMode ? <span className="ap-header-badge">AP</span> : 'Lv'}
@@ -847,14 +923,72 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                         </div>
                                     </div>
                                 </div>
-                                <a
-                                    href={`https://asset.rilaksekai.com/charts/${String(selectedSong.song_no).padStart(3, '0')}/${selectedSong.isExpert ? 'expert' : difficulty}.html`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="popover-chart-btn"
-                                >
-                                    채보
-                                </a>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100px', flexShrink: 0 }}>
+                                    {/* Accuracy Button */}
+                                    {(() => {
+                                        const songIdStr = String(selectedSong.song_no).padStart(3, '0');
+                                        const diffKey = selectedSong.isExpert ? 'expert' : difficulty;
+                                        const result = userResults.find(r => r.musicId === songIdStr && r.musicDifficulty === diffKey);
+
+                                        const accuracy = getExistingAccuracy(songIdStr, diffKey);
+                                        let score = accuracy ? calculateScore(accuracy) : null;
+
+                                        // Logic: AP -> 100%, FC (no data) -> 97%
+                                        let displayScore = score;
+                                        if (result?.playResult === 'full_perfect') {
+                                            displayScore = 100;
+                                        } else if (score === null && result?.playResult === 'full_combo') {
+                                            displayScore = 97;
+                                        }
+
+                                        const hasRecord = displayScore !== null;
+                                        const is100 = displayScore === 100;
+
+                                        return (
+                                            <button
+                                                className={`popover-chart-btn ${is100 ? 'ap-record' : ''}`}
+                                                style={{
+                                                    background: is100 ? undefined : hasRecord ? '#434367' : '#eee',
+                                                    color: is100 ? undefined : hasRecord ? '#fff' : '#888',
+                                                    marginBottom: '0',
+                                                    height: '32px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    width: '100%',
+                                                    boxSizing: 'border-box',
+                                                    fontSize: '0.9rem',
+                                                    padding: '0',
+                                                    border: is100 ? undefined : '1px solid #ddd'
+                                                }}
+                                                onClick={() => {
+                                                    setActiveAccuracyInput({ songId: songIdStr, diff: diffKey });
+                                                    setShowAccuracyModal(true);
+                                                }}
+                                            >
+                                                {hasRecord ? `${displayScore?.toFixed(2)}%` : '기록 없음'}
+                                            </button>
+                                        );
+                                    })()}
+
+                                    <a
+                                        href={`https://asset.rilaksekai.com/charts/${String(selectedSong.song_no).padStart(3, '0')}/${selectedSong.isExpert ? 'expert' : difficulty}.html`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="popover-chart-btn"
+                                        style={{
+                                            width: '100%',
+                                            boxSizing: 'border-box',
+                                            textAlign: 'center',
+                                            justifyContent: 'center',
+                                            height: '32px',
+                                            padding: '0',
+                                            fontSize: '0.9rem'
+                                        }}
+                                    >
+                                        채보
+                                    </a>
+                                </div>
                             </div>
                             <div className="popover-body">
                                 {selectedSong.Elements && selectedSong.Elements !== '-' && (
@@ -907,6 +1041,44 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                             </div>
                         </div>
                     </div>
+                )
+            }
+
+            {
+                showAccuracyModal && activeAccuracyInput && (() => {
+                    const targetSong = songs.find(s => s.id === activeAccuracyInput.songId);
+                    if (!targetSong) return null;
+
+                    return (
+                        <AccuracyModal
+                            mode="edit"
+                            songs={songs}
+                            targetSong={targetSong}
+                            targetDiff={activeAccuracyInput.diff}
+                            existingValues={getExistingAccuracy(activeAccuracyInput.songId, activeAccuracyInput.diff) || undefined}
+                            onClose={() => setShowAccuracyModal(false)}
+                            onSave={handleAccuracySave}
+                        />
+                    );
+                })()
+            }
+
+            {
+                confirmModalState.isOpen && (
+                    <ConfirmModal
+                        isOpen={confirmModalState.isOpen}
+                        title={confirmModalState.pendingData ? "기록 덮어쓰기 확인" : "알림"}
+                        message={confirmModalState.message}
+                        showCancel={confirmModalState.showCancel ?? true}
+                        onConfirm={() => {
+                            if (confirmModalState.pendingData) {
+                                performSave(confirmModalState.pendingData.data, confirmModalState.pendingData.info);
+                            } else {
+                                setConfirmModalState(prev => ({ ...prev, isOpen: false }));
+                            }
+                        }}
+                        onCancel={() => setConfirmModalState(prev => ({ ...prev, isOpen: false }))}
+                    />
                 )
             }
         </div >

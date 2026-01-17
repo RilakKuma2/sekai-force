@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { getChoseong } from 'es-hangul';
 import { type Difficulty, type UserMusicResult, calculateTotalR, calculateAppendR, processUserBest, type MusicDifficultyStatus } from '../utils/calculator';
 import { type Song } from '../utils/api';
+import AccuracyModal, { type AccuracyInput } from '../components/AccuracyModal';
+import ConfirmModal from '../components/ConfirmModal';
 import './ScoreInput.css';
 
 interface ScoreInputProps {
@@ -11,6 +13,20 @@ interface ScoreInputProps {
     userResults: UserMusicResult[];
     onUpdateResults: (results: UserMusicResult[]) => void;
 }
+
+// Accuracy data types for per-song accuracy tracking
+
+
+// Key format: "songId_difficulty" e.g., "001_master"
+type AccuracyData = Record<string, AccuracyInput>;
+
+// Calculate accuracy percentage from input
+const calculateAccuracy = (input: AccuracyInput): number | null => {
+    const total = input.perfect + input.great + input.good + input.bad + input.miss;
+    if (total === 0) return null;
+    const score = input.perfect * 3 + input.great * 2 + input.good * 1;
+    return (score / (total * 3)) * 100;
+};
 
 const UNIT_NAME_MAP: Record<string, string> = {
     "VS": "버싱",
@@ -93,9 +109,13 @@ interface SongRowProps {
     songResults: Record<string, string>; // difficulty -> result
     activeInfo: string | null;
     setActiveInfo: (id: string | null) => void;
+    // Accuracy props
+    showAccuracy: boolean;
+    getAccuracyDisplay: (songId: string, diff: Difficulty, status?: string | null) => string;
+    onOpenAccuracyModal: (songId: string, diff: Difficulty, event: React.MouseEvent) => void;
 }
 
-const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, updateResultsBulk, activeFilters, songResults, activeInfo, setActiveInfo }: SongRowProps) => {
+const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, updateResultsBulk, activeFilters, songResults, activeInfo, setActiveInfo, showAccuracy, getAccuracyDisplay, onOpenAccuracyModal }: SongRowProps) => {
     // Determine unit border class
     const unitClass = `unit-border-${song.unit_code.replace('/', '-')}`;
     const isFilteredMode = activeFilters.length > 0;
@@ -219,50 +239,64 @@ const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, upd
                         }
 
                         return (
-                            <div key={diff} style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-                                <div
-                                    className={circleClass}
-                                    onClick={(e) => {
-                                        if (!isFilteredMode) {
-                                            e.stopPropagation();
-                                            setActiveEdit(isEditing ? null : { songId: song.id, diff });
-                                        }
-                                    }}
-                                    title={`${diff}: ${level}`}
-                                    style={{ cursor: isFilteredMode ? 'default' : 'pointer' }}
-                                >
-                                    {level}
-                                </div>
-
-                                {/* Standard Popover (Non-filtered mode) */}
-                                {!isFilteredMode && isEditing && (
+                            <div key={diff} className="difficulty-cell">
+                                {/* Accuracy Box - positioned directly above the circle */}
+                                {showAccuracy && !isFilteredMode && (
                                     <div
-                                        className={`score-popover ${(diff === 'append' || diff === 'master') ? 'right-aligned' : ''}`}
-                                        onClick={(e) => e.stopPropagation()}
-                                        style={
-                                            (diff === 'append' || diff === 'master')
-                                                ? { left: 'auto', right: 0, transform: 'none' }
-                                                : {}
-                                        }
+                                        className={`accuracy-box ${diff} ${getAccuracyDisplay(song.id, diff, currentResult) === 'N/A' ? 'no-data' : ''}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onOpenAccuracyModal(song.id, diff, e);
+                                        }}
                                     >
-                                        <button className={currentResult === null ? 'active-none' : ''} onClick={() => updateResult(song.id, diff, null)}>-</button>
-                                        <button className={currentResult === 'clear' ? 'active-clear' : ''} onClick={() => updateResult(song.id, diff, 'clear')}>C</button>
-                                        <button className={currentResult === 'full_combo' ? 'active-fc' : ''} onClick={() => updateResult(song.id, diff, 'full_combo')}>FC</button>
-                                        <button className={currentResult === 'full_perfect' ? 'active-ap' : ''} onClick={() => updateResult(song.id, diff, 'full_perfect')}>AP</button>
+                                        {getAccuracyDisplay(song.id, diff, currentResult)}
                                     </div>
                                 )}
+                                <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                                    <div
+                                        className={circleClass}
+                                        onClick={(e) => {
+                                            if (!isFilteredMode) {
+                                                e.stopPropagation();
+                                                setActiveEdit(isEditing ? null : { songId: song.id, diff });
+                                            }
+                                        }}
+                                        title={`${diff}: ${level}`}
+                                        style={{ cursor: isFilteredMode ? 'default' : 'pointer' }}
+                                    >
+                                        {level}
+                                    </div>
 
-                                {/* Inline Buttons (Filtered mode) */}
-                                {isFilteredMode && (
-                                    <div className="inline-score-container">
-                                        <div className="inline-score-buttons">
-                                            <button className={`inline-score-btn ${currentResult === null ? 'active-none' : ''}`} onClick={() => updateResult(song.id, diff, null)}>-</button>
-                                            <button className={`inline-score-btn ${currentResult === 'clear' ? 'active-clear' : ''}`} onClick={() => updateResult(song.id, diff, 'clear')}>C</button>
-                                            <button className={`inline-score-btn ${currentResult === 'full_combo' ? 'active-fc' : ''}`} onClick={() => updateResult(song.id, diff, 'full_combo')}>FC</button>
-                                            <button className={`inline-score-btn ${currentResult === 'full_perfect' ? 'active-ap' : ''}`} onClick={() => updateResult(song.id, diff, 'full_perfect')}>AP</button>
+                                    {/* Standard Popover (Non-filtered mode) */}
+                                    {!isFilteredMode && isEditing && (
+                                        <div
+                                            className={`score-popover ${(diff === 'append' || diff === 'master') ? 'right-aligned' : ''}`}
+                                            onClick={(e) => e.stopPropagation()}
+                                            style={
+                                                (diff === 'append' || diff === 'master')
+                                                    ? { left: 'auto', right: 0, transform: 'none' }
+                                                    : {}
+                                            }
+                                        >
+                                            <button className={currentResult === null ? 'active-none' : ''} onClick={() => updateResult(song.id, diff, null)}>-</button>
+                                            <button className={currentResult === 'clear' ? 'active-clear' : ''} onClick={() => updateResult(song.id, diff, 'clear')}>C</button>
+                                            <button className={currentResult === 'full_combo' ? 'active-fc' : ''} onClick={() => updateResult(song.id, diff, 'full_combo')}>FC</button>
+                                            <button className={currentResult === 'full_perfect' ? 'active-ap' : ''} onClick={() => updateResult(song.id, diff, 'full_perfect')}>AP</button>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+
+                                    {/* Inline Buttons (Filtered mode) */}
+                                    {isFilteredMode && (
+                                        <div className="inline-score-container">
+                                            <div className="inline-score-buttons">
+                                                <button className={`inline-score-btn ${currentResult === null ? 'active-none' : ''}`} onClick={() => updateResult(song.id, diff, null)}>-</button>
+                                                <button className={`inline-score-btn ${currentResult === 'clear' ? 'active-clear' : ''}`} onClick={() => updateResult(song.id, diff, 'clear')}>C</button>
+                                                <button className={`inline-score-btn ${currentResult === 'full_combo' ? 'active-fc' : ''}`} onClick={() => updateResult(song.id, diff, 'full_combo')}>FC</button>
+                                                <button className={`inline-score-btn ${currentResult === 'full_perfect' ? 'active-ap' : ''}`} onClick={() => updateResult(song.id, diff, 'full_perfect')}>AP</button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         );
                     })}
@@ -307,8 +341,126 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
     const [shareUrl, setShareUrl] = useState('');
     const [showMobileSearch, setShowMobileSearch] = useState(false);
 
+    const [showAccuracy, setShowAccuracy] = useState(() => {
+        const saved = localStorage.getItem('sekai_show_accuracy');
+        return saved === 'true';
+    });
+    const [accuracyData, setAccuracyData] = useState<AccuracyData>(() => {
+        const saved = localStorage.getItem('sekai_accuracy_data');
+        return saved ? JSON.parse(saved) : {};
+    });
+    const [accuracyModal, setAccuracyModal] = useState<{ songId: string; diff: Difficulty } | null>(null);
+    const [modalPosition, setModalPosition] = useState<{ top: number; left: number } | null>(null);
+    const [existingAccuracyInput, setExistingAccuracyInput] = useState<AccuracyInput | null>(null);
+    const [confirmModalState, setConfirmModalState] = useState<{
+        isOpen: boolean;
+        message: string;
+        pendingData: AccuracyInput | null;
+    }>({ isOpen: false, message: '', pendingData: null });
+
+
+
+
     const toggleMobileSearch = () => {
         setShowMobileSearch(prev => !prev);
+    };
+
+    // Accuracy Helper Functions
+    const toggleAccuracy = () => {
+        setShowAccuracy(prev => {
+            const newVal = !prev;
+            localStorage.setItem('sekai_show_accuracy', String(newVal));
+            return newVal;
+        });
+    };
+
+    const openAccuracyModal = (songId: string, diff: Difficulty, event: React.MouseEvent) => {
+        const key = `${songId}_${diff}`;
+        const existing = accuracyData[key] || null;
+        setExistingAccuracyInput(existing);
+
+        // Get clicked element and container
+        const clickedEl = event.currentTarget as HTMLElement;
+        const container = clickedEl.closest('.score-input-container') as HTMLElement;
+
+        if (!container) return;
+
+        const clickedRect = clickedEl.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const modalWidth = 320;
+
+        // Calculate position relative to container
+        // Center modal horizontally with the accuracy box
+        const boxCenterX = clickedRect.left - containerRect.left + clickedRect.width / 2;
+        let left = boxCenterX - modalWidth / 2;
+
+        // Clamp to container bounds (with 16px margin)
+        const containerWidth = containerRect.width;
+        left = Math.max(16, Math.min(left, containerWidth - modalWidth - 16));
+
+        // Position below the clicked element (relative to container)
+        const top = clickedRect.bottom - containerRect.top + container.scrollTop + 8;
+
+        setModalPosition({ top, left });
+        setAccuracyModal({ songId, diff });
+    };
+
+    const saveAccuracy = (data: AccuracyInput) => {
+        if (!accuracyModal) return;
+
+        const newAcc = calculateAccuracy(data);
+        const existingAcc = existingAccuracyInput ? calculateAccuracy(existingAccuracyInput) : null;
+
+        // If new accuracy is lower than existing, ask for confirmation
+        if (existingAcc !== null && newAcc !== null && newAcc < existingAcc) {
+            setConfirmModalState({
+                isOpen: true,
+                message: `새 기록(${newAcc.toFixed(2)}%)이 기존 기록(${existingAcc.toFixed(2)}%)보다 낮습니다.\n덮어씌우시겠습니까?`,
+                pendingData: data
+            });
+            return;
+        }
+
+        performSave(data);
+    };
+
+    const performSave = (data: AccuracyInput) => {
+        if (!accuracyModal) return;
+        const key = `${accuracyModal.songId}_${accuracyModal.diff}`;
+        const newData = { ...accuracyData, [key]: data };
+        setAccuracyData(newData);
+        localStorage.setItem('sekai_accuracy_data', JSON.stringify(newData));
+        setAccuracyModal(null);
+        setConfirmModalState({ isOpen: false, message: '', pendingData: null });
+    };
+
+    const clearAccuracy = () => {
+        if (!accuracyModal) return;
+        const key = `${accuracyModal.songId}_${accuracyModal.diff}`;
+        const newData = { ...accuracyData };
+        delete newData[key];
+        setAccuracyData(newData);
+        localStorage.setItem('sekai_accuracy_data', JSON.stringify(newData));
+        setAccuracyModal(null);
+    };
+
+    const getAccuracyDisplay = (songId: string, diff: Difficulty, status?: string | null): string => {
+        // Priority 1: AP always 100%
+        if (status === 'full_perfect') return '100.00%';
+
+        const key = `${songId}_${diff}`;
+        const data = accuracyData[key];
+
+        // Priority 2: Detailed Input
+        if (data) {
+            const acc = calculateAccuracy(data);
+            if (acc !== null) return `${acc.toFixed(2)}%`;
+        }
+
+        // Priority 3: FC default 97%
+        if (status === 'full_combo') return '97.00%';
+
+        return 'N/A';
     };
 
     // Sync local state with global state on mount/update
@@ -1022,6 +1174,13 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     </div> */}
 
                     <div className="header-actions">
+                        <button
+                            onClick={toggleAccuracy}
+                            className={`accuracy-toggle-btn ${showAccuracy ? 'active' : ''}`}
+                            style={{ marginRight: '10px' }}
+                        >
+                            정확도
+                        </button>
                         <button onClick={handleShareUrl} className="share-button" style={{ marginRight: '10px' }}>URL로 데이터 공유</button>
                         <button onClick={handleExport} className="export-button">내보내기</button>
                         <label className="import-button">
@@ -1053,6 +1212,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     </button>
                     <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'white' }}>{isAnyFilterActive ? "오름차순 정렬 시 인겜 순서와 동일" : "위쪽 난이도 버튼 눌러서 레벨 검색"}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+
                         <button
                             className="bulk-input-trigger-btn mobile"
                             onClick={toggleBulkModal}
@@ -1132,6 +1292,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                             </button>
                         </div>
                         <div className="difficulty-instruction desktop-only desktop-instruction-container">
+
                             <button
                                 className="bulk-input-trigger-btn desktop"
                                 onClick={toggleBulkModal}
@@ -1172,6 +1333,9 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                             songResults={resultsMap[song.id] || {}}
                             activeInfo={activeInfo}
                             setActiveInfo={setActiveInfo}
+                            showAccuracy={showAccuracy}
+                            getAccuracyDisplay={getAccuracyDisplay}
+                            onOpenAccuracyModal={openAccuracyModal}
                         />
                     ))
                 }
@@ -1339,6 +1503,45 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
                     </div>
                 )
             }
+
+            {/* Accuracy Input Modal (Edit Mode) */}
+            {accuracyModal && modalPosition && (
+                <AccuracyModal
+                    mode="edit"
+                    songs={songs}
+                    targetSong={songs.find(s => s.id === accuracyModal.songId)}
+                    targetDiff={accuracyModal.diff}
+                    initialValues={existingAccuracyInput}
+                    existingValues={existingAccuracyInput}
+                    onSave={saveAccuracy}
+                    onClose={() => setAccuracyModal(null)}
+                    position={modalPosition}
+                />
+            )}
+
+            {/* Confirm Modal */}
+            {confirmModalState.isOpen && (
+                <ConfirmModal
+                    isOpen={confirmModalState.isOpen}
+                    title="기록 덮어쓰기 확인"
+                    message={confirmModalState.message}
+                    onConfirm={() => {
+                        if (confirmModalState.pendingData) {
+                            performSave(confirmModalState.pendingData);
+                        }
+                    }}
+                    onCancel={() => setConfirmModalState(prev => ({ ...prev, isOpen: false }))}
+                />
+            )}
+
+
+
+            {/* Accuracy Display per Song (rendered separately to avoid SongRow modifications) */}
+            {showAccuracy && (
+                <div className="accuracy-overlay-container">
+                    {/* Accuracy boxes will be positioned via CSS absolute positioning based on song rows */}
+                </div>
+            )}
 
 
         </div >

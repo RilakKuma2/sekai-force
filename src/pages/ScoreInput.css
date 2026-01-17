@@ -217,53 +217,15 @@
 .circle.result-full_combo,
 .circle.result-full_perfect {
     background-origin: padding-box;
-    /* Reset background origin if needed */
+    /* Border color is kept from original difficulty class */
 }
 
-/* Result Colors with Difficulty Borders */
-/* We need to target specific combinations of difficulty and result */
-
-/* Easy */
-.circle.easy.result-clear,
-.circle.easy.result-full_combo,
-.circle.easy.result-full_perfect {
-    border: 3.5px solid var(--diff-easy-light);
-}
-
-/* Normal */
-.circle.normal.result-clear,
-.circle.normal.result-full_combo,
-.circle.normal.result-full_perfect {
-    border: 3.5px solid var(--diff-normal-light);
-}
-
-/* Hard */
-.circle.hard.result-clear,
-.circle.hard.result-full_combo,
-.circle.hard.result-full_perfect {
-    border: 3.5px solid var(--diff-hard-light);
-}
-
-/* Expert */
-.circle.expert.result-clear,
-.circle.expert.result-full_combo,
-.circle.expert.result-full_perfect {
-    border: 3.5px solid var(--diff-expert-light);
-}
-
-/* Master */
-.circle.master.result-clear,
-.circle.master.result-full_combo,
-.circle.master.result-full_perfect {
-    border: 3.5px solid var(--diff-master-light);
-}
-
-/* Append */
-.circle.append.result-clear,
-.circle.append.result-full_combo,
-.circle.append.result-full_perfect {
-    border: 3.5px solid var(--diff-append);
-}
+/* Easy - keep original border color */
+/* Normal - keep original border color */
+/* Hard - keep original border color */
+/* Expert - keep original border color */
+/* Master - keep original border color */
+/* Append - keep original border color */
 
 
 /* Background colors for results (keep existing logic but ensure border overrides) */
@@ -2236,4 +2198,752 @@
     color: #eee;
     font-size: 0.95rem;
     font-weight: 600;
+}
+
+/* ==========================================
+   ACCURACY FEATURE STYLES
+   ========================================== */
+
+/* Accuracy Toggle Button */
+.accuracy-toggle-button {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+    background-color: #eaebf3;
+    color: #434367;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    margin-right: 10px;
+}
+
+.accuracy-toggle-button:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+}
+
+.accuracy-toggle-button.active {
+    background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
+    color: white;
+    box-shadow: 0 2px 8px rgba(173, 146, 253, 0.5);
+}
+
+/* Accuracy Filter Wrapper */
+.accuracy-filter-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Accuracy Box */
+.accuracy-box {
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    transition: all 0.2s;
+    min-width: 38px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.accuracy-box:hover {
+    transform: scale(1.05);
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* N/A state - light gray text and border */
+.accuracy-box.no-data {
+    color: #999;
+    border: 1.5px solid #999 !important;
+    background-color: transparent;
+}
+
+.accuracy-box.easy {
+    border: 1.5px solid var(--diff-easy);
+}
+
+.accuracy-box.normal {
+    border: 1.5px solid var(--diff-normal);
+}
+
+.accuracy-box.hard {
+    border: 1.5px solid var(--diff-hard);
+}
+
+.accuracy-box.expert {
+    border: 1.5px solid var(--diff-expert);
+}
+
+.accuracy-box.master {
+    border: 1.5px solid var(--diff-master);
+}
+
+.accuracy-box.append {
+    border: 1.5px solid var(--diff-append);
+}
+
+/* Accuracy Modal */
+.accuracy-modal {
+    background: linear-gradient(to bottom, #31325a, #434c74);
+    border-radius: 16px;
+    padding: 24px;
+    min-width: 380px;
+    /* Increased for label space */
+    max-width: 480px;
+    /* Increased for label space */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+.accuracy-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.accuracy-modal-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: white;
+    font-weight: 700;
+}
+
+.total-notes {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.accuracy-diff-label {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: black;
+}
+
+.accuracy-diff-label.easy {
+    background-color: var(--diff-easy);
+}
+
+.accuracy-diff-label.normal {
+    background-color: var(--diff-normal);
+}
+
+.accuracy-diff-label.hard {
+    background-color: var(--diff-hard);
+}
+
+.accuracy-diff-label.expert {
+    background-color: var(--diff-expert);
+}
+
+.accuracy-diff-label.master {
+    background-color: var(--diff-master);
+}
+
+.accuracy-diff-label.append {
+    background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
+}
+
+/* Accuracy Modal Body */
+.accuracy-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    /* No gap between rows */
+}
+
+/* Game-style Input Rows */
+.accuracy-input-row {
+    background-color: transparent;
+    /* Default transparent */
+    border-radius: 0;
+    /* Reset border radius */
+    margin-bottom: 0;
+    /* Remove margin */
+    padding: 10px 10px;
+    display: flex;
+    /* justify-content: space-between; REMOVED to fix alignment */
+    align-items: center;
+    /* Remove box-shadow to blend rows */
+}
+
+/* Striped Background Colors */
+.accuracy-input-row.perfect,
+.accuracy-input-row.good,
+.accuracy-input-row.miss {
+    background-color: #3e3f64;
+}
+
+.accuracy-input-row.great,
+.accuracy-input-row.bad {
+    background-color: transparent;
+}
+
+/* Rounded corners for first and last items */
+.accuracy-input-row:first-of-type {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.accuracy-input-row:last-of-type {
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.accuracy-input-row label {
+    font-size: 1.4rem;
+    /* Increased size per request */
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    /* Tighter spacing for bolder look */
+    margin-right: 16px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    flex: 1;
+    /* Push inputs to the right */
+    font-family: 'Noto Sans KR', 'Roboto', sans-serif;
+    /* Explicitly state robust fonts */
+}
+
+/* Existing Column Header */
+.accuracy-column-header {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 38px;
+    /* Align with existing value padding + margin */
+    margin-bottom: -4px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: bold;
+}
+
+/* Specific Gradient Colors for Labels */
+/* Only Perfect uses gradient */
+.accuracy-input-row.perfect label {
+    background: linear-gradient(170deg, #7ff7e5 22%, #bdc1ff 35%, #f1c1f4 45%, #fffdd3 55%);
+    /* 텍스트 잘라내기 속성 (그대로 유지) */
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    /* 글자 색 투명화 (그대로 유지) */
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+
+    /* 그림자 제거 (필수) */
+    text-shadow: none;
+
+    /* [중요] 폰트가 두꺼워야 색이 밝게 잘 보입니다 */
+    font-weight: 800;
+}
+
+/* Others use solid colors */
+.accuracy-input-row.great label {
+    color: #e292f4;
+    text-shadow: 0 0 10px rgba(159, 112, 189, 0.3);
+}
+
+.accuracy-input-row.good label {
+    color: #77ccff;
+    text-shadow: 0 0 10px rgba(119, 204, 255, 0.3);
+}
+
+.accuracy-input-row.bad label {
+    color: #77ffbc;
+    text-shadow: 0 0 10px rgba(119, 255, 188, 0.3);
+}
+
+.accuracy-input-row.miss label {
+    color: #dfdfdf;
+    text-shadow: none;
+}
+
+/* Input Wrapper & Visual Overlay */
+.input-visual-wrapper {
+    position: relative;
+    width: 80px;
+    /* Further reduced from 90px to give more space for Perfect label */
+    height: 30px;
+    /* Reduced fixed height to match text better */
+    display: flex;
+    align-items: center;
+    /* Vertical alignment fix */
+    justify-content: flex-end;
+    flex-shrink: 0;
+    /* Prevent collapsing */
+}
+
+/* Helper text (visual background) */
+.visual-value {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 1.4rem;
+    font-weight: 700;
+    /* Bold to match existing value */
+    font-family: 'Roboto', sans-serif;
+    /* Ensuring cleaner font if available */
+    pointer-events: none;
+    letter-spacing: 1px;
+}
+
+.visual-value .padded-zeros {
+    color: #91a2af;
+    /* Updated padded zero color */
+}
+
+.visual-value .actual-number {
+    color: white;
+}
+
+/* Actual Transparent Input */
+.accuracy-input-row input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    background: transparent;
+    border: none;
+    cursor: text;
+    font-size: 1.4rem;
+    color: transparent;
+    /* Text should be invisible */
+    padding: 0;
+    margin: 0;
+    z-index: 2;
+}
+
+/* Focus styles via wrapper or label? */
+/* Focus styles via wrapper or label? */
+/* Changed to wrapper focus within per user request */
+.input-visual-wrapper:focus-within {
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+/* Hide legacy styles */
+.accuracy-input-row input:focus,
+.accuracy-input-row input::placeholder {
+    outline: none;
+}
+
+.accuracy-input-row input::-webkit-outer-spin-button,
+.accuracy-input-row input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.accuracy-input-row input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Existing record display */
+/* Existing record display */
+.existing-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    /* Creating consistency with input value */
+    margin-left: 24px;
+    min-width: 45px;
+    font-family: inherit;
+    text-align: right;
+}
+
+.existing-value .padded-zeros {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.existing-value .actual-number {
+    color: white;
+}
+
+.existing-accuracy {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-left: 8px;
+}
+
+/* Accuracy Modal Preview */
+.accuracy-modal-preview {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    margin-top: 16px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+}
+
+.accuracy-modal-preview .accuracy-result {
+    font-size: 1.1rem;
+    color: #66ff99;
+}
+
+/* Accuracy Modal Actions */
+.accuracy-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.accuracy-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.accuracy-btn.clear-btn {
+    background-color: #666;
+    color: white;
+    margin-right: auto;
+}
+
+.accuracy-btn.clear-btn:hover {
+    background-color: #777;
+}
+
+.accuracy-btn.cancel-btn {
+    background-color: #eaebf3;
+    color: #434367;
+}
+
+.accuracy-btn.cancel-btn:hover {
+    filter: brightness(0.95);
+}
+
+.accuracy-btn.save-btn {
+    background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
+    color: white;
+}
+
+.accuracy-btn.save-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .accuracy-box {
+        font-size: 0.6rem;
+        padding: 2px 6px;
+        min-width: 32px;
+    }
+
+    .accuracy-modal {
+        min-width: 280px;
+        padding: 16px;
+    }
+
+    .accuracy-input-row .accuracy-label {
+        font-size: 0.85rem;
+        min-width: 60px;
+    }
+
+    .accuracy-input-row input {
+        width: 80px;
+        font-size: 1rem;
+    }
+
+    .accuracy-toggle-button {
+        font-size: 0.7rem;
+        padding: 5px 12px;
+    }
+}
+
+/* Additional Accuracy Styles */
+.accuracy-toggle-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+    background-color: #eaebf3;
+    color: #434367;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.accuracy-toggle-btn:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+}
+
+.accuracy-toggle-btn.active {
+    background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
+    color: white;
+    box-shadow: 0 2px 8px rgba(173, 146, 253, 0.5);
+}
+
+/* Accuracy Row Wrapper */
+.song-row-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.accuracy-row {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+    gap: 10px;
+}
+
+.accuracy-spacer {
+    width: 80px;
+    /* Match song cover width */
+    flex-shrink: 0;
+}
+
+.accuracy-boxes {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    justify-content: flex-start;
+    padding-left: 10px;
+}
+
+.accuracy-box-placeholder {
+    width: 40px;
+    height: 20px;
+    visibility: hidden;
+}
+
+/* Accuracy Modal Footer */
+.accuracy-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.accuracy-clear-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #666;
+    color: white;
+    margin-right: auto;
+}
+
+.accuracy-clear-btn:hover {
+    background-color: #777;
+}
+
+.accuracy-cancel-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #eaebf3;
+    color: #434367;
+}
+
+.accuracy-cancel-btn:hover {
+    filter: brightness(0.95);
+}
+
+.accuracy-save-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: linear-gradient(to bottom right, #ad92fd, #fe7bde);
+    color: white;
+}
+
+.accuracy-save-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* Accuracy Modal Header */
+.accuracy-modal-header {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: white;
+}
+
+.accuracy-modal-diff {
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.accuracy-modal-diff.easy {
+    background-color: var(--diff-easy);
+}
+
+.accuracy-modal-diff.normal {
+    background-color: var(--diff-normal);
+}
+
+.accuracy-modal-diff.hard {
+    background-color: var(--diff-hard);
+}
+
+.accuracy-modal-diff.expert {
+    background-color: var(--diff-expert);
+}
+
+.accuracy-modal-diff.master {
+    background-color: var(--diff-master);
+}
+
+.accuracy-modal-diff.append {
+    background-color: var(--diff-append);
+}
+
+/* Accuracy Modal Body */
+.accuracy-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+
+
+
+.accuracy-result-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 10px;
+    margin-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-weight: bold;
+}
+
+.accuracy-result-label {
+    flex: 1;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.accuracy-result-value {
+    width: 80px;
+    text-align: right;
+    font-size: 1.2rem;
+    color: #ffd700;
+    flex-shrink: 0;
+}
+
+.accuracy-existing-result {
+    margin-left: 24px;
+    min-width: 45px;
+    text-align: right;
+    font-size: 0.9rem;
+    color: #aaa;
+    flex-shrink: 0;
+    font-weight: 700;
+}
+
+@media (max-width: 768px) {
+    .accuracy-spacer {
+        width: 60px;
+    }
+
+    .accuracy-boxes {
+        gap: 4px;
+    }
+
+    .accuracy-box {
+        font-size: 0.6rem;
+        padding: 2px 5px;
+        min-width: 32px;
+    }
+
+    .accuracy-toggle-btn {
+        font-size: 0.7rem;
+        padding: 5px 10px;
+    }
+}
+
+/* Difficulty Cell - for stacking accuracy box above circle */
+.difficulty-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    position: relative;
+}
+
+/* Accuracy Modal - positioned near clicked box */
+.accuracy-modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Calculator Mode Controls */
+.calc-header-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.calc-song-select,
+.calc-diff-select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 0.9rem;
+}
+
+.calc-song-select {
+    flex: 2;
+}
+
+.calc-diff-select {
+    flex: 1;
 }
