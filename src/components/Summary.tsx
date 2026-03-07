@@ -38,6 +38,8 @@ const Summary: React.FC<SummaryProps> = ({ userResults, songs, totalR, appendTot
     now.setHours(0, 0, 0, 0);
 
     const availableSongs = songs.filter(song => {
+        if (['707', '708', '709'].includes(song.id)) return false;
+
         if (!song.release_date) return true;
         const releaseDate = new Date(song.release_date);
         return releaseDate <= now;

@@ -45,6 +45,8 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
             }
         };
 
+        const validSongs = songs.filter(s => !['707', '708', '709'].includes(s.id));
+
         // Dispose of any existing charts from the *other* mode before initializing the current mode's charts.
         if (showLineChart) {
             safeDispose(chartInstance);
@@ -69,7 +71,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
             const standardLevels = new Set<number>();
             const appendLevels = new Set<number>();
 
-            songs.forEach(song => {
+            validSongs.forEach(song => {
                 Object.entries(song.levels).forEach(([diff, val]) => {
                     if (val !== null && typeof val === 'number') {
                         const levelInt = Math.floor(val);
@@ -104,7 +106,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
             const resultMap = new Map<string, string>();
             userResults.forEach(r => resultMap.set(`${r.musicId}-${r.musicDifficulty}`, r.playResult));
 
-            songs.forEach(song => {
+            validSongs.forEach(song => {
                 Object.entries(song.levels).forEach(([diff, val]) => {
                     if (val !== null && typeof val === 'number') {
                         const levelInt = Math.floor(val);
@@ -152,7 +154,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
             // MOBILE / LINE CHART: Two Line Charts
             const processMobileData = (isAppend: boolean) => {
                 const levels = new Set<number>();
-                songs.forEach(song => {
+                validSongs.forEach(song => {
                     Object.entries(song.levels).forEach(([diff, val]) => {
                         if (val !== null && typeof val === 'number') {
                             const levelInt = Math.floor(val);
@@ -178,7 +180,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({ best39, userResults, 
                 const resultMap = new Map<string, string>();
                 userResults.forEach(r => resultMap.set(`${r.musicId}-${r.musicDifficulty}`, r.playResult));
 
-                songs.forEach(song => {
+                validSongs.forEach(song => {
                     Object.entries(song.levels).forEach(([diff, val]) => {
                         if (val !== null && typeof val === 'number') {
                             if (isAppend ? diff === 'append' : diff !== 'append') {

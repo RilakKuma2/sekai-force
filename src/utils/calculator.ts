@@ -52,7 +52,15 @@ export const processUserBest = (songs: Song[], userResults: UserMusicResult[]): 
     const songMap = new Map<string, Song>();
     songs.forEach(song => songMap.set(song.id, song));
 
+    const now = new Date();
+    const isAfterApril22 = now >= new Date('2026-04-22T00:00:00+09:00');
+    const excludedSongs = ['707', '708', '709'];
+
     userResults.forEach(result => {
+        if (isAfterApril22 && excludedSongs.includes(result.musicId)) {
+            return;
+        }
+
         const song = songMap.get(result.musicId);
         if (!song) return;
 

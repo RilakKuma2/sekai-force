@@ -963,6 +963,48 @@
     filter: brightness(0.8) grayscale(0.2);
 }
 
+/* FC/AP Status Badge Overlays */
+.status-badge-overlay {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 900;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+    pointer-events: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    letter-spacing: -0.5px;
+}
+
+.fc-badge {
+    background-color: #d32f2f;
+    color: white;
+    border: 1.5px solid rgba(255, 255, 255, 0.9);
+}
+
+.ap-badge {
+    background: linear-gradient(to bottom right, #C2185B, #1976D2);
+    color: white;
+    border: 1.5px solid rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+    .status-badge-overlay {
+        width: 16px;
+        height: 16px;
+        font-size: 7px;
+        top: -4px;
+        right: -4px;
+    }
+}
+
 .popover-section.status-control {
     margin-top: 15px;
     padding-top: 15px;
@@ -1018,6 +1060,7 @@
 
 /* Removed rainbow animation */
 
+
 .status-btn:first-child.active {
     background-color: #6b7280;
     /* Gray for None */
@@ -1025,7 +1068,7 @@
 
 .song-card.dimmed-ap {
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden; Removed to allow badge to overflow */
     /* Ensure border radius is respected */
 }
 

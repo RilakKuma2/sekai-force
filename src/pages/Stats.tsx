@@ -505,6 +505,39 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
     if (loading) return <div className="loading">Loading...</div>;
     if (error) return <div className="error">{error}</div>;
 
+    const getSongPlayResult = (song: SongStats): string | null => {
+        if (!dimCleared) return null;
+        const targetDifficulty = song.isExpert ? 'expert' : difficulty;
+        const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
+        if (!result) return null;
+        return result.playResult;
+    };
+
+    const getSongDimClass = (song: SongStats): string => {
+        const playResult = getSongPlayResult(song);
+        if (!playResult) return '';
+        if (apMode) {
+            if (playResult === 'full_perfect') return 'dimmed dimmed-ap';
+            return '';
+        } else {
+            if (playResult === 'full_perfect') return 'dimmed dimmed-ap';
+            if (playResult === 'full_combo') return 'dimmed';
+            return '';
+        }
+    };
+
+    const renderStatusBadge = (song: SongStats) => {
+        const playResult = getSongPlayResult(song);
+        if (!playResult) return null;
+        if (playResult === 'full_perfect') {
+            return <div className="status-badge-overlay ap-badge">AP</div>;
+        }
+        if (playResult === 'full_combo' && !apMode) {
+            return <div className="status-badge-overlay fc-badge">FC</div>;
+        }
+        return null;
+    };
+
     return (
         <div className="stats-container">
             <div className="stats-bg-layer" />
@@ -714,21 +747,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                 {pSlice.map(song => (
                                                     <div
                                                         key={song.song_no}
-                                                        className={`song-card ${(() => {
-                                                            if (!dimCleared) return '';
-                                                            const targetDifficulty = song.isExpert ? 'expert' : difficulty;
-                                                            const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
-                                                            if (!result) return '';
-
-                                                            if (apMode) {
-                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
-                                                                return '';
-                                                            } else {
-                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
-                                                                if (result.playResult === 'full_combo') return 'dimmed';
-                                                                return '';
-                                                            }
-                                                        })()}`}
+                                                        className={`song-card ${getSongDimClass(song)}`}
                                                         title={`${song.song_name}`}
                                                         onClick={() => handleSongClick(song)}
                                                     >
@@ -738,6 +757,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             loading="lazy"
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
                                                         />
+                                                        {renderStatusBadge(song)}
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
                                                         {song.isExpert && <div className="expert-indicator">EX</div>}
                                                         {(song.modifier === '+' || song.modifier === '±') && (
@@ -761,20 +781,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                 {gSlice.map(song => (
                                                     <div
                                                         key={song.song_no}
-                                                        className={`song-card ${(() => {
-                                                            if (!dimCleared) return '';
-                                                            const targetDifficulty = song.isExpert ? 'expert' : difficulty;
-                                                            const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
-                                                            if (!result) return '';
-                                                            if (apMode) {
-                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
-                                                                return '';
-                                                            } else {
-                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
-                                                                if (result.playResult === 'full_combo') return 'dimmed';
-                                                                return '';
-                                                            }
-                                                        })()}`}
+                                                        className={`song-card ${getSongDimClass(song)}`}
                                                         title={`${song.song_name}`}
                                                         onClick={() => handleSongClick(song)}
                                                     >
@@ -784,6 +791,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             loading="lazy"
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
                                                         />
+                                                        {renderStatusBadge(song)}
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
                                                         {song.isExpert && <div className="expert-indicator">EX</div>}
                                                         {(song.modifier === '+' || song.modifier === '±') && (
@@ -807,20 +815,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                 {bSlice.map(song => (
                                                     <div
                                                         key={song.song_no}
-                                                        className={`song-card ${(() => {
-                                                            if (!dimCleared) return '';
-                                                            const targetDifficulty = song.isExpert ? 'expert' : difficulty;
-                                                            const result = userResults.find(r => r.musicId === String(song.song_no).padStart(3, '0') && r.musicDifficulty === targetDifficulty);
-                                                            if (!result) return '';
-                                                            if (apMode) {
-                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
-                                                                return '';
-                                                            } else {
-                                                                if (result.playResult === 'full_perfect') return 'dimmed dimmed-ap';
-                                                                if (result.playResult === 'full_combo') return 'dimmed';
-                                                                return '';
-                                                            }
-                                                        })()}`}
+                                                        className={`song-card ${getSongDimClass(song)}`}
                                                         title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
                                                         onClick={() => handleSongClick(song)}
                                                     >
@@ -830,6 +825,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             loading="lazy"
                                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
                                                         />
+                                                        {renderStatusBadge(song)}
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
                                                         {song.isExpert && <div className="expert-indicator">EX</div>}
                                                         {(song.modifier === '+' || song.modifier === '±') && (
@@ -929,10 +925,30 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                         isUnreleased = releaseDate > now;
                                                     }
                                                 }
+
+                                                const isOldChart = (() => {
+                                                    if (!song) return false;
+                                                    // Check specific IDs first
+                                                    const oldChartIds = [445, 552, 387, 420, 464];
+                                                    if (oldChartIds.includes(Number(song.id))) return true;
+
+                                                    // Check release date
+                                                    if (song.release_date) {
+                                                        const releaseDate = new Date(song.release_date);
+                                                        const cutoffDate = new Date('2023-09-29');
+                                                        // releaseDate must be strictly before cutoff to be "old"
+                                                        // Logic: releaseDate < 2023/09/29
+                                                        return releaseDate < cutoffDate;
+                                                    }
+                                                    return false;
+                                                })();
                                                 return (
                                                     <>
                                                         {apConstant !== undefined && !isNaN(apConstant) && (
                                                             <span className="popover-info">AP {apConstant.toFixed(1)}</span>
+                                                        )}
+                                                        {isOldChart && (
+                                                            <span className="popover-info">구채보</span>
                                                         )}
                                                         {isUnreleased && (
                                                             <span className="popover-info" style={{ color: '#ff6b6b', fontWeight: 'bold' }}>수록 예정</span>
@@ -1008,6 +1024,21 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                     >
                                         채보
                                     </a>
+                                    {(() => {
+                                        const song = songs.find(s => parseInt(s.id) === selectedSong.song_no);
+                                        if (song?.release_date) {
+                                            const d = new Date(song.release_date);
+                                            const yy = String(d.getFullYear()).slice(2);
+                                            const mm = String(d.getMonth() + 1).padStart(2, '0');
+                                            const dd = String(d.getDate()).padStart(2, '0');
+                                            return (
+                                                <div style={{ fontSize: '0.9rem', fontWeight: '800', color: '#ccc', marginTop: '4px', textAlign: 'center' }}>
+                                                    {`${yy}/${mm}/${dd}`}
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
                                 </div>
                             </div>
                             <div className="popover-body">
