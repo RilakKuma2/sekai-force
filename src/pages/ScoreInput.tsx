@@ -953,6 +953,13 @@ const ScoreInput: React.FC<ScoreInputProps> = ({ songs, userResults, onUpdateRes
 
     const filteredSongs = useMemo(() => {
         let result = songs;
+
+        const now = new Date();
+        const isAfterApril22 = now >= new Date('2026-04-22T00:00:00+09:00');
+        if (isAfterApril22) {
+            result = result.filter(song => !['707', '708', '709'].includes(song.id));
+        }
+
         const term = searchTerm.toLowerCase().replace(/\s/g, '');
 
         // Helper to normalize Katakana to Hiragana
