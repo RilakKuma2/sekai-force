@@ -520,7 +520,8 @@
     position: relative;
     flex-shrink: 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    border: 1px solid #444;
+    border: 3px solid #444;
+    box-sizing: border-box;
 }
 
 .song-card:hover {
@@ -1279,3 +1280,13 @@
     font-weight: 500;
     letter-spacing: 0.02em;
 }
+
+/* Song Card Unit Borders - Higher specificity than .song-card */
+.song-card.unit-border-VS { border-color: var(--unit-color-vs); }
+.song-card.unit-border-L-n { border-color: var(--unit-color-ln); }
+.song-card.unit-border-MMJ { border-color: var(--unit-color-mmj); }
+.song-card.unit-border-VBS { border-color: var(--unit-color-vbs); }
+.song-card.unit-border-WxS { border-color: var(--unit-color-wxs); }
+.song-card.unit-border-N25 { border-color: var(--unit-color-n25); }
+.song-card.unit-border-Oth { border-color: var(--unit-color-oth); }
+.song-card.unit-border-Unk { border-color: var(--unit-color-unk); }

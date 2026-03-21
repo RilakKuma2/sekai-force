@@ -50,6 +50,7 @@ interface SongStats {
     isExpert?: boolean;
     ApMemo?: string;
     modifier?: '+' | '-' | '±' | null;
+    unit_code: string;
 }
 
 const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) => {
@@ -60,6 +61,14 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedSong, setSelectedSong] = useState<SongStats | null>(null);
+    const [showLimited, setShowLimited] = useState(() => {
+        const saved = localStorage.getItem('sekai_show_limited');
+        if (saved !== null) {
+            return JSON.parse(saved);
+        }
+        // Default logic: true until end of April 21, 2026
+        return new Date().getTime() <= new Date('2026-04-21T23:59:59+09:00').getTime();
+    });
     const [dimCleared, setDimCleared] = useState(() => {
         const saved = localStorage.getItem('dimCleared');
         return saved !== null ? JSON.parse(saved) : false;
@@ -214,9 +223,9 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
 
     useEffect(() => {
         if (apiData.length > 0) {
-            processData(apiData, difficulty, apMode, tierSource);
+            processData(apiData, difficulty, apMode, tierSource, showLimited);
         }
-    }, [apiData, difficulty, apMode, tierSource, songs]);
+    }, [apiData, difficulty, apMode, tierSource, songs, showLimited]);
 
     const handleStatusUpdate = (resultType: 'clear' | 'full_combo' | 'full_perfect' | null) => {
         if (!selectedSong) return;
@@ -255,7 +264,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         onUpdateResults(newResults);
     };
 
-    const processData = (data: ApiSongStats[], diff: Difficulty, isApMode: boolean, source: 'jp' | 'gallery') => {
+    const processData = (data: ApiSongStats[], diff: Difficulty, isApMode: boolean, source: 'jp' | 'gallery', isShowLimited: boolean) => {
         const parsedData: SongStats[] = [];
 
         data.forEach(item => {
@@ -395,7 +404,8 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                     song_time: songFromApi.length,
                     isExpert: isExpertOverride,
                     ApMemo: apMemo,
-                    modifier: modifier
+                    modifier: modifier,
+                    unit_code: songFromApi.unit_code || 'Unk'
                 };
                 parsedData.push(song);
             };
@@ -436,6 +446,9 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         };
 
         parsedData.forEach(song => {
+            if (!isShowLimited && ['707', '708', '709'].includes(String(song.song_no))) {
+                return;
+            }
             if (!newGroupedData[song.Level]) {
                 newGroupedData[song.Level] = {};
             }
@@ -658,7 +671,18 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                 )}
                             </div>
                         </div>
-                        <div className="dim-toggle-container">
+                        <div className="dim-toggle-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label className="dim-toggle-label">
+                                <input
+                                    type="checkbox"
+                                    checked={showLimited}
+                                    onChange={(e) => {
+                                        setShowLimited(e.target.checked);
+                                        localStorage.setItem('sekai_show_limited', JSON.stringify(e.target.checked));
+                                    }}
+                                />
+                                기간한정곡 표시
+                            </label>
                             <label className="dim-toggle-label">
                                 <input
                                     type="checkbox"
@@ -767,7 +791,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                 {pSlice.map(song => (
                                                     <div
                                                         key={song.song_no}
-                                                        className={`song-card ${getSongDimClass(song)}`}
+                                                        className={`song-card ${getSongDimClass(song)} unit-border-${song.unit_code.replace('/', '-')}`}
                                                         title={`${song.song_name}`}
                                                         onClick={() => handleSongClick(song)}
                                                     >
@@ -801,7 +825,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                 {gSlice.map(song => (
                                                     <div
                                                         key={song.song_no}
-                                                        className={`song-card ${getSongDimClass(song)}`}
+                                                        className={`song-card ${getSongDimClass(song)} unit-border-${song.unit_code.replace('/', '-')}`}
                                                         title={`${song.song_name}`}
                                                         onClick={() => handleSongClick(song)}
                                                     >
@@ -835,7 +859,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                 {bSlice.map(song => (
                                                     <div
                                                         key={song.song_no}
-                                                        className={`song-card ${getSongDimClass(song)}`}
+                                                        className={`song-card ${getSongDimClass(song)} unit-border-${song.unit_code.replace('/', '-')}`}
                                                         title={`${song.song_name} (PY_BR: ${song.PY_BR})`}
                                                         onClick={() => handleSongClick(song)}
                                                     >
