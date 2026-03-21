@@ -1,4 +1,4 @@
-import axios from 'axios';
+/* import axios from 'axios'; */
 
 export interface SongLevel {
     easy: number | null;
@@ -59,11 +59,17 @@ export interface Song {
 
 export const fetchSongs = async (): Promise<Song[]> => {
     try {
-        const response = await axios.get<Song[]>('https://api.rilaksekai.com/api/songs');
-        if (Array.isArray(response.data)) {
-            return response.data;
+        const response = await fetch('https://api.rilaksekai.com/api/songs', {
+            cache: 'reload'
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch songs: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            return data;
         } else {
-            console.error("API response is not an array:", response.data);
+            console.error("API response is not an array:", data);
             return [];
         }
     } catch (error) {
@@ -74,11 +80,17 @@ export const fetchSongs = async (): Promise<Song[]> => {
 
 export const fetchCards = async (): Promise<Card[]> => {
     try {
-        const response = await axios.get<Card[]>('https://api.rilaksekai.com/api/cards');
-        if (Array.isArray(response.data)) {
-            return response.data;
+        const response = await fetch('https://api.rilaksekai.com/api/cards', {
+            cache: 'reload'
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch cards: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            return data;
         } else {
-            console.error("API response is not an array:", response.data);
+            console.error("API response is not an array:", data);
             return [];
         }
     } catch (error) {

@@ -26,6 +26,9 @@ interface ApiSongStats {
     apd_ph?: string;
     apd_kst?: string;
     apd_jst?: string;
+    fc_ud?: string;
+    wiki_ud?: string;
+    ap_ud?: string;
 }
 
 interface StatsProps {
@@ -52,6 +55,7 @@ interface SongStats {
 const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) => {
     const navigate = useNavigate();
     const [apiData, setApiData] = useState<ApiSongStats[]>([]);
+    const [updateDates, setUpdateDates] = useState<{fc: string, wiki: string, ap: string} | null>(null);
     const [groupedData, setGroupedData] = useState<Record<number, Record<number, SongStats[]>>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -179,13 +183,22 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
         const fetchData = async () => {
             try {
                 console.log("Fetching API data...");
-                const response = await fetch('https://api.rilaksekai.com/api/songs_stats');
+                const response = await fetch('https://api.rilaksekai.com/api/songs_stats', {
+                    cache: 'reload'
+                });
 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
                 }
 
                 const data: ApiSongStats[] = await response.json();
+                if (data.length > 0) {
+                    setUpdateDates({
+                        fc: data[0].fc_ud || '',
+                        wiki: data[0].wiki_ud || '',
+                        ap: data[0].ap_ud || '',
+                    });
+                }
                 setApiData(data);
                 setLoading(false);
             } catch (err) {
@@ -543,7 +556,14 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
             <div className="stats-bg-layer" />
             <div className="stats-overlay-layer" />
             <div className="stats-header">
-                <button onClick={() => navigate('/')} className="back-button">&lt; 뒤로가기</button>
+                <div className="back-button-wrapper">
+                    <button onClick={() => navigate('/')} className="back-button">&lt; 뒤로가기</button>
+                    {updateDates && (
+                        <div className="update-date-display">
+                            업데이트: {apMode ? updateDates.ap : (tierSource === 'gallery' ? updateDates.fc : updateDates.wiki)}
+                        </div>
+                    )}
+                </div>
                 <div className="header-controls">
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                         <div className="difficulty-toggles">
