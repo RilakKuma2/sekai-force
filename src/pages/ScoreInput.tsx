@@ -150,7 +150,7 @@ const SongRow = React.memo(({ song, activeEdit, setActiveEdit, updateResult, upd
                     alt={song.title_ko || song.title_jp}
                     loading="lazy"
                     className={`song-cover ${unitClass}`}
-                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80'; }}
+                    onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                 />
                 {activeInfo === song.id && (
                     <div className="song-info-popover">

@@ -1,0 +1,254 @@
+.force-account-dock {
+    position: fixed;
+    top: 16px;
+    right: max(16px, env(safe-area-inset-right));
+    z-index: 1600;
+    color: #f8fafc;
+}
+
+.force-account-trigger {
+    min-width: 250px;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid rgba(148, 163, 184, 0.38);
+    border-radius: 14px;
+    color: #f8fafc;
+    text-align: left;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.34);
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.force-account-trigger.logged-out {
+    border-color: rgba(34, 211, 238, 0.65);
+    background:
+        linear-gradient(135deg, rgba(8, 47, 73, 0.96), rgba(15, 23, 42, 0.96)),
+        #0f172a;
+    box-shadow:
+        0 12px 38px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(34, 211, 238, 0.08),
+        0 0 24px rgba(34, 211, 238, 0.17);
+}
+
+.force-account-trigger.logged-in {
+    background: rgba(15, 23, 42, 0.94);
+}
+
+.force-account-trigger:hover,
+.force-account-trigger.active {
+    transform: translateY(-1px);
+    border-color: #67e8f9;
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.45);
+}
+
+.force-account-trigger:focus-visible {
+    outline: 3px solid rgba(34, 211, 238, 0.45);
+    outline-offset: 3px;
+}
+
+.force-account-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    color: #67e8f9;
+    background: rgba(34, 211, 238, 0.12);
+    font-size: 23px;
+}
+
+.force-account-trigger-copy {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.force-account-trigger-copy strong {
+    overflow: hidden;
+    color: #f8fafc;
+    font-size: 13px;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.force-account-trigger-copy small {
+    overflow: hidden;
+    color: #94a3b8;
+    font-size: 10px;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.force-account-trigger-copy small.ready,
+.force-account-popover-heading em.ready {
+    color: #4ade80;
+}
+
+.force-account-trigger-copy small.warning,
+.force-account-popover-heading em.warning {
+    color: #fbbf24;
+}
+
+.force-account-trigger-copy small.error,
+.force-account-popover-heading em.error {
+    color: #fb7185;
+}
+
+.force-account-trigger-copy small.working,
+.force-account-popover-heading em.working {
+    color: #67e8f9;
+}
+
+.force-account-chevron {
+    color: #64748b;
+    font-size: 17px;
+    transition: transform 0.18s ease;
+}
+
+.force-account-chevron.open {
+    transform: rotate(180deg);
+}
+
+.force-account-popover {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: min(330px, calc(100vw - 24px));
+    padding: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.98);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.52);
+    color: #e2e8f0;
+}
+
+.force-account-popover-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 13px;
+    padding-bottom: 11px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    color: #f8fafc;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.force-account-popover-heading em {
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 700;
+}
+
+.force-account-popover .login-account-copy {
+    color: #cbd5e1;
+}
+
+.force-account-popover .login-profile {
+    border-color: rgba(148, 163, 184, 0.22);
+    background: rgba(30, 41, 59, 0.92);
+}
+
+.force-account-popover .login-profile strong {
+    color: #f8fafc;
+}
+
+.force-account-popover .login-profile small,
+.force-account-popover .login-account-muted {
+    color: #94a3b8;
+}
+
+.force-account-popover .login-account-action {
+    border-color: rgba(148, 163, 184, 0.24);
+    background: #1e293b;
+    color: #e2e8f0;
+}
+
+.force-account-popover .login-account-action:hover {
+    border-color: rgba(103, 232, 249, 0.55);
+    background: #263449;
+}
+
+.force-account-popover .login-account-button {
+    border: 0;
+    color: #082f49;
+    background: linear-gradient(135deg, #67e8f9, #22d3ee);
+    box-shadow: 0 8px 24px rgba(34, 211, 238, 0.22);
+}
+
+.force-account-checking {
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    color: #cbd5e1;
+    font-size: 13px;
+}
+
+.force-account-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(103, 232, 249, 0.22);
+    border-top-color: #67e8f9;
+    border-radius: 50%;
+    animation: force-account-spin 0.7s linear infinite;
+}
+
+.force-account-privacy {
+    margin: 13px 0 0;
+    padding-top: 11px;
+    border-top: 1px solid rgba(148, 163, 184, 0.16);
+    color: #64748b;
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+@keyframes force-account-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 640px) {
+    .force-account-dock {
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+    }
+
+    .force-account-trigger {
+        min-width: 0;
+        width: auto;
+        max-width: calc(100vw - 20px);
+        min-height: 46px;
+        padding: 6px 10px;
+        border-radius: 13px;
+    }
+
+    .force-account-trigger.logged-out {
+        min-width: 220px;
+    }
+
+    .force-account-icon {
+        width: 30px;
+        height: 30px;
+        flex-basis: 30px;
+        font-size: 20px;
+    }
+
+    .force-account-popover {
+        position: fixed;
+        top: 66px;
+        right: 10px;
+    }
+}

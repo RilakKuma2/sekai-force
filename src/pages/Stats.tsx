@@ -799,7 +799,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.webp`}
                                                             alt={song.song_name}
                                                             loading="lazy"
-                                                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
+                                                            onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                                                         />
                                                         {renderStatusBadge(song)}
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
@@ -833,7 +833,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.webp`}
                                                             alt={song.song_name}
                                                             loading="lazy"
-                                                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
+                                                            onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                                                         />
                                                         {renderStatusBadge(song)}
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
@@ -867,7 +867,7 @@ const Stats: React.FC<StatsProps> = ({ songs, userResults, onUpdateResults }) =>
                                                             src={`https://asset.rilaksekai.com/cover/${String(song.song_no).padStart(3, '0')}.webp`}
                                                             alt={song.song_name}
                                                             loading="lazy"
-                                                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60'; }}
+                                                            onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                                                         />
                                                         {renderStatusBadge(song)}
                                                         {song.Judgment === '-' && song.Level < 35 && <div className="negative-indicator">?</div>}
