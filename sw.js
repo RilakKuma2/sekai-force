@@ -17,6 +17,14 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    const requestUrl = new URL(event.request.url);
+    if (
+        event.request.method !== 'GET'
+        || requestUrl.origin !== self.location.origin
+    ) {
+        return;
+    }
+
     event.respondWith(
         fetch(event.request)
             .then((response) => {
@@ -27,16 +35,19 @@ self.addEventListener('fetch', (event) => {
 
                 // Update the cache with the fresh response
                 const responseToCache = response.clone();
-                caches.open(CACHE_NAME)
+                const cacheUpdate = caches.open(CACHE_NAME)
                     .then((cache) => {
-                        cache.put(event.request, responseToCache);
-                    });
+                        return cache.put(event.request, responseToCache);
+                    })
+                    .catch(() => undefined);
+                event.waitUntil(cacheUpdate);
 
                 return response;
             })
-            .catch(() => {
+            .catch(async () => {
                 // Network failed, try to serve from cache
-                return caches.match(event.request);
+                const cachedResponse = await caches.match(event.request);
+                return cachedResponse || Response.error();
             })
     );
 });
