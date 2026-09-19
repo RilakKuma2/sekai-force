@@ -1566,7 +1566,15 @@ export function AccountPanel({
           <button type="button" className="login-account-button" onClick={() => setAuthOpen(true)}>{text.authButton}</button>
         </>
       )}
-      {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
+      {(authOpen || Boolean(user?.mustChangePassword)) && (
+        <AuthModal
+          initialMode={user?.mustChangePassword ? 'change' : 'login'}
+          onClose={() => {
+            if (!user?.mustChangePassword) setAuthOpen(false);
+          }}
+          onAuthenticated={() => setAuthOpen(false)}
+        />
+      )}
       {profileOpen && (
         <ProfileModal
           onClose={() => setProfileOpen(false)}
